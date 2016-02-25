@@ -79,8 +79,8 @@ implements OnPreferenceChangeListener, TeamTalkConnectionListener, CommandListen
         findPreference(ServerEntry.KEY_TCPPORT).setOnPreferenceChangeListener(this);
         findPreference(ServerEntry.KEY_UDPPORT).setOnPreferenceChangeListener(this);
         findPreference(ServerEntry.KEY_ENCRYPTED).setOnPreferenceChangeListener(this);
-        PreferenceCategory category = (PreferenceCategory)findPreference("srv_info");
-        if(category != null)category.removePreference(findPreference(ServerEntry.KEY_ENCRYPTED));
+        // PreferenceCategory category = (PreferenceCategory)findPreference("srv_info");
+        // if(category != null)category.removePreference(findPreference(ServerEntry.KEY_ENCRYPTED));
         findPreference(ServerEntry.KEY_USERNAME).setOnPreferenceChangeListener(this);
         findPreference(ServerEntry.KEY_PASSWORD).setOnPreferenceChangeListener(this);
         findPreference(ServerEntry.KEY_REMEMBER_LAST_CHANNEL).setOnPreferenceChangeListener(this);
