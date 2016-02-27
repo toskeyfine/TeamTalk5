@@ -1,4 +1,4 @@
-TEAMTALKLIB=../../../../Library/TeamTalkJNI/src/build/TeamTalk5.jar
+TEAMTALKLIB=../../../../Library/TeamTalkJNI/libs/TeamTalk5.jar
 
 help:
 	@echo "Targets:"
