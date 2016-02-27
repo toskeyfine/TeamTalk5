@@ -1,4 +1,3 @@
-
 TEAMTALKLIB=../../../../Library/TeamTalkJNI/src/build/TeamTalk5.jar
 
 help:
