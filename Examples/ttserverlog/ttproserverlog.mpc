@@ -3,8 +3,9 @@ project(ttproserverlog) : vc_warnings {
   exename   = tt5prosrvlog
 
   includes += ../../../Library/TeamTalk_DLL 
+  libpaths += ../../../Library/TeamTalk_DLL
   lit_libs += TeamTalk5Pro
-
+  
 specific(vc8,vc11,vc12) {
   intermediate_dir = $(PlatformName)/$(Configuration)
   exeout = $(PlatformName)/$(Configuration)
