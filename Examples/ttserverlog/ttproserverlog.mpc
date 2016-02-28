@@ -3,19 +3,15 @@ project(ttproserverlog) : vc_warnings {
   exename   = tt5prosrvlog
 
   includes += ../../../Library/TeamTalk_DLL 
-  
+  lit_libs += TeamTalk5Pro
+
 specific(vc8,vc11,vc12) {
-  libpaths += ../../../Library/TeamTalk_DLL
-  libs += TeamTalk5Pro
-  
   intermediate_dir = $(PlatformName)/$(Configuration)
   exeout = $(PlatformName)/$(Configuration)
   unicode = 1
 }
 
 specific(make,gnuace) {
-  libpaths += ../../../Library/TeamTalk_DLL
-  libs += TeamTalk5Pro 
 }
 
 Header_Files {
