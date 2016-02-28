@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>bin\x86\Release\</OutputPath>
@@ -291,7 +291,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\TeamTalk.NET\TeamTalk5.NET.csproj">
+    <ProjectReference Include="..\..\..Library\TeamTalk.NET\TeamTalk5.NET.csproj">
       <Project>{BF65BDA9-BA3C-45E2-8A32-FADC20A1FA92}</Project>
       <Name>TeamTalk5.NET</Name>
     </ProjectReference>
