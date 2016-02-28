@@ -2,13 +2,8 @@ project(ttproserverlog) : vc_warnings {
   
   exename   = tt5prosrvlog
 
-<<<<<<< HEAD
   includes += ../../../Library/TeamTalk_DLL 
   libpaths += ../../../Library/TeamTalk_DLL
-=======
-  includes += ../../TeamTalk_DLL 
-  libpaths += ../../TeamTalk_DLL
->>>>>>> master
   lit_libs += TeamTalk5Pro
   
 specific(vc8,vc11,vc12) {
