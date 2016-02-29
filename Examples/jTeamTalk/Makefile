@@ -3,7 +3,7 @@ TEAMTALKLIB=../../../../Library/TeamTalkJNI/libs/TeamTalk5.jar
 help:
 	@echo "Targets:"
 	@echo "  all"
-	@echo "    - Build Java TeamTalk client"
+	@echo "    - Build TeamTalk Java client"
 	@echo "  run"
 	@echo "    - Run TeamTalk Java client"
 	@echo "  clean"
