@@ -37,7 +37,7 @@ import dk.bearware.RemoteFile;
 import dk.bearware.ServerProperties;
 import dk.bearware.StreamType;
 import dk.bearware.Subscription;
-import dk.bearware.TeamTalk5;
+import dk.bearware.TeamTalk5Pro;
 import dk.bearware.TeamTalkBase;
 import dk.bearware.TextMessage;
 import dk.bearware.TextMsgType;
@@ -91,11 +91,11 @@ implements CommandListener, UserListener, ConnectionListener, ClientListener {
         super.onCreate();
         
         // make sure DLL is loaded 
-        TeamTalk5.loadLibrary();
+        TeamTalk5Pro.loadLibrary();
         
-        TeamTalk5.setLicenseInformation(License.REGISTRATION_NAME, License.REGISTRATION_KEY);
+        TeamTalk5Pro.setLicenseInformation(License.REGISTRATION_NAME, License.REGISTRATION_KEY);
         
-        ttclient = new TeamTalk5();
+        ttclient = new TeamTalk5Pro();
         
         //register self as event handler so 'users' and 'channels' can be updated
         mEventHandler.addConnectionListener(this);
