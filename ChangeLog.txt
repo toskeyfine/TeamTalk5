@@ -5,8 +5,9 @@ Version 5.x unreleased
 Default Qt client:
 - Option to enable/disable VU-meter updates
 - Show username instead of nickname in channel list
+- See which client application is being used
 Accessible Windows client:
-- Portuguese_BR updated
+- Portuguese_BR, Chinese Simplified, Turkish, Czech, Korean updated
 - Names for main window controls (translatable)
 - Fixed issue where away-status was not set after reconnect
 - Show username instead of nickname in channel list
@@ -14,6 +15,11 @@ Accessible Windows client:
 Android client:
 - Voice activation
 - Show username instead of nickname
+iOS client:
+- Fixed crash issue when creating channel and VoiceOver active
+- Default audio codec settings when creating new channel
+
+Version 5.1.2, released 2016/02/18
 iOS client:
 - Initial release
 
