@@ -27,7 +27,7 @@ class ChannelDetailViewController :
     UITextFieldDelegate, UIAlertViewDelegate {
 
     //shared TTInstance between all view controllers
-    var ttInst = UnsafeMutablePointer<Void>()
+    var ttInst : UnsafeMutablePointer<Void> = nil
 
     var channel = Channel()
     
@@ -52,6 +52,10 @@ class ChannelDetailViewController :
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        if channel.nChannelID == 0 {
+            channel.audiocodec = newAudioCodec(DEFAULT_AUDIOCODEC)
+        }
         
         let namecell = UITableViewCell(style: .Default, reuseIdentifier: nil)
         namefield = newTableCellTextField(namecell, label: NSLocalizedString("Name", comment: "create channel"), initial: fromTTString(channel.szName))
@@ -206,17 +210,20 @@ class ChannelDetailViewController :
             
         case CLIENTEVENT_CMD_SUCCESS :
             if m.nSource == cmdid {
-                let vc = self.navigationController?.viewControllers[1]
-                
-                self.navigationController?.popToViewController(vc!, animated: true)
+                self.navigationController?.popViewControllerAnimated(true)
             }
         case CLIENTEVENT_CMD_ERROR :
             if m.nSource == cmdid {
                 let errmsg = getClientErrorMsg(&m).memory
                 let s = fromTTString(errmsg.szErrorMsg)
-                let alert = UIAlertController(title: NSLocalizedString("Error", comment: "Dialog message"), message: s, preferredStyle: UIAlertControllerStyle.Alert)
-                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Dialog message"), style: UIAlertActionStyle.Default, handler: nil))
-                self.presentViewController(alert, animated: true, completion: nil)
+                if #available(iOS 8.0, *) {
+                    let alert = UIAlertController(title: NSLocalizedString("Error", comment: "Dialog message"), message: s, preferredStyle: UIAlertControllerStyle.Alert)
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Dialog message"), style: UIAlertActionStyle.Default, handler: nil))
+                    self.presentViewController(alert, animated: true, completion: nil)
+                    
+                } else {
+                    // Fallback on earlier versions
+                }
             }
         case CLIENTEVENT_CMD_PROCESSING :
             if getTTBOOL(&m) == 0 && cmdid == m.nSource {
@@ -298,20 +305,37 @@ class ChannelDetailViewController :
         if permanentswitch!.on {
             channel.uChannelType |= CHANNEL_PERMANENT.rawValue
         }
+        else {
+            channel.uChannelType &= ~CHANNEL_PERMANENT.rawValue
+        }
         if nointerruptionsswitch!.on {
             channel.uChannelType |= CHANNEL_SOLO_TRANSMIT.rawValue
+        }
+        else {
+            channel.uChannelType &= ~CHANNEL_SOLO_TRANSMIT.rawValue
         }
         if novoiceactivationswitch!.on {
             channel.uChannelType |= CHANNEL_NO_VOICEACTIVATION.rawValue
         }
+        else {
+            channel.uChannelType &= ~CHANNEL_NO_VOICEACTIVATION.rawValue
+        }
         if noaudiorecordingswitch!.on {
             channel.uChannelType |= CHANNEL_NO_RECORDING.rawValue
+        }
+        else {
+            channel.uChannelType &= ~CHANNEL_NO_RECORDING.rawValue
         }
         
     }
     
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return 2
+        if cmd_items.count > 0 {
+            return 2
+        }
+        else {
+            return 1
+        }
     }
     
     func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
