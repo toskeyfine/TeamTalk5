@@ -102,13 +102,13 @@ class ServerListViewController : UITableViewController,
         }
         
         if defaults.objectForKey(PREF_DISPLAY_PUBSERVERS) == nil || defaults.boolForKey(PREF_DISPLAY_PUBSERVERS) {
-            NSTimer.scheduledTimerWithTimeInterval(1.0, target: self, selector: "downloadServerList", userInfo: nil, repeats: false)
+            NSTimer.scheduledTimerWithTimeInterval(1.0, target: self, selector: #selector(ServerListViewController.downloadServerList), userInfo: nil, repeats: false)
         }
 
         tableView.reloadData()
         
         if nextappupdate.earlierDate(NSDate()) == nextappupdate {
-            NSTimer.scheduledTimerWithTimeInterval(2.0, target: self, selector: "checkAppUpdate", userInfo: nil, repeats: false)
+            NSTimer.scheduledTimerWithTimeInterval(2.0, target: self, selector: #selector(ServerListViewController.checkAppUpdate), userInfo: nil, repeats: false)
         }
     }
     
@@ -117,7 +117,7 @@ class ServerListViewController : UITableViewController,
         // check for new version
         let updateparser = AppUpdateParser()
         
-        let parser = NSXMLParser(contentsOfURL: NSURL(string: AppInfo.URL_APPUPDATE)!)!
+        let parser = NSXMLParser(contentsOfURL: NSURL(string: AppInfo.getUpdateURL())!)!
         parser.delegate = updateparser
         parser.parse()
         
@@ -129,7 +129,7 @@ class ServerListViewController : UITableViewController,
         // get xml-list of public server
         let serverparser = ServerParser()
         
-        let parser = NSXMLParser(contentsOfURL: NSURL(string: AppInfo.URL_FREESERVER)!)!
+        let parser = NSXMLParser(contentsOfURL: NSURL(string: AppInfo.getServersURL())!)!
         parser.delegate = serverparser
         parser.parse()
 
@@ -184,13 +184,18 @@ class ServerListViewController : UITableViewController,
             cell.iconImageView.accessibilityLabel = NSLocalizedString("Private server", comment: "serverlist")
         }
         
-        let action_connect = MyCustomAction(name: NSLocalizedString("Connect to server", comment: "serverlist"), target: self, selector: "connectServer:", tag: indexPath.row)
-        let action_delete = MyCustomAction(name: NSLocalizedString("Delete server from list", comment: "serverlist"), target: self, selector: "deleteServer:", tag: indexPath.row)
-        cell.accessibilityCustomActions = [action_connect, action_delete]
+        if #available(iOS 8.0, *) {
+            let action_connect = MyCustomAction(name: NSLocalizedString("Connect to server", comment: "serverlist"), target: self, selector: #selector(ServerListViewController.connectServer(_:)), tag: indexPath.row)
+            let action_delete = MyCustomAction(name: NSLocalizedString("Delete server from list", comment: "serverlist"), target: self, selector: #selector(ServerListViewController.deleteServer(_:)), tag: indexPath.row)
+            cell.accessibilityCustomActions = [action_connect, action_delete]
+        } else {
+            // Fallback on earlier versions
+        }
         
         return cell
     }
 
+    @available(iOS 8.0, *)
     func connectServer(action: UIAccessibilityCustomAction) -> Bool {
         
         if let ac = action as? MyCustomAction {
@@ -200,6 +205,7 @@ class ServerListViewController : UITableViewController,
         return true
     }
     
+    @available(iOS 8.0, *)
     func deleteServer(action: UIAccessibilityCustomAction) -> Bool {
         
         if let ac = action as? MyCustomAction {
