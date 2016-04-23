@@ -569,9 +569,6 @@
     <ClInclude Include="settings\CPrintfArg.h">
       <Filter>Header Files\Settings</Filter>
     </ClInclude>
-    <ClInclude Include="speech\Tolk.h">
-      <Filter>Header Files\Speech</Filter>
-    </ClInclude>
     <ClInclude Include="gui\GenerateTTFileDlg.h">
       <Filter>Header Files\Dialogs</Filter>
     </ClInclude>
@@ -579,6 +576,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="License.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -637,10 +637,5 @@
     </CustomBuildStep>
     <CustomBuildStep Include="res\TeamTalk.manifest" />
     <CustomBuildStep Include="res\TeamTalk_amd64.manifest" />
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="Resource.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
   </ItemGroup>
 </Project>
