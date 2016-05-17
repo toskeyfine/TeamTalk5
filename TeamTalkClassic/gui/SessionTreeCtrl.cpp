@@ -5,7 +5,6 @@
 #include "Resource.h"
 #include "TeamTalkBase.h"
 #include "SessionTreeCtrl.h"
-#include ".\sessiontreectrl.h"
 
 using namespace std;
 
@@ -111,9 +110,7 @@ void CSessionTreeCtrl::UpdMyChannel(int nChannelID)
         HTREEITEM hTmp = hItem;
         while( hTmp != GetRootItem())
         {
-            if(hTmp == hNewItem)
-                break;
-            CollapseChannel(hTmp);
+            Expand(hTmp, TVE_COLLAPSE);
             hTmp = GetParentItem(hTmp);
         }
 
@@ -138,10 +135,22 @@ void CSessionTreeCtrl::UpdMyChannel(int nChannelID)
     while(hItem)
     {
         ChannelItemPlus(hItem, ChannelOpened);
+        Expand(hItem, TVE_EXPAND);
         hItem = GetParentItem(hItem);
     }
 
     m_nMyChannel = nChannelID;
+}
+
+void CSessionTreeCtrl::UpdateParentChannels(int nChannelID)
+{
+    //update channel user count
+    Channel chan;
+    while(GetChannel(nChannelID, chan))
+    {
+        UpdateChannel(chan);
+        nChannelID = chan.nParentID;
+    }
 }
 
 void CSessionTreeCtrl::UpdServerName(const ServerProperties& prop)
@@ -151,7 +160,7 @@ void CSessionTreeCtrl::UpdServerName(const ServerProperties& prop)
         UpdateChannel(chan);
 }
 
-HTREEITEM CSessionTreeCtrl::GetUserItem(int nUserID)
+HTREEITEM CSessionTreeCtrl::GetUserItem(int nUserID) const
 {
     HTREEITEM result = 0;
     HTREEITEM item = GetRootItem();
@@ -166,26 +175,24 @@ HTREEITEM CSessionTreeCtrl::GetUserItem(int nUserID)
         item = GetChildItem(item);
         while(item != NULL)
         {
-            int img, img2;
-            GetItemImage(item, img, img2);
-            if(IsUser(img))
+            DWORD_PTR dwItemData = GetItemData(item);
+            if(dwItemData & USER_ITEMDATA)
             {
-                if((DWORD)nUserID == (GetItemData(item) & ID_ITEMDATA))
+                if(nUserID == (dwItemData & ID_ITEMDATA))
                 {
                     result = item;
                     break;
                 }
             }
-            else
-                if(IsChannel(img))
-                    items.push(item);
+            else if(dwItemData & CHANNEL_ITEMDATA)
+                items.push(item);
             item = GetNextSiblingItem(item);
         }
     }
     return result;
 }
 
-HTREEITEM CSessionTreeCtrl::GetChannelItem(int nChannelID)
+HTREEITEM CSessionTreeCtrl::GetChannelItem(int nChannelID) const
 {
     HTREEITEM result = 0;
 
@@ -200,18 +207,16 @@ HTREEITEM CSessionTreeCtrl::GetChannelItem(int nChannelID)
         items.pop();
         while(item != NULL)
         {
-            int img, img2;
-            GetItemImage(item, img, img2);
-            if(IsChannel(img))
+            DWORD_PTR dwItemData = GetItemData(item);
+            if(dwItemData & CHANNEL_ITEMDATA)
             {
-                UINT nNum = (GetItemData(item) & ID_ITEMDATA);
+                int nNum = (dwItemData & ID_ITEMDATA);
                 if(nChannelID == nNum)
                 {
                     result = item;
                     break;
                 }
-                if(ItemHasChildren(item))
-                    items.push( GetChildItem(item) );
+                items.push( GetChildItem(item) );
             }
             item = GetNextSiblingItem(item);
         }
@@ -220,12 +225,12 @@ HTREEITEM CSessionTreeCtrl::GetChannelItem(int nChannelID)
     return result;
 }
 
-BOOL CSessionTreeCtrl::IsUser(int nImageIndex)
+BOOL CSessionTreeCtrl::IsUser(int nImageIndex) const
 {
     return nImageIndex >= USER_INDEX_START && nImageIndex <= USER_INDEX_END;
 }
 
-BOOL CSessionTreeCtrl::IsUserTalking(int nImageIndex)
+BOOL CSessionTreeCtrl::IsUserTalking(int nImageIndex) const
 {
     switch(nImageIndex)
     {
@@ -242,7 +247,7 @@ BOOL CSessionTreeCtrl::IsUserTalking(int nImageIndex)
     }
 }
 
-BOOL CSessionTreeCtrl::IsUserAway(int nImageIndex)
+BOOL CSessionTreeCtrl::IsUserAway(int nImageIndex) const
 {
     switch(nImageIndex)
     {
@@ -259,7 +264,7 @@ BOOL CSessionTreeCtrl::IsUserAway(int nImageIndex)
     }
 }
 
-BOOL CSessionTreeCtrl::IsUserMessaged(int nImageIndex)
+BOOL CSessionTreeCtrl::IsUserMessaged(int nImageIndex) const
 {
     switch(nImageIndex)
     {
@@ -277,7 +282,7 @@ BOOL CSessionTreeCtrl::IsUserMessaged(int nImageIndex)
     }
 }
 
-BOOL CSessionTreeCtrl::IsUserOperator(int nImageIndex)
+BOOL CSessionTreeCtrl::IsUserOperator(int nImageIndex) const
 {
     switch(nImageIndex)
     {
@@ -295,12 +300,12 @@ BOOL CSessionTreeCtrl::IsUserOperator(int nImageIndex)
     }
 }
 
-BOOL CSessionTreeCtrl::IsChannel(int nImageIndex)
+BOOL CSessionTreeCtrl::IsChannel(int nImageIndex) const
 {
     return nImageIndex >= CHANNEL_INDEX_START && nImageIndex <= CHANNEL_INDEX_END;
 }
 
-BOOL CSessionTreeCtrl::IsChannelMessaged(int nImageIndex)
+BOOL CSessionTreeCtrl::IsChannelMessaged(int nImageIndex) const
 {
     switch(nImageIndex)
     {
@@ -318,7 +323,7 @@ BOOL CSessionTreeCtrl::IsChannelMessaged(int nImageIndex)
     }
 }
 
-BOOL CSessionTreeCtrl::IsChannelOpened(int nImageIndex)
+BOOL CSessionTreeCtrl::IsChannelOpened(int nImageIndex) const
 {
     switch(nImageIndex)
     {
@@ -336,7 +341,7 @@ BOOL CSessionTreeCtrl::IsChannelOpened(int nImageIndex)
     }
 }
 
-BOOL CSessionTreeCtrl::IsChannelLocked(int nImageIndex)
+BOOL CSessionTreeCtrl::IsChannelLocked(int nImageIndex) const
 {
     switch(nImageIndex)
     {
@@ -354,12 +359,12 @@ BOOL CSessionTreeCtrl::IsChannelLocked(int nImageIndex)
     }
 }
 
-int CSessionTreeCtrl::GetMyChannelID()
+int CSessionTreeCtrl::GetMyChannelID() const
 {
     return m_nMyChannel;
 }
 
-int CSessionTreeCtrl::GetSelectedChannel(bool bIncludeUserChan/* = false*/)
+int CSessionTreeCtrl::GetSelectedChannel(bool bIncludeUserChan/* = false*/) const
 {
     HTREEITEM h = GetSelectedItem();
 
@@ -384,7 +389,7 @@ int CSessionTreeCtrl::GetSelectedChannel(bool bIncludeUserChan/* = false*/)
     return 0;
 }
 
-int CSessionTreeCtrl::GetSelectedUser()
+int CSessionTreeCtrl::GetSelectedUser() const
 {
     HTREEITEM h = GetSelectedItem();
 
@@ -401,6 +406,24 @@ int CSessionTreeCtrl::GetSelectedUser()
         }
     }
     return 0;
+}
+
+std::vector<User> CSessionTreeCtrl::GetSelectedUsers() const
+{
+    std::vector<User> users;
+    HTREEITEM hItem = GetRootItem();
+    while((hItem = GetNextVisibleItem(hItem)) != NULL)
+    {
+        DWORD_PTR dwItemData = GetItemData(hItem);
+        if ((dwItemData & USER_ITEMDATA) != 0 &&
+            (GetItemState(hItem, TVIS_SELECTED) & TVIS_SELECTED))
+        {
+            User user;
+            if(GetUser((int)(dwItemData & ID_ITEMDATA), user))
+                users.push_back(user);
+        }
+    }
+    return users;
 }
 
 void CSessionTreeCtrl::SetUserTalking(int nUserID, BOOL bTalking)
@@ -477,8 +500,6 @@ void CSessionTreeCtrl::AddUser(const User& user)
         if(user.nUserID == TT_GetMyUserID(ttInst))
         {
             UpdMyChannel(user.nChannelID);
-            VERIFY(Expand(hChanItem, TVE_EXPAND));
-            EnsureVisible(hNewItem);
         }
 
         if(user.nUserID == TT_GetMyUserID(ttInst))
@@ -490,10 +511,7 @@ void CSessionTreeCtrl::AddUser(const User& user)
         else
             SetUserTalking(user.nUserID, user.uUserState & USERSTATE_VOICE);
 
-        //update channel user count
-        Channel chan;
-        if(GetChannel(user.nChannelID, chan))
-            UpdateChannel(chan);
+        UpdateParentChannels(user.nChannelID);
     }
 }
 
@@ -540,9 +558,7 @@ void CSessionTreeCtrl::RemoveUser(const User& user)
         DeleteItem(hItem);
     m_users[user.nUserID] = user;
 
-    Channel chan;
-    if(GetChannel(oldUser.nChannelID, chan))
-        UpdateChannel(chan);
+    UpdateParentChannels(oldUser.nChannelID);
 }
 
 void CSessionTreeCtrl::AddChannel(const Channel& channel)
@@ -552,7 +568,7 @@ void CSessionTreeCtrl::AddChannel(const Channel& channel)
     {
         HTREEITEM hRoot = InsertItem( _T(""), ROOT_CLOSED, ROOT_CLOSED);
         SetItemData(hRoot, (channel.nChannelID | CHANNEL_ITEMDATA));
-        SetItemText(hRoot, LimitText(GetChannelText(channel.nChannelID)));
+        SetItemText(hRoot, GetChannelText(channel.nChannelID));
         if(channel.bPassword)
             ChannelItemPlus(hRoot, ChannelLocked);
     }
@@ -582,7 +598,7 @@ void CSessionTreeCtrl::UpdateChannel(const Channel& chan)
     HTREEITEM hItem = GetChannelItem(chan.nChannelID);
     if(hItem)
     {
-        SetItemText(hItem, LimitText(GetChannelText(chan.nChannelID)));
+        SetItemText(hItem, GetChannelText(chan.nChannelID));
 
         if(chan.bPassword)
             ChannelItemPlus(hItem, ChannelLocked);
@@ -672,20 +688,22 @@ void CSessionTreeCtrl::OnTvnItemexpanded(NMHDR *pNMHDR, LRESULT *pResult)
     LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
 
     HTREEITEM hItem = pNMTreeView->itemNew.hItem;
-    int nImg1, nImg2;
-    GetItemImage(hItem, nImg1, nImg2);
-    if(IsChannel(nImg1))
+    int nChannelID = GetItemData(hItem);
+    if(nChannelID & CHANNEL_ITEMDATA)
     {
+        nChannelID &= ID_ITEMDATA;
         switch(pNMTreeView->action)
         {
         case 2 :
             {
                 ChannelItemPlus(hItem, ChannelOpened);
+                UpdateParentChannels(nChannelID);
                 break;
             }
         case 1 :
             {
                 ChannelItemMinus(hItem, ChannelOpened);
+                UpdateParentChannels(nChannelID);
                 break;
             }
         }
@@ -788,7 +806,7 @@ void CSessionTreeCtrl::ChannelItemMinus(HTREEITEM hItem, ChannelStates minusStat
     ASSERT(nImg >= CHANNEL_INDEX_START && nImg <= CHANNEL_INDEX_END); //within channels
 }
 
-BOOL CSessionTreeCtrl::IsShowingUserCount()
+BOOL CSessionTreeCtrl::IsShowingUserCount() const
 {
     return m_bShowUserCount;
 }
@@ -809,7 +827,7 @@ void CSessionTreeCtrl::ShowUserCount(BOOL bShow)
             qItems.pop();
 
             int nChannelID = (GetItemData(hItem) & ID_ITEMDATA);
-            SetItemText(hItem, LimitText(GetChannelText(nChannelID)));
+            SetItemText(hItem, GetChannelText(nChannelID));
             hItem = GetChildItem(hItem);
 
             while(hItem)
@@ -825,10 +843,10 @@ void CSessionTreeCtrl::ShowUserCount(BOOL bShow)
     }
 }
 
-BOOL CSessionTreeCtrl::GetChannel(int nChannelID, Channel& outChan)
+BOOL CSessionTreeCtrl::GetChannel(int nChannelID, Channel& outChan) const
 {
     Channel chan = {0};
-    channels_t::iterator ite = m_channels.find(nChannelID);
+    auto ite = m_channels.find(nChannelID);
     if(ite != m_channels.end())
     {
         outChan = ite->second;
@@ -866,10 +884,10 @@ void CSessionTreeCtrl::SetUserMessages(int nUserID, const messages_t& msgs)
     m_messages[nUserID] = msgs;
 }
 
-messages_t CSessionTreeCtrl::GetUserMessages(int nUserID)
+messages_t CSessionTreeCtrl::GetUserMessages(int nUserID) const
 {
     messages_t msgs;
-    msgmap_t::iterator ite = m_messages.find(nUserID);
+    auto ite = m_messages.find(nUserID);
     if(ite != m_messages.end())
         return ite->second;
     return msgs;
@@ -880,13 +898,12 @@ const channels_t& CSessionTreeCtrl::GetChannels()
     return m_channels;
 }
 
-BOOL CSessionTreeCtrl::IsUserOperator(int nUserID, int nChannelID)
+BOOL CSessionTreeCtrl::IsUserOperator(int nUserID, int nChannelID) const
 {
     return TT_IsChannelOperator(ttInst, nUserID, nChannelID);
 }
 
-
-users_t CSessionTreeCtrl::GetOperators(int nChannelID)
+users_t CSessionTreeCtrl::GetOperators(int nChannelID) const
 {
     users_t users = GetChannelUsers(nChannelID, m_users);
     users_t ops;
@@ -897,9 +914,9 @@ users_t CSessionTreeCtrl::GetOperators(int nChannelID)
     return ops;
 }
 
-BOOL CSessionTreeCtrl::GetUser(int nUserID, User& outUser)
+BOOL CSessionTreeCtrl::GetUser(int nUserID, User& outUser) const
 {
-    users_t::iterator ite = m_users.find(nUserID);
+    auto ite = m_users.find(nUserID);
     if(ite != m_users.end())
     {
         outUser = ite->second;
@@ -908,13 +925,13 @@ BOOL CSessionTreeCtrl::GetUser(int nUserID, User& outUser)
     return FALSE;
 }
 
-users_t CSessionTreeCtrl::GetUsers(int nChannelID)
+users_t CSessionTreeCtrl::GetUsers(int nChannelID) const
 {
     if(nChannelID == 0)
         return m_users;
 
     users_t ret;
-    users_t::iterator ite = m_users.begin();
+    auto ite = m_users.begin();
     for(;ite!=m_users.end();ite++)
     {
         if(ite->second.nChannelID == nChannelID)
@@ -923,10 +940,10 @@ users_t CSessionTreeCtrl::GetUsers(int nChannelID)
     return ret;
 }
 
-CString CSessionTreeCtrl::GetUserText(int nUserID)
+CString CSessionTreeCtrl::GetUserText(int nUserID) const
 {
     CString szText;
-    users_t::iterator ite = m_users.find(nUserID);
+    auto ite = m_users.find(nUserID);
     if(ite != m_users.end())
     {
         User user = ite->second;
@@ -942,23 +959,32 @@ CString CSessionTreeCtrl::GetUserText(int nUserID)
     return LimitText(szText);
 }
 
-CString CSessionTreeCtrl::GetChannelText(int nChannelID)
+CString CSessionTreeCtrl::GetChannelText(int nChannelID) const
 {
     CString szText;
-    channels_t::iterator ite = m_channels.find(nChannelID);
+    auto ite = m_channels.find(nChannelID);
     if(ite != m_channels.end())
     {
         ServerProperties prop = {0};
         TT_GetServerProperties(ttInst, &prop); 
         if(IsShowingUserCount())
         {
-            int nCount = 0;
-            for(users_t::const_iterator iteU = m_users.begin();
-                iteU != m_users.end();iteU++)
+            HTREEITEM hItem = GetChannelItem(nChannelID);
+            int nCount = (int)GetChannelUsers(nChannelID, m_users).size();
+            UINT uState = hItem? GetItemState(hItem, TVIS_EXPANDED) : 0;
+            if (hItem && (uState & TVIS_EXPANDED) == 0)
             {
-                if(iteU->second.nChannelID == nChannelID)
-                    nCount++;
+                //TRACE(_T("%s is not expanded\n"), ite->second.szName);
+                channels_t subs = GetSubChannels(nChannelID, m_channels);
+                for(auto c=subs.begin();c!=subs.end();++c)
+                {
+                    nCount += (int)GetChannelUsers(c->first, m_users).size();
+                }
             }
+            else if (hItem && (uState & TVIS_EXPANDED) == TVIS_EXPANDED)
+            {
+                //TRACE(_T("%s is expanded\n"), ite->second.szName);
+            } 
 
             if(GetRootChannelID(m_channels) == nChannelID)
                 szText.Format(_T("%s (%d)"), prop.szServerName, nCount);
@@ -974,39 +1000,7 @@ CString CSessionTreeCtrl::GetChannelText(int nChannelID)
         }
     }
 
-    return szText;
-}
-
-void CSessionTreeCtrl::CollapseChannel(HTREEITEM hItem)
-{
-    ASSERT(hItem);
-    int nImg1, nImg2;
-    GetItemImage(hItem, nImg1, nImg2);
-    ASSERT(IsChannel(nImg1));
-    int nChannelID = (GetItemData(hItem) & ID_ITEMDATA);
-    int nRootID = GetRootChannelID(m_channels);
-
-    if(IsChannel(nImg1) && nRootID != nChannelID)
-    {
-        Expand(hItem, TVE_COLLAPSE);
-        ChannelItemMinus(hItem, ChannelOpened);
-    }
-}
-
-void CSessionTreeCtrl::ExpandChannel(HTREEITEM hItem)
-{
-    ASSERT(hItem);
-    int nImg1, nImg2;
-    GetItemImage(hItem, nImg1, nImg2);
-    ASSERT(IsChannel(nImg1));
-    int nChannelID = (GetItemData(hItem) & ID_ITEMDATA);
-    int nRootID = GetRootChannelID(m_channels);
-
-    if(IsChannel(nImg1) && nRootID != nChannelID)
-    {
-        VERIFY(Expand(hItem, TVE_EXPAND));
-        ChannelItemPlus(hItem, ChannelOpened);
-    }
+    return LimitText(szText);
 }
 
 void CSessionTreeCtrl::OnTvnBegindrag(NMHDR *pNMHDR, LRESULT *pResult)
