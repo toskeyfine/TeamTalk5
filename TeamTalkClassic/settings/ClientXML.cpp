@@ -1010,7 +1010,7 @@ namespace teamtalk {
 
     bool ClientXML::GetVuMeterUpdate()
     {
-        bool bEnabled = true;
+        bool bEnabled = false;
         TiXmlElement* child = GetWindowElement();
         if(child)
             GetBoolean(*child, "update-vu-meter", bEnabled);
@@ -1386,6 +1386,27 @@ namespace teamtalk {
         return nDefDeviceId;
     }
 
+    bool ClientXML::SetSoundInputDevice(const std::string& devid)
+    {
+        TiXmlElement* pParent = GetSoundSystemElement();
+        if(pParent)
+        {
+            PutString(*pParent, "input-device-id", devid);
+            return true;
+        }
+        else
+            return false;
+    }
+
+    std::string ClientXML::GetSoundInputDevice()
+    {
+        std::string devid;
+        TiXmlElement* child = GetSoundSystemElement();
+        if(child)
+            GetString(*child, "input-device-id", devid);
+        return devid;
+    }
+
     bool ClientXML::SetSoundOutputDevice(int nDevice)
     {
         TiXmlElement* pParent = GetSoundSystemElement();
@@ -1404,6 +1425,27 @@ namespace teamtalk {
         if(child)
             GetInteger(*child, "output-driver", nDefDeviceId);
         return nDefDeviceId;
+    }
+
+    bool ClientXML::SetSoundOutputDevice(const std::string& devid)
+    {
+        TiXmlElement* pParent = GetSoundSystemElement();
+        if(pParent)
+        {
+            PutString(*pParent, "output-device-id", devid);
+            return true;
+        }
+        else
+            return false;
+    }
+
+    std::string ClientXML::GetSoundOutputDevice()
+    {
+        std::string devid;
+        TiXmlElement* child = GetSoundSystemElement();
+        if(child)
+            GetString(*child, "output-device-id", devid);
+        return devid;
     }
 
     bool ClientXML::SetSoundMixerDevice(int nDevice)
@@ -2006,6 +2048,28 @@ namespace teamtalk {
         return ret;
     }
 
+    bool ClientXML::SetEventTTSEvents(TTSEvents uEvents)
+    {
+        TiXmlElement* pParent = GetEventsElement();
+        if(pParent)
+        {
+            PutInteger(*pParent, "text-to-speech-events", uEvents);
+            return true;
+        }
+        else
+            return false;
+    }
+    
+    TTSEvents ClientXML::GetEventTTSEvents()
+    {
+        TTSEvents ret = TTS_ALL;
+        TiXmlElement* child = GetEventsElement();
+        if(child)
+            GetInteger(*child, "text-to-speech-events", ret);
+
+        return ret;
+    }
+
     bool ClientXML::SetEventFlashOnMsg(int nIndex)
     {
         TiXmlElement* pParent = GetEventsElement();
@@ -2385,6 +2449,26 @@ namespace teamtalk {
         if(child)
             GetInteger(*child, "webm-vp8-bitrate", nDefBitrate);
         return nDefBitrate;
+    }
+
+    bool ClientXML::SetVideoCaptureEnabled(bool enabled)
+    {
+        TiXmlElement* pParent = GetVideoElement();
+        if(pParent)
+        {
+            PutBoolean(*pParent, "video-capture-enabled", enabled);
+            return true;
+        }
+        else
+            return false;
+    }
+
+    bool ClientXML::GetVideoCaptureEnabled(bool def_value)
+    {
+        TiXmlElement* child = GetVideoElement();
+        if(child)
+            GetBoolean(*child, "video-capture-enabled", def_value);
+        return def_value;
     }
 
     /********* </videocapture> *********/
