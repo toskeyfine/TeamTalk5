@@ -23,7 +23,7 @@
 #define APPINFO_H
 
 #define COMPANYNAME         "BearWare.dk"
-#define APPVERSION_SHORT    "5.1"
+#define APPVERSION_SHORT    "5.1.3"
 #define APPVERSION          TEAMTALK_VERSION " - Unreleased"
 
 #define APPICON             QString::fromUtf8(":/images/images/teamtalk.png")
@@ -41,6 +41,7 @@
 #endif
 
 #define APPINIFILE          (QApplication::applicationName() + ".ini")
+#define APPDEFAULTINIFILE   (QApplication::applicationName() + ".ini.default")
 
 #if defined(Q_OS_DARWIN)
 #define APPMANUAL           (QApplication::applicationDirPath() + "/../Resources/Help/index.html")
