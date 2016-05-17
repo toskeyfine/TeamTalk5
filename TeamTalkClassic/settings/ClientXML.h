@@ -224,8 +224,14 @@ namespace teamtalk {
         bool SetSoundInputDevice(int nDevice);
         int GetSoundInputDevice(int nDefDeviceId);
 
+        bool SetSoundInputDevice(const std::string& devid);
+        std::string GetSoundInputDevice();
+
         bool SetSoundOutputDevice(int nDevice);
         int GetSoundOutputDevice(int nDefDeviceId);
+
+        bool SetSoundOutputDevice(const std::string& devid);
+        std::string GetSoundOutputDevice();
 
         bool SetSoundOutputVolume(int nVolume);
         int GetSoundOutputVolume(int def_vol);
@@ -309,6 +315,9 @@ namespace teamtalk {
 
         bool SetEventFlashOnMsg(int nIndex);
         int GetEventFlashOnMsg();
+
+        bool SetEventTTSEvents(TTSEvents uEvents);
+        TTSEvents GetEventTTSEvents();
         /********* </events> ************/
 
         /********* <advanced> ***********/
@@ -360,6 +369,9 @@ namespace teamtalk {
 
         bool SetVideoCodecBitrate(int bitrate);
         int GetVideoCodecBitrate(int nDefBitrate);
+
+        bool SetVideoCaptureEnabled(bool enabled);
+        bool GetVideoCaptureEnabled(bool def_value);
         /********* </videocapture> *********/
 
         /********* <latesthosts> ********/

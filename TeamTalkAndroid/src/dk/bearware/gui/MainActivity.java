@@ -21,9 +21,12 @@
 
 package dk.bearware.gui;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.Locale;
+import java.util.List;
 import java.util.Vector;
 
 import dk.bearware.BannedUser;
@@ -42,6 +45,7 @@ import dk.bearware.TextMessage;
 import dk.bearware.TextMsgType;
 import dk.bearware.User;
 import dk.bearware.UserAccount;
+import dk.bearware.UserRight;
 import dk.bearware.UserState;
 import dk.bearware.events.ClientListener;
 import dk.bearware.events.CommandListener;
@@ -55,6 +59,7 @@ import dk.bearware.backend.TeamTalkConstants;
 import dk.bearware.backend.TeamTalkService;
 import dk.bearware.data.FileListAdapter;
 import dk.bearware.data.MediaAdapter;
+import dk.bearware.data.Preferences;
 import dk.bearware.data.ServerEntry;
 import dk.bearware.data.TextMessageAdapter;
 import dk.bearware.data.TTSWrapper;
@@ -367,8 +372,8 @@ implements TeamTalkConnectionListener,
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         SharedPreferences.Editor editor = prefs.edit();
         if(ttclient != null) {
-            editor.putInt("mastervolume", ttclient.getSoundOutputVolume());
-            editor.putInt("microphonegain", ttclient.getSoundInputGainLevel());
+            editor.putInt(Preferences.PREF_SOUNDSYSTEM_MASTERVOLUME, ttclient.getSoundOutputVolume());
+            editor.putInt(Preferences.PREF_SOUNDSYSTEM_MICROPHONEGAIN, ttclient.getSoundInputGainLevel());
             editor.commit();
         }
         
@@ -1064,10 +1069,28 @@ implements TeamTalkConnectionListener,
     }
 
     Channel selectedChannel;
+    User selectedUser;
+    List<Integer> userIDS = new ArrayList<Integer>();
 
     @Override
     public boolean onItemLongClick(AdapterView< ? > l, View v, int position, long id) {
         Object item = channelsAdapter.getItem(position);
+        if (item instanceof User) {
+            selectedUser = (User) item;
+            UserAccount myuseraccount = new UserAccount();
+            ttclient.getMyUserAccount(myuseraccount);
+            boolean kickRight = (myuseraccount.uUserRights & UserRight.USERRIGHT_KICK_USERS) !=0;
+            boolean banRight = (myuseraccount.uUserRights & UserRight.USERRIGHT_BAN_USERS) !=0;
+            boolean moveRight = (myuseraccount.uUserRights & UserRight.USERRIGHT_MOVE_USERS) !=0;
+            PopupMenu userActions = new PopupMenu(this, v);
+            userActions.setOnMenuItemClickListener(this);
+            userActions.inflate(R.menu.user_actions);
+            userActions.getMenu().findItem(R.id.action_kick).setEnabled(kickRight).setVisible(kickRight);
+            userActions.getMenu().findItem(R.id.action_ban).setEnabled(banRight).setVisible(banRight);
+            userActions.getMenu().findItem(R.id.action_select).setEnabled(moveRight).setVisible(moveRight);
+            userActions.show();
+            return true;
+        }
         if (item instanceof Channel) {
             selectedChannel = (Channel) item;
             if ((curchannel != null) && (curchannel.nParentID != selectedChannel.nChannelID)) {
@@ -1086,8 +1109,24 @@ implements TeamTalkConnectionListener,
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         switch (item.getItemId()) {
+        case R.id.action_ban:
+            ttclient.doBanUser(selectedUser.nUserID, 0);
+            break;
         case R.id.action_edit:
             editChannelProperties(selectedChannel);
+            break;
+        case R.id.action_kick:
+            ttclient.doKickUser(selectedUser.nUserID, 0);
+            break;
+        case R.id.action_move:
+            Iterator<Integer> userIDSIterator = userIDS.iterator(); 
+            while (userIDSIterator.hasNext()) {
+                ttclient.doMoveUser(userIDSIterator.next(), selectedChannel.nChannelID);
+            }
+            userIDS.clear();
+            break;
+        case R.id.action_select:
+            userIDS.add(selectedUser.nUserID);
             break;
         case R.id.action_remove: {
             AlertDialog.Builder alert = new AlertDialog.Builder(this);
@@ -1327,14 +1366,14 @@ implements TeamTalkConnectionListener,
         
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 
-        if (prefs.getBoolean("voice_activation", true)) {
+        if (prefs.getBoolean(Preferences.PREF_SOUNDSYSTEM_VOICEACTIVATION, false)) {
             ttservice.enableVoiceActivation(true);
             ttclient.setVoiceActivationLevel(5);
         } else {
             ttservice.enableVoiceActivation(false);
         }
-        int mastervol = prefs.getInt("mastervolume", SoundLevel.SOUND_VOLUME_DEFAULT);
-        int gain = prefs.getInt("microphonegain", SoundLevel.SOUND_GAIN_DEFAULT);
+        int mastervol = prefs.getInt(Preferences.PREF_SOUNDSYSTEM_MASTERVOLUME, SoundLevel.SOUND_VOLUME_DEFAULT);
+        int gain = prefs.getInt(Preferences.PREF_SOUNDSYSTEM_MICROPHONEGAIN, SoundLevel.SOUND_GAIN_DEFAULT);
         // only set volume and gain if tt-instance hasn't already been configured
         if(ttclient.getSoundOutputVolume() == SoundLevel.SOUND_VOLUME_DEFAULT)
             ttclient.setSoundOutputVolume(mastervol);
