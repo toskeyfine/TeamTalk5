@@ -68,13 +68,55 @@
 #define IDS_USERTEXTMSG                 160
 #define IDD_PROPPAGE_TEXTTOSPEECHPAGE   161
 #define IDS_BCASTTEXTMSG                162
+#define IDS_USERLOGIN                   163
+#define IDS_USERLOGOUT                  164
+#define IDS_PROPPAGE_USEREVENTS         165
+#define IDS_PROPPAGE_USERLOGIN          166
+#define IDS_PROPPAGE_USERLOGOUT         167
+#define IDS_PROPPAGE_USERJOINED         168
+#define IDS_PROPPAGE_USERLEFT           169
+#define IDS_PROPPAGE_TXTMSG_PRIV        170
+#define IDS_PROPPAGE_TXTMSG_CHAN        171
+#define IDS_PROPPAGE_TXTMSG_BCAST       172
+#define IDS_PROPPAGE_SUB_CHANGE         173
+#define IDS_PROPPAGE_SUB_TXTMSG_PRIV    174
+#define IDS_PROPPAGE_SUB_TXTMSG_CHAN    175
+#define IDS_PROPPAGE_SUB_TXTMSG_BCAST   176
+#define IDS_PROPPAGE_SUB_VOICE          177
+#define IDS_PROPPAGE_SUB_VIDEO          178
+#define IDS_PROPPAGE_SUB_DESKTOP        179
+#define IDS_PROPPAGE_SUB_DESKTOPINPUT   180
+#define IDS_PROPPAGE_SUB_MEDIAFILE      181
+#define IDS_PROPPAGE_SUBINT_TXTMSG_PRIV 182
+#define IDS_PROPPAGE_SUBINT_TXTMSG_CHAN 183
+#define IDS_PROPPAGE_SUBINT_VOICE       184
+#define IDS_PROPPAGE_SUBINT_VIDEO       185
+#define IDS_PROPPAGE_SUBINT_DESKTOP     186
+#define IDS_PROPPAGE_SUBINT_DESKTOPINPUT 187
+#define IDS_PROPPAGE_SUBINT_MEDIAFILE   188
+#define IDS_PROPPAGE_CLASSROOM_CHANGE   189
+#define IDS_PROPPAGE_CLASSROOM_VOICE    190
+#define IDS_PROPPAGE_CLASSROOM_VIDEO    191
+#define IDS_PROPPAGE_CLASSROOM_DESKTOP  192
+#define IDS_PROPPAGE_CLASSROOM_MEDIAFILE 193
+#define IDS_SUB_TEXTMSG                 194
+#define IDS_SUB_CHANTEXTMSG             195
+#define IDS_SUB_BCASTTEXTMSG            196
+#define IDS_SUB_VOICE                   197
+#define IDS_SUB_VIDEO                   198
+#define IDS_SUB_DESKTOP                 199
+#define IDS_SUB_DESKTOPINPUT            200
 #define IDD_DIALOG_MESSAGE              201
 #define IDD_DIALOG_TEAMTALK             202
 #define IDD_DIALOG_CHANNEL              203
 #define IDD_DIALOG_INPUT                204
 #define IDD_DIALOG_CHANGESTATUS         205
+#define IDS_SUB_MEDIAFILE               206
+#define IDS_SUBINT_TEXTMSG              207
 #define ID_INDICATOR_STATS              208
 #define IDD_DIALOG_ABOUTBOX             209
+#define IDS_SUBINT_CHANTEXTMSG          210
+#define IDS_SUBINT_VOICE                211
 #define IDD_PROPPAGE_WINDOWPAGE         212
 #define IDR_MAINFRAME                   213
 #define IDR_MENU_MAIN                   214
@@ -89,6 +131,7 @@
 #define IDD_PROPPAGE_SOUNDEVENTSPAGE    223
 #define IDD_PROPPAGE_SOUNDSYSPAGE       224
 #define IDD_DIALOG_CONNECT              225
+#define IDS_SUBINT_VIDEO                226
 #define IDD_DIALOG_USERINFO             227
 #define IDB_BITMAP_MIKE                 228
 #define IDB_BITMAP_VOICEACT             229
@@ -96,6 +139,7 @@
 #define IDD_DIALOG_USERVOLUME           231
 #define IDR_MENU_TRAY                   232
 #define IDD_DIALOG_DIRECTCONDLG         233
+#define IDS_SUBINT_DESKTOP              234
 #define IDD_WIZARD_GENERALPAGE          235
 #define IDR_ACCELERATOR2                236
 #define IDR_TOOLBAR1                    237
@@ -105,8 +149,11 @@
 #define IDB_BITMAP_NOVOLUME             241
 #define IDB_BITMAP_TOOLBAR              242
 #define IDD_DIALOG_HOSTMANAGER          243
+#define IDS_SUBINT_MEDIAFILE            244
+#define IDS_DESKTOPINPUT_GRANTED        245
 #define IDD_WIZARD_COMPLETIONPAGE       246
 #define IDD_DIALOG_IPADDRESSES          247
+#define IDS_DESKTOPINPUT_ACTIVE         248
 #define IDD_DIALOG_KEYCOMP              249
 #define IDR_MENU_MSGPOPUP               250
 #define IDD_DIALOG_POSITION_USERS       251
@@ -118,6 +165,7 @@
 #define IDR_MENU_ONLINEUSERS            257
 #define IDR_ACCELERATOR3                258
 #define IDR_MENU_DESKTOPINPUT           259
+#define IDS_DESKTOPINPUT_STOPPED        260
 #define MAX_STRING_LENGTH               511
 #define MAX_USERS                       1000
 #define IDC_SLIDER_VOICEACT             1001
@@ -142,7 +190,6 @@
 #define IDC_CHECK_SHOWUSERCOUNT         1020
 #define IDC_CHECK_POSITIONING           1021
 #define IDC_CHECK_IDLEVOX               1022
-#define IDC_CHECK_SPEECH                1023
 #define IDC_CHECK_MANUAL                1024
 #define IDC_STATIC_DEFHOST              1025
 #define IDC_STATIC_MSG                  1026
@@ -607,7 +654,8 @@
 #define IDC_CHECK_SHOWUSERNAME          1539
 #define IDC_STATIC_CLIENTNAME           1540
 #define IDC_STATIC_SCLIENTNAME          1541
-#define IDC_TREE_TTS                    1543
+#define IDC_TREE_TTS                    1542
+#define IDC_STATIC_TTS                  1543
 #define ID_HELP_WHATISMYIP              32791
 #define ID_USERS_OP                     32798
 #define ID_CHANNELS_VIEWCHANNELMESSAGES 32801
@@ -712,9 +760,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        260
+#define _APS_NEXT_RESOURCE_VALUE        261
 #define _APS_NEXT_COMMAND_VALUE         32945
 #define _APS_NEXT_CONTROL_VALUE         1544
-#define _APS_NEXT_SYMED_VALUE           163
+#define _APS_NEXT_SYMED_VALUE           194
 #endif
 #endif
