@@ -1125,6 +1125,16 @@ void CTeamTalkDlg::OnUserLogin(const TTMessage& msg)
     }
 
     DefaultUnsubscribe(user.nUserID);
+
+    if (m_commands[m_nCurrentCmdID] != CMD_COMPLETE_LOGIN)
+    {
+        CString szMsg, szFormat;
+        szFormat.LoadString(IDS_USERLOGIN);
+        TRANSLATE_ITEM(IDS_USERLOGIN, szFormat);
+        szMsg.Format(szFormat, GetDisplayName(user));
+        if (m_xmlSettings.GetEventTTSEvents() & TTS_USER_LOGGEDIN)
+            AddVoiceMessage(szMsg);
+    }
 }
 
 void CTeamTalkDlg::OnUserLogout(const TTMessage& msg)
@@ -1140,6 +1150,13 @@ void CTeamTalkDlg::OnUserLogout(const TTMessage& msg)
 
     m_users.erase(user.nUserID);
     m_wndTree.RemoveUser(user);
+
+    CString szMsg, szFormat;
+    szFormat.LoadString(IDS_USERLOGOUT);
+    TRANSLATE_ITEM(IDS_USERLOGOUT, szFormat);
+    szMsg.Format(szFormat, GetDisplayName(user));
+    if(m_xmlSettings.GetEventTTSEvents() & TTS_USER_LOGGEDOUT)
+        AddVoiceMessage(szMsg);
 }
 
 /* SESSION_TREE UPDATES    */
@@ -1209,133 +1226,181 @@ void CTeamTalkDlg::OnUserUpdate(const TTMessage& msg)
         return;
 
     CString szName = GetDisplayName(user);
-    CString s;
+    CString szText, szFormat;
 
     if((oldUser.uPeerSubscriptions & SUBSCRIBE_USER_MSG) !=
         (user.uPeerSubscriptions & SUBSCRIBE_USER_MSG))
     {
-        s.Format(_T("%s changed subscription \"User Messages\" to: %d"),
-                 szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_USER_MSG));
-        AddStatusText(s);
+        szFormat.LoadString(IDS_SUB_TEXTMSG);
+        TRANSLATE_ITEM(IDS_SUB_TEXTMSG, szFormat);
+        szText.Format(szFormat, szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_USER_MSG));
+        AddStatusText(szText);
+        if (m_xmlSettings.GetEventTTSEvents() & TTS_SUBSCRIPTIONS_TEXTMSG_PRIVATE)
+            AddVoiceMessage(szText);
     }
     if((oldUser.uPeerSubscriptions & SUBSCRIBE_CHANNEL_MSG) !=
         (user.uPeerSubscriptions & SUBSCRIBE_CHANNEL_MSG))
     {
-        s.Format(_T("%s changed subscription \"Channel Messages\" to: %d"),
-                 szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_CHANNEL_MSG));
-        AddStatusText(s);
+        szFormat.LoadString(IDS_SUB_CHANTEXTMSG);
+        TRANSLATE_ITEM(IDS_SUB_CHANTEXTMSG, szFormat);
+        szText.Format(szFormat, szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_CHANNEL_MSG));
+        AddStatusText(szText);
+        if (m_xmlSettings.GetEventTTSEvents() & TTS_SUBSCRIPTIONS_TEXTMSG_CHANNEL)
+            AddVoiceMessage(szText);
     }
     if((oldUser.uPeerSubscriptions & SUBSCRIBE_BROADCAST_MSG) !=
         (user.uPeerSubscriptions & SUBSCRIBE_BROADCAST_MSG))
     {
-        s.Format(_T("%s changed subscription \"Broadcast Messages\" to: %d"),
-                 szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_BROADCAST_MSG));
-        AddStatusText(s);
+        szFormat.LoadString(IDS_SUB_BCASTTEXTMSG);
+        TRANSLATE_ITEM(IDS_SUB_BCASTTEXTMSG, szFormat);
+        szText.Format(szText, szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_BROADCAST_MSG));
+        AddStatusText(szText);
+        if (m_xmlSettings.GetEventTTSEvents() & TTS_SUBSCRIPTIONS_TEXTMSG_BROADCAST)
+            AddVoiceMessage(szText);
     }
     if((oldUser.uPeerSubscriptions & SUBSCRIBE_VOICE) !=
         (user.uPeerSubscriptions & SUBSCRIBE_VOICE))
     {
-        s.Format(_T("%s changed subscription \"Voice\" to: %d"),
-                 szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_VOICE));
-        AddStatusText(s);
+        szFormat.LoadString(IDS_SUB_VOICE);
+        TRANSLATE_ITEM(IDS_SUB_VOICE, szFormat);
+        szText.Format(szFormat, szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_VOICE));
+        AddStatusText(szText);
+        if (m_xmlSettings.GetEventTTSEvents() & TTS_SUBSCRIPTIONS_VOICE)
+            AddVoiceMessage(szText);
     }
     if((oldUser.uPeerSubscriptions & SUBSCRIBE_VIDEOCAPTURE) !=
         (user.uPeerSubscriptions & SUBSCRIBE_VIDEOCAPTURE))
     {
-        s.Format(_T("%s changed subscription \"Video\" to: %d"),
-                 szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_VIDEOCAPTURE));
-        AddStatusText(s);
+        szFormat.LoadString(IDS_SUB_VIDEO);
+        TRANSLATE_ITEM(IDS_SUB_VIDEO, szFormat);
+        szText.Format(szFormat, szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_VIDEOCAPTURE));
+        AddStatusText(szText);
+        if (m_xmlSettings.GetEventTTSEvents() & TTS_SUBSCRIPTIONS_VIDEO)
+            AddVoiceMessage(szText);
     }
     if((oldUser.uPeerSubscriptions & SUBSCRIBE_DESKTOP) !=
         (user.uPeerSubscriptions & SUBSCRIBE_DESKTOP))
     {
-        s.Format(_T("%s changed subscription \"Desktop\" to: %d"),
-                 szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_DESKTOP));
-        AddStatusText(s);
+        szFormat.LoadString(IDS_SUB_DESKTOP);
+        TRANSLATE_ITEM(IDS_SUB_DESKTOP, szFormat);
+        szText.Format(szFormat, szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_DESKTOP));
+        AddStatusText(szText);
+        if (m_xmlSettings.GetEventTTSEvents() & TTS_SUBSCRIPTIONS_DESKTOP)
+            AddVoiceMessage(szText);
     }
     if((oldUser.uPeerSubscriptions & SUBSCRIBE_DESKTOPINPUT) !=
         (user.uPeerSubscriptions & SUBSCRIBE_DESKTOPINPUT))
     {
-        s.Format(_T("%s changed subscription \"Desktop Access\" to: %d"),
-                 szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_DESKTOPINPUT));
-        AddStatusText(s);
+        szFormat.LoadString(IDS_SUB_DESKTOPINPUT);
+        TRANSLATE_ITEM(IDS_SUB_DESKTOPINPUT, szFormat);
+        szText.Format(szFormat, szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_DESKTOPINPUT));
+        AddStatusText(szText);
         if(user.uPeerSubscriptions & SUBSCRIBE_DESKTOPINPUT)
         {
-            s.Format(_T("%s has granted desktop access"), szName);
+            szFormat.LoadString(IDS_DESKTOPINPUT_GRANTED);
+            TRANSLATE_ITEM(IDS_DESKTOPINPUT_GRANTED, szFormat);
+            szText.Format(szFormat, szName);
             if (m_xmlSettings.GetEventTTSEvents() & TTS_SUBSCRIPTIONS_DESKTOPINPUT)
-                AddVoiceMessage(s);
+                AddVoiceMessage(szText);
         }
         else
         {
-            s.Format(_T("%s has retracted desktop access"), szName);
+            szFormat.LoadString(IDS_DESKTOPINPUT_RETRACT);
+            TRANSLATE_ITEM(IDS_DESKTOPINPUT_RETRACT, szFormat);
+            szText.Format(szFormat, szName);
             if (m_xmlSettings.GetEventTTSEvents() & TTS_SUBSCRIPTIONS_DESKTOPINPUT)
-                AddVoiceMessage(s);
+                AddVoiceMessage(szText);
         }
     }
     if((oldUser.uPeerSubscriptions & SUBSCRIBE_MEDIAFILE) !=
         (user.uPeerSubscriptions & SUBSCRIBE_MEDIAFILE))
     {
-        s.Format(_T("%s changed subscription \"Media File Stream\" to: %d"),
-            szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_MEDIAFILE));
-        AddStatusText(s);
+        szFormat.LoadString(IDS_SUB_MEDIAFILE);
+        TRANSLATE_ITEM(IDS_SUB_MEDIAFILE, szFormat);
+        szText.Format(szFormat, szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_MEDIAFILE));
+        AddStatusText(szText);
+        if (m_xmlSettings.GetEventTTSEvents() & TTS_SUBSCRIPTIONS_MEDIAFILE)
+            AddVoiceMessage(szText);
     }
     if((oldUser.uLocalSubscriptions & SUBSCRIBE_DESKTOPINPUT) !=
         (user.uLocalSubscriptions & SUBSCRIBE_DESKTOPINPUT))
     {
         if(user.uLocalSubscriptions & SUBSCRIBE_DESKTOPINPUT)
         {
-            s.Format(_T("%s now has desktop access"), szName);
+            szFormat.LoadString(IDS_DESKTOPINPUT_ACTIVE);
+            TRANSLATE_ITEM(IDS_DESKTOPINPUT_ACTIVE, szFormat);
+            szText.Format(szFormat, szName);
             if (m_xmlSettings.GetEventTTSEvents() & TTS_SUBSCRIPTIONS_DESKTOPINPUT)
-                AddVoiceMessage(s);
+                AddVoiceMessage(szText);
         }
         else
         {
-            s.Format(_T("%s no longer has desktop access"), szName);
+            szFormat.LoadString(IDS_DESKTOPINPUT_STOPPED);
+            TRANSLATE_ITEM(IDS_DESKTOPINPUT_STOPPED, szFormat);
+            szText.Format(szFormat, szName);
             if (m_xmlSettings.GetEventTTSEvents() & TTS_SUBSCRIPTIONS_DESKTOPINPUT)
-                AddVoiceMessage(s);
+                AddVoiceMessage(szText);
         }
     }
     if((oldUser.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_USER_MSG) !=
         (user.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_USER_MSG))
     {
-        s.Format(_T("%s changed subscription \"Intercept User Messages\" to: %d"),
-                 szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_USER_MSG));
-        AddStatusText(s);
+        szFormat.LoadString(IDS_SUBINT_TEXTMSG);
+        TRANSLATE_ITEM(IDS_SUBINT_TEXTMSG, szFormat);
+        szText.Format(szFormat, szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_USER_MSG));
+        AddStatusText(szText);
+        if (m_xmlSettings.GetEventTTSEvents() & TTS_SUBSCRIPTIONS_INTERCEPT_TEXTMSG_PRIVATE)
+            AddVoiceMessage(szText);
     }
     if((oldUser.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_CHANNEL_MSG) !=
         (user.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_CHANNEL_MSG))
     {
-        s.Format(_T("%s changed subscription \"Intercept Channel Messages\" to: %d"),
-                 szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_CHANNEL_MSG));
-        AddStatusText(s);
+        szFormat.LoadString(IDS_SUBINT_CHANTEXTMSG);
+        TRANSLATE_ITEM(IDS_SUBINT_CHANTEXTMSG, szFormat);
+        szText.Format(szFormat, szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_CHANNEL_MSG));
+        AddStatusText(szText);
+        if (m_xmlSettings.GetEventTTSEvents() & TTS_SUBSCRIPTIONS_INTERCEPT_TEXTMSG_CHANNEL)
+            AddVoiceMessage(szText);
     }
     if((oldUser.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_VOICE) !=
         (user.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_VOICE))
     {
-        s.Format(_T("%s changed subscription \"Intercept Voice\" to: %d"),
-                 szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_VOICE));
-        AddStatusText(s);
+        szFormat.LoadString(IDS_SUBINT_VOICE);
+        TRANSLATE_ITEM(IDS_SUBINT_VOICE, szFormat);
+        szText.Format(szFormat, szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_VOICE));
+        AddStatusText(szText);
+        if (m_xmlSettings.GetEventTTSEvents() & TTS_SUBSCRIPTIONS_INTERCEPT_VOICE)
+            AddVoiceMessage(szText);
     }
     if((oldUser.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_VIDEOCAPTURE) !=
         (user.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_VIDEOCAPTURE))
     {
-        s.Format(_T("%s changed subscription \"Intercept Video\" to: %d"),
-                 szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_VIDEOCAPTURE));
-        AddStatusText(s);
+        szFormat.LoadString(IDS_SUBINT_VIDEO);
+        TRANSLATE_ITEM(IDS_SUBINT_VIDEO, szFormat);
+        szText.Format(szFormat, szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_VIDEOCAPTURE));
+        AddStatusText(szText);
+        if (m_xmlSettings.GetEventTTSEvents() & TTS_SUBSCRIPTIONS_INTERCEPT_VIDEO)
+            AddVoiceMessage(szText);
     }
     if((oldUser.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_DESKTOP) !=
         (user.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_DESKTOP))
     {
-        s.Format(_T("%s changed subscription \"Intercept Desktop\" to: %d"),
-                 szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_DESKTOP));
-        AddStatusText(s);
+        szFormat.LoadString(IDS_SUBINT_DESKTOP);
+        TRANSLATE_ITEM(IDS_SUBINT_DESKTOP, szFormat);
+        szText.Format(szFormat, szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_DESKTOP));
+        AddStatusText(szText);
+        if (m_xmlSettings.GetEventTTSEvents() & TTS_SUBSCRIPTIONS_INTERCEPT_DESKTOP)
+            AddVoiceMessage(szText);
     }
     if((oldUser.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_MEDIAFILE) !=
         (user.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_MEDIAFILE))
     {
-        s.Format(_T("%s changed subscription \"Intercept Media File Stream\" to: %d"),
-            szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_MEDIAFILE));
-        AddStatusText(s);
+        szFormat.LoadString(IDS_SUBINT_MEDIAFILE);
+        TRANSLATE_ITEM(IDS_SUBINT_MEDIAFILE, szFormat);
+        szText.Format(szFormat, szName, (int)(bool)(user.uPeerSubscriptions & SUBSCRIBE_INTERCEPT_MEDIAFILE));
+        AddStatusText(szText);
+        if (m_xmlSettings.GetEventTTSEvents() & TTS_SUBSCRIPTIONS_INTERCEPT_MEDIAFILE)
+            AddVoiceMessage(szText);
     }
 }
 
@@ -2308,7 +2373,7 @@ BOOL CTeamTalkDlg::OnInitDialog()
     //positioning in 3D
     TT_Enable3DSoundPositioning(ttInst, m_xmlSettings.GetAutoPositioning());
 
-    EnableSpeech(m_xmlSettings.GetEventSpeechEvents());
+    EnableSpeech(m_xmlSettings.GetEventTTSEvents() != 0);
 
     //load fonts
     Font font;
@@ -3166,7 +3231,6 @@ void CTeamTalkDlg::OnFilePreferences()
     eventspage.m_szNewDesktopSession = STR_UTF8( m_xmlSettings.GetEventDesktopSession().c_str());
     eventspage.m_szQuestionMode = STR_UTF8( m_xmlSettings.GetEventQuestionMode().c_str());
     eventspage.m_szDesktopAccessReq = STR_UTF8( m_xmlSettings.GetEventDesktopAccessReq().c_str());
-    eventspage.m_bSpeech = m_xmlSettings.GetEventSpeechEvents();
 
     ////////////////////////
     // Text to Speech
@@ -3434,13 +3498,12 @@ void CTeamTalkDlg::OnFilePreferences()
         m_xmlSettings.SetEventDesktopSession(STR_UTF8( eventspage.m_szNewDesktopSession.GetBuffer()));
         m_xmlSettings.SetEventQuestionMode(STR_UTF8( eventspage.m_szQuestionMode.GetBuffer()));
         m_xmlSettings.SetEventDesktopAccessReq(STR_UTF8( eventspage.m_szDesktopAccessReq.GetBuffer()));
-        m_xmlSettings.SetEventSpeechEvents(eventspage.m_bSpeech);
-        EnableSpeech(eventspage.m_bSpeech);
 
         ///////////////////////////////////////
         // write settings for Text to speech
         ///////////////////////////////////////
         m_xmlSettings.SetEventTTSEvents(ttspage.m_uTTSEvents);
+        EnableSpeech(ttspage.m_uTTSEvents != 0);
 
         ///////////////////////////////////////
         // write settings for shortcuts
@@ -4679,7 +4742,6 @@ void CTeamTalkDlg::OnUpdateMeUsespeechonevents(CCmdUI *pCmdUI)
 void CTeamTalkDlg::OnMeUsespeechonevents()
 {
     EnableSpeech(!m_bSpeech);
-    m_xmlSettings.SetEventSpeechEvents(m_bSpeech);
 }
 
 void CTeamTalkDlg::OnHelpRunwizard()
@@ -6273,7 +6335,7 @@ void CTeamTalkDlg::OnHelpResetpreferencestodefault()
         OnClose();
 
         szMsg.LoadString(IDS_RESTARTAPPLICATION);
-        TRANSLATE_ITEM(IDS_RESETPREFERENCES, szMsg);
+        TRANSLATE_ITEM(IDS_RESTARTAPPLICATION, szMsg);
         MessageBox(szMsg, szTitle, MB_OK);
     }
 }
