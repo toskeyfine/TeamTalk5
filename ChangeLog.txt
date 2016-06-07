@@ -2,6 +2,24 @@
                  TeamTalk
 ----------------------------------------------
 Version 5.x, unreleased
+Default Qt client:
+- Multi selection for kick, ban, volume levels
+- Option in Help-menu to reset to default settings
+- Video transmission state is restored when restarting the application
+Accessible Windows client:
+- TTS events are now configurable in Preferences
+- Sliders labelled for screen reader
+- Option in Help-menu to reset to default settings
+- Pressing Enter on Channel item now means join
+- Pressing Enter on User item now means text message
+- Video transmission state is restored when restarting the application
+- Fixed issue where voice processing was not reenabled
+- Fixed issue where incorrect sound device is chosen when new sound devices are plugged/unplugged
+- Fixed issue where status-mode is reset after reconnect
+- Fixed issue where default video frame rate was always selected
+iOS client:
+- Keyboard closes when sending empty message
+- TX toggle from headset now configurable
 
 Version 5.1.3, released 2016/05/01
 Default Qt client:
