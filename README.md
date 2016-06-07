@@ -15,7 +15,7 @@ To build the TeamTalk client or server projects you must first download the
   * [Debian 7 64-bit](http://bearware.dk/test/teamtalksdk/v5.1.3.4542/tt5sdk_v5.1.3.4542_debian7_x86_64.tar.gz) **rev. 4542**
   * [Raspberry Pi (armhf)](http://bearware.dk/test/teamtalksdk/v5.1.3.4542/tt5sdk_v5.1.3.4542_raspbian_armhf.tar.gz) **rev. 4542**
   * [Android arm-v7](http://bearware.dk/test/teamtalksdk/v5.1.3.4506/tt5sdk_v5.1.3.4506_android_armv7a.tar.gz)  **rev. 4506**
-  * [iOS 7.0+ universal](http://bearware.dk/test/teamtalksdk/v5.1.3.4506/tt5sdk_v5.1.3.4506_ios_universal.tar.gz)  **rev. 4506**
+  * [iOS 7.0+ universal](http://bearware.dk/test/teamtalksdk/v5.1.4.4577/tt5sdk_v5.1.4.4577_ios_universal.tar.gz)  **rev. 4577**
 * TeamTalk 5 SDK Professional Edition - **Beta** releases
   * [Windows 32-bit](http://bearware.dk/test/teamtalksdk/v5.1.3.4542/tt5prosdk_v5.1.3.4542_win32.zip) **rev. 4542**
   * [Windows 64-bit](http://bearware.dk/test/teamtalksdk/v5.1.3.4542/tt5prosdk_v5.1.3.4542_win64.zip) **rev. 4542**
@@ -24,7 +24,7 @@ To build the TeamTalk client or server projects you must first download the
   * [Debian 7 64-bit](http://bearware.dk/test/teamtalksdk/v5.1.3.4542/tt5prosdk_v5.1.3.4542_debian7_x86_64.tar.gz) **rev. 4542**
   * [Raspberry Pi](http://bearware.dk/test/teamtalksdk/v5.1.3.4542/tt5prosdk_v5.1.3.4542_raspbian_armhf.tar.gz) **rev. 4542**
   * [Android arm-v7](http://bearware.dk/test/teamtalksdk/v5.1.3.4506/tt5prosdk_v5.1.3.4506_android_armv7a.tar.gz)  **rev. 4506**
-  * [iOS 7.0+ universal](http://bearware.dk/test/teamtalksdk/v5.1.3.4506/tt5prosdk_v5.1.3.4506_ios_universal.tar.gz)  **rev. 4506**
+  * [iOS 7.0+ universal](http://bearware.dk/test/teamtalksdk/v5.1.4.4577/tt5prosdk_v5.1.4.4577_ios_universal.tar.gz)  **rev. 4577**
 
 ## TeamTalk 5 Libraries
 Projects wrapping the client DLL file in the TeamTalk SDK.
@@ -65,17 +65,18 @@ Projects containing client applications which use the TeamTalk 5 client DLL.
   * Open project in Xcode
 * **TeamTalkAndroid** (dependency: **TeamTalkJNI**)
   * TeamTalk 5 Android client application written in Java
-  * Import project in Eclipse using [Android SDK](http://developer.android.com/sdk/index.html)
-    * Follow the instructions [here](http://www.bearware.dk/teamtalksdk/v5.1b/docs/Java/examples.html#teamtalkandroid)
+  * Open project in [Android Studio](https://developer.android.com/studio/intro/index.html)
     * ... or build using [ant](http://ant.apache.org), run the following command: ```android update project -p . -s -t android-17```
-  * Copy the following files to *TeamTalkAndroid/libs* directory:
-    * android-support-v4.jar
-      * Located in {Eclipse ADT install-dir}/sdk/extras/android/support/v4
-    * android-support-v13.jar
-      * Located in {Eclipse ADT install-dir}/sdk/extras/android/support/v13
-    * gson-2.2.4.jar
-      * Download from http://code.google.com/p/google-gson/
-  * Requires **TeamTalkJNI** project as library dependency
+  * Copy the TeamTalk 5 Java library to *TeamTalkAndroid/libs* directory:
+    * TeamTalk5.jar
+      * Located in ```Library/TeamTalkJNI/libs``` folder of the TeamTalk 5 SDK for Android
+    * TeamTalk5Test.jar (optional, only for unit-tests)
+      * Located in ```Library/TeamTalkJNI/libs``` folder of the TeamTalk 5 SDK for Android
+  * Copy the TeamTalk 5 JNI shared library to *TeamTalkAndroid/src/main/jniLibs/armeabi-v7a*
+    * libTeamTalk5-jni.so
+        * Located in ```Library/TeamTalkJNI/libs/armeabi-v7a``` (Standard Edition)
+    * libTeamTalk5Pro-jni.so
+        * Located in ```Library/TeamTalkJNI/libs/armeabi-v7a``` (Professional Edition)
 * **ttphpadmin**
   * Console PHP-script for administrating a TeamTalk 5 server.
 

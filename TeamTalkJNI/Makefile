@@ -29,12 +29,14 @@ CLASSPATH ?= .:$(HAMCRESTCORE_JAR):$(JUNIT_JAR):$(PWD)/libs/TeamTalk5.jar
 TT5DLL := $(PWD)/libs/libTeamTalk5-jni.$(SHARED_EXT)
 TT5PRODLL := $(PWD)/libs/libTeamTalk5Pro-jni.$(SHARED_EXT)
 
+SRCTARGET=-source 1.5 -target 1.5
+
 help:
 	@echo "Targets:"
 	@echo "  native"
-	@echo "    - Build JNI DLL for TeamTalk5 DLL"
+	@echo "    - Build libTeamTalk5-jni.$(SHARED_EXT) JNI DLL for TeamTalk5 DLL"
 	@echo "  nativepro"
-	@echo "    - Build JNI DLL for TeamTalk5Pro DLL"
+	@echo "    - Build libTeamTalk5Pro-jni.$(SHARED_EXT) JNI DLL for TeamTalk5Pro DLL"
 	@echo "  java"
 	@echo "    - Build TeamTalk5.jar. Java wrapper classes for JNI DLLs"
 	@echo "  clean"
@@ -42,7 +44,7 @@ help:
 	@echo "  cleanjava"
 	@echo "    - Remove all Java generated classes and JAR files"
 	@echo "  junit"
-	@echo "    - Build and run JUnit test-cases"
+	@echo "    - Build TeamTalk5Test.jar and run JUnit test-cases"
 	@echo "  testcase"
 	@echo "    - Build and run a single test-case in TeamTalkTestCase-class"
 	@echo "  E.g make TARGET=test_04_Auth"
@@ -67,7 +69,7 @@ nativepro:
 	cd jni && g++ -O0 -g $(INCLUDE) $(CPPFLAGS) $(TT5PRODLIBS) -shared teamtalk-jni.cpp teamtalksrv-jni.cpp ttconvert-jni.cpp -o $(TT5PRODLL) -Wno-unused-value
 
 java:
-	cd src && mkdir -p build && javac -g:vars -d ./build ./dk/bearware/*.java ./dk/bearware/events/*.java && cd ./build && jar cf ../../libs/TeamTalk5.jar ./dk/bearware/*.class ./dk/bearware/events/*.class
+	cd src && javac $(SRCTARGET) -g:vars ./dk/bearware/*.java ./dk/bearware/events/*.java && jar cf ../libs/TeamTalk5.jar ./dk/bearware/*.class ./dk/bearware/events/*.class
 
 clean: cleanjava
 	cd jni && rm -f $(TT5DLL) $(TT5PRODLL)
@@ -75,13 +77,14 @@ clean: cleanjava
 cleanjava:
 	cd src && find . -name \*.class -exec rm {} \;
 	cd test && find . -name \*.class -exec rm {} \;
-	cd src && rm -rf build
+	rm -f libs/TeamTalk5.jar libs/TeamTalk5Test.jar
 
 junitcompile: java
-	cd test && javac -cp "$(CLASSPATH)" -sourcepath ../src dk/bearware/TeamTalkTestCase.java dk/bearware/TeamTalkTestCaseBase.java TeamTalkTestSuite.java SingleJUnitTestRunner.java
+	cd test && javac $(SRCTARGET) -g:vars -cp "$(CLASSPATH)" -sourcepath ../src dk/bearware/TeamTalkTestCase.java dk/bearware/TeamTalkTestCaseBase.java TeamTalkTestSuite.java SingleJUnitTestRunner.java
+	cd test && jar cf ../libs/TeamTalk5Test.jar ./dk/bearware/*.class
 
 junitsrvcompile: java
-	cd test && javac -cp "$(CLASSPATH)" -sourcepath ../src dk/bearware/TeamTalkTestCaseBase.java dk/bearware/TeamTalkServerTestCase.java TeamTalkServerTestSuite.java SingleJUnitTestRunner.java
+	cd test && javac $(SRCTARGET) -cp "$(CLASSPATH)" -sourcepath ../src dk/bearware/TeamTalkTestCaseBase.java dk/bearware/TeamTalkServerTestCase.java TeamTalkServerTestSuite.java SingleJUnitTestRunner.java
 
 junit:  junitcompile
 	cd test && java -cp "$(CLASSPATH)" org.junit.runner.JUnitCore TeamTalkTestSuite
