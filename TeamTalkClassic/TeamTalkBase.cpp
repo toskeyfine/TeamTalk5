@@ -21,6 +21,7 @@
 
 #include "StdAfx.h"
 #include "TeamTalkBase.h"
+#include "resource.h"
 #include <algorithm>
 #include <assert.h>
 
@@ -64,14 +65,22 @@ void InitDefaultAudioCodec(AudioCodec& audiocodec)
     }
 }
 
-channels_t GetSubChannels(int nChannelID, const channels_t& channels)
+channels_t GetSubChannels(int nChannelID, const channels_t& channels, BOOL bRecursive/* = FALSE*/)
 {
     channels_t subchannels;
     channels_t::const_iterator ite;
     for(ite = channels.begin(); ite != channels.end(); ite++)
     {
         if(ite->second.nParentID == nChannelID)
+        {
             subchannels[ite->first] = ite->second;
+            if(bRecursive)
+            {
+                channels_t subs;
+                subs = GetSubChannels(ite->first, channels, bRecursive);
+                subchannels.insert(subs.begin(), subs.end());
+            }
+        }
     }
     return subchannels;
 }
@@ -138,7 +147,9 @@ BOOL ToggleTransmitUser(Channel& chan, int nUserID, StreamTypes streams)
     {
         p = std::find(begin, end, 0);
         if(p == end)
+        {
             return FALSE;
+        }
         else
         {
             *p = nUserID;
