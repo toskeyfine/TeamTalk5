@@ -14,15 +14,25 @@ Accessible Windows client:
 - Pressing Enter on User item now means text message
 - Video transmission state is restored when restarting the application
 - Classroom channel transmit all menu-item in Users->Advanced
+- Added Estonian language
 - Fixed issue where voice processing was not reenabled
 - Fixed issue where incorrect sound device is chosen when new sound devices are plugged/unplugged
 - Fixed issue where status-mode is reset after reconnect
 - Fixed issue where default video frame rate was always selected
+- Fixed issue where resizing video dialog would show weird colors
 Android client:
 - Kick/ban option
+
+Version 5.1.5
+iOS client:
+- Removed use of "Voice Preprocessing" option in preferences
+
+Version 5.1.4, released 2016/06/18
 iOS client:
 - Keyboard closes when sending empty message
 - TX toggle from headset now configurable
+- BlueTooth support
+- Added "Voice Preprocessing" option to preferences for better echo cancellation
 
 Version 5.1.3, released 2016/05/01
 Default Qt client:
