@@ -517,7 +517,7 @@
     <item id="185">Usługa przechwytywania wideo</item>
     <item id="186">Usługa przechwytywania pulpitu</item>
     <item id="187">Usługa przechwytywania dostępu do pulpitu</item>
-    <item id="188">Usługa przechwytywania czegoś tam</item>
+    <item id="188">Usługa przechwytywania multimediów</item>
     <item id="189">Zmiany w kanałach moderowanych</item>
     <item id="190">Transmisja audio dozwolona</item>
     <item id="191">Transmisja wideo dozwolona</item>
@@ -550,7 +550,8 @@
     <item id="32946">Zezwól wszystkim na transmisję video\tCtrl+Alt+Shift+W</item>
     <item id="32947">Zezwól wszystkim na transmisję pulpitu\tCtrl+Alt+Shift+E</item>
     <item id="32948">zezwól wszystkim na transmisję mediów\tCtrl+Alt+Shift+R</item>
-    <item id="264">Do kanału %s dołącza się %s</item>
+    <item id="264">%s wchodzi na kanał %s</item>
     <item id="265">%s opuszcza kanał %s</item>
-    <item id="266">głównego</item>
+    <item id="266">główny</item>
+    <item id="32949">Ogłoś status &amp;kanału\tCtrl+Shift+G</item>
 </language>
