@@ -2,26 +2,41 @@
                  TeamTalk
 ----------------------------------------------
 Version 5.x, unreleased
+
+Version 5.1.7, released 2016/08/10
+Default Qt client:
+- Fixed bug where tone was generated instead of voice input
+
+Version 5.1.6, released 2016/08/09
 Default Qt client:
 - Multi selection for kick, ban, volume levels
 - Option in Help-menu to reset to default settings
 - Video transmission state is restored when restarting the application
+- Fixed issue where local audio was not stored in MP3 format (on Windows)
 Accessible Windows client:
 - TTS events are now configurable in Preferences
 - Sliders labelled for screen reader
 - Option in Help-menu to reset to default settings
 - Pressing Enter on Channel item now means join
 - Pressing Enter on User item now means text message
+- Announce who is talking/streaming/desktop/video by pressing Ctrl+Shift+G
 - Video transmission state is restored when restarting the application
 - Classroom channel transmit all menu-item in Users->Advanced
 - Added Estonian language
+- Closing client will minize to tray (if minimize to tray is enabled)
 - Fixed issue where voice processing was not reenabled
 - Fixed issue where incorrect sound device is chosen when new sound devices are plugged/unplugged
 - Fixed issue where status-mode is reset after reconnect
 - Fixed issue where default video frame rate was always selected
 - Fixed issue where resizing video dialog would show weird colors
+- Fixed issue where local audio was not stored in MP3 format
 Android client:
 - Kick/ban option
+- Single tap to connect in portrait mode, edit in landscape mode
+- Added voice preprocessing option in preferences (echo cancellation)
+- Added speakerphone option in preferences
+iOS client:
+- Reintroduced "Voice Preprocessing" option in preferences
 
 Version 5.1.5
 iOS client:
