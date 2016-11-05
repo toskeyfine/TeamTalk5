@@ -4,8 +4,8 @@
  * Contact Information:
  *
  * Bjoern D. Rasmussen
- * Skanderborgvej 40 4-2
- * DK-8000 Aarhus C
+ * Kirketoften 5
+ * DK-8260 Viby J
  * Denmark
  * Email: contact@bearware.dk
  * Phone: +45 20 20 54 59
@@ -23,8 +23,8 @@
 #define APPINFO_H
 
 #define COMPANYNAME         "BearWare.dk"
-#define APPVERSION_SHORT    "5.1.7"
-#define APPVERSION          "5.1.7" ""
+#define APPVERSION_SHORT    "5.2.0"
+#define APPVERSION          TEAMTALK_VERSION " - Unreleased"
 
 #define APPICON             QString::fromUtf8(":/images/images/teamtalk.png")
 #define APPTRAYICON         QString::fromUtf8(":/images/images/teamtalky.png")
