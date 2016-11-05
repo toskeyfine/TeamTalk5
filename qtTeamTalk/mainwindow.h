@@ -4,8 +4,8 @@
  * Contact Information:
  *
  * Bjoern D. Rasmussen
- * Skanderborgvej 40 4-2
- * DK-8000 Aarhus C
+ * Kirketoften 5
+ * DK-8260 Viby J
  * Denmark
  * Email: contact@bearware.dk
  * Phone: +45 20 20 54 59
@@ -43,6 +43,10 @@
 
 #if defined(Q_OS_WIN32)
 #define USE_POLL 0
+#endif
+
+#ifdef Q_OS_LINUX
+#include <QX11Info>
 #endif
 
 //Commands which we're interested in knowning when have completed
