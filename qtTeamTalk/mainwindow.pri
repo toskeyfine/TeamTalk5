@@ -48,11 +48,20 @@ x11 {
      LIBS += -lX11
 }
 
+linux {
+     LIBS += -lX11
+     greaterThan(QT_MAJOR_VERSION, 4): QT += x11extras
+}
+
 mac {
     CONFIG += accessibility
     QTPLUGIN += qtaccessiblewidgets
     ICON = images/teamtalk.icns
     LIBS += -framework IOKit -framework Carbon
+}
+
+*-g++* {
+    QMAKE_CXXFLAGS += -std=c++0x
 }
 
 # install
