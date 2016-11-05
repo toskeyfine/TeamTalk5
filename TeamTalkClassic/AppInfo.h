@@ -4,8 +4,8 @@
  * Contact Information:
  *
  * Bjoern D. Rasmussen
- * Skanderborgvej 40 4-2
- * DK-8000 Aarhus C
+ * Kirketoften 5
+ * DK-8260 Viby J
  * Denmark
  * Email: contact@bearware.dk
  * Phone: +45 20 20 54 59
@@ -22,8 +22,8 @@
 #pragma once
 
 #define COMPANYNAME             _T("BearWare.dk")
-#define APPVERSION_SHORT        _T("5.1.7")
-#define APPVERSION              _T( "5.1.7" ) _T("")
+#define APPVERSION_SHORT        _T("5.2.0")
+#define APPVERSION              _T( TEAMTALK_VERSION ) _T(" - Unreleased")
 
 #ifdef ENABLE_ENCRYPTION
 #define APPTITLE                _T("TeamTalk 5 Classic Professional v. ") APPVERSION
