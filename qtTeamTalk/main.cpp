@@ -127,11 +127,12 @@ public:
         {
             xcb_generic_event_t *ev = static_cast<xcb_generic_event_t *>(message);
             xcb_key_press_event_t *keyevent = 0;
-            unsigned int keycode = 0, mods = 0, type = (ev->response_type & 0x7F);
+            unsigned int keycode = 0, mods = 0, type = (ev->response_type & ~0x80);
             switch(type)
             {
             case XCB_KEY_PRESS :
             case XCB_KEY_RELEASE :
+            {
                 keyevent = static_cast<xcb_key_press_event_t *>(message);
                 keycode = keyevent->detail;
                 if(keyevent->state & XCB_MOD_MASK_1)
@@ -143,9 +144,10 @@ public:
                 if(keyevent->state & XCB_MOD_MASK_SHIFT)
                     mods |= ShiftMask;
 
-                //this doesn't work with key repeat
+                qDebug() << "Hotkeys are not working in Qt5";
                 m_mainwindow->keysActive(keycode, mods, type == XCB_KEY_PRESS);
                 break;
+            }
             }
         }
         return false;
@@ -230,7 +232,11 @@ public:
 
         OSStatus oss = InstallApplicationEventHandler(&mac_callback, 2, hkEvents, NULL, NULL);
         Q_ASSERT(oss == 0);
-     }
+
+#if QT_VERSION >= 0x050400
+        QApplication::setQuitOnLastWindowClosed(false);
+#endif
+    }
 
     //TeamTalk event handling for MacOS X (Carbon). In QT 4 this is an
     //inherited method from QCoreApplication. In QT 5 this is a
@@ -251,6 +257,7 @@ public:
                 m_mainwindow->hotkeyToggle((HotKeyID)keyID.id, kind == kEventHotKeyPressed);
             }
         }
+
 #if QT_VERSION >= 0x050000
         return true; //Just return what ever...
 #else
@@ -272,7 +279,14 @@ protected:
             if(m_mainwindow && tturi.size())
                 m_mainwindow->parseArgs(QStringList() << "abc" << tturi);
         }
-
+#if QT_VERSION >= 0x050400
+        // This handles press in Dock on Mac OS X
+        if (e->type() == QEvent::ApplicationActivated)
+        {
+            if(m_mainwindow->isHidden())
+                m_mainwindow->show();
+        }
+#endif
         return QApplication::event(e);
     }
 };
