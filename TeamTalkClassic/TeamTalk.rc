@@ -814,7 +814,7 @@ BEGIN
     CONTROL         "Separate audio file for each user",IDC_CHECK_SEPARATEFILES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,130,37,142,10
     LTEXT           "Audio file format",IDC_STATIC_AFF,12,53,117,8
-    COMBOBOX        IDC_COMBO_AFF,130,51,142,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_AFF,130,51,142,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Folder for audio files",IDC_STATIC_AUDFOLDER,12,71,117,8
     EDITTEXT        IDC_EDIT_AUDIOFOLDER,130,68,120,14,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_BUTTON_AUDIOBROWSE,253,68,19,14
@@ -1429,8 +1429,8 @@ IDR_MAINFRAME           ICON                    "res\\TeamTalk.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,2,0,4675
- PRODUCTVERSION 5,2,0,4675
+ FILEVERSION 5,2,0,4731
+ PRODUCTVERSION 5,2,0,4731
  FILEFLAGSMASK 0x1fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -1447,12 +1447,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "BearWare.dk"
             VALUE "FileDescription", "TeamTalk voice conferencing client"
-            VALUE "FileVersion", "5, 2, 0, 4675"
+            VALUE "FileVersion", "5, 2, 0, 4731"
             VALUE "InternalName", "TeamTalk5.exe"
             VALUE "LegalCopyright", "Copyright (c) 2002-2016, BearWare.dk.  All rights reserved."
             VALUE "OriginalFilename", "TeamTalk5.exe"
             VALUE "ProductName", "BearWare.dk TeamTalk"
-            VALUE "ProductVersion", "5, 2, 0, 4675"
+            VALUE "ProductVersion", "5, 2, 0, 4731"
         END
     END
     BLOCK "VarFileInfo"
