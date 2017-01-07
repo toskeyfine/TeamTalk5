@@ -22,12 +22,12 @@ class iTeamTalkTests: XCTestCase {
     let ADMIN_USERNAME = "admin", ADMIN_PASSWORD = "admin"
     let NICKNAME = "iOS test", USERNAME = "guest", PASSWORD = "guest"
     
-    var clients = [UnsafeMutablePointer<Void>]()
+    var clients = [UnsafeMutableRawPointer]()
     
-    func newClient() -> UnsafeMutablePointer<Void> {
+    func newClient() -> UnsafeMutableRawPointer {
         let ttInst = TT_InitTeamTalkPoll()
-        clients.append(ttInst)
-        return ttInst
+        clients.append(ttInst!)
+        return ttInst!
     }
     
     override func setUp() {
@@ -42,7 +42,7 @@ class iTeamTalkTests: XCTestCase {
         for m in clients {
             TT_CloseTeamTalk(m)
         }
-        clients.removeAll(keepCapacity: true)
+        clients.removeAll(keepingCapacity: true)
     }
     
     func testExample() {
@@ -55,7 +55,7 @@ class iTeamTalkTests: XCTestCase {
     
     func testPerformanceExample() {
         // This is an example of a performance test case.
-        self.measureBlock() {
+        self.measure() {
             // Put the code you want to measure the time of here.
         }
     }
@@ -64,18 +64,38 @@ class iTeamTalkTests: XCTestCase {
         let ttInst = newClient()
         var msg = TTMessage()
 
-        let inst1 = TT_StartSoundLoopbackTest(1, 1, 48000, 1, 0, nil)
-        let inst2 = TT_StartSoundLoopbackTest(0, 1, 32000, 1, 0, nil)
+        let inst1 = TT_StartSoundLoopbackTest(0, 0, 16000, 1, FALSE, nil)
 
         print("Sound loop is active now")
         
         XCTAssert(inst1 != nil, "inst1 started")
-        XCTAssert(inst2 != nil, "inst2 started")
         
         waitForEvent(ttInst, e: CLIENTEVENT_NONE, waittimeout: 5000, msg: &msg)
         
-        TT_CloseSoundLoopbackTest(inst2)
-        TT_CloseSoundLoopbackTest(inst1)
+        XCTAssert(TT_CloseSoundLoopbackTest(inst1) == TRUE)
+        
+        var agc = SpeexDSP()
+        
+        agc.bEnableAGC = TRUE
+        agc.nGainLevel = 8000
+        agc.nMaxIncDBSec = 12
+        agc.nMaxDecDBSec = -40
+        agc.nMaxGainDB = 30
+        agc.bEnableDenoise = TRUE
+        
+        let instAGC = TT_StartSoundLoopbackTest(0, 0, 48000, 1, FALSE, &agc)
+        
+        waitForEvent(ttInst, e: CLIENTEVENT_NONE, waittimeout: 5000, msg: &msg)
+        
+        XCTAssert(TT_CloseSoundLoopbackTest(instAGC) == TRUE)
+
+        agc.nGainLevel = 2000
+        let instAGC2 = TT_StartSoundLoopbackTest(0, 0, 48000, 1, FALSE, &agc)
+        
+        waitForEvent(ttInst, e: CLIENTEVENT_NONE, waittimeout: 5000, msg: &msg)
+        
+        XCTAssert(TT_CloseSoundLoopbackTest(instAGC2) == TRUE)
+
     }
     
     // test is invalid. Sound device 1 no longer exists.
@@ -247,7 +267,7 @@ class iTeamTalkTests: XCTestCase {
             for a in inputs! {
                 print("--- An input ---")
                 print("PortName: " + a.portName)
-                print("UID: " + a.UID)
+                print("UID: " + a.uid)
                 print("PortType: " + a.portType)
                 
                 // only input
@@ -297,7 +317,7 @@ class iTeamTalkTests: XCTestCase {
             for a in outputs {
                 print("--- An output ---")
                 print("PortName: " + a.portName)
-                print("UID: " + a.UID)
+                print("UID: " + a.uid)
                 print("PortType: " + a.portType)
                 
                 if a.portType == AVAudioSessionPortLineOut {
@@ -355,7 +375,7 @@ class iTeamTalkTests: XCTestCase {
             
             print("Switching to speaker")
             
-            try session.overrideOutputAudioPort(AVAudioSessionPortOverride.Speaker)
+            try session.overrideOutputAudioPort(AVAudioSessionPortOverride.speaker)
             
             waitForEvent(ttInst, e: CLIENTEVENT_NONE, waittimeout: 5000, msg: &msg)
             
@@ -405,7 +425,12 @@ class iTeamTalkTests: XCTestCase {
     func testHearMyself() {
         
         do {
+            
             let ttInst = newClient()
+            
+            var msg = TTMessage()
+
+            waitForEvent(ttInst, e: CLIENTEVENT_NONE, waittimeout: 5000, msg: &msg)
             
             initSound(ttInst)
             
@@ -421,14 +446,11 @@ class iTeamTalkTests: XCTestCase {
             
             print("Waiting 5 sec")
             
-            NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(iTeamTalkTests.audioRouteChangeListenerCallback(_:)), name: AVAudioSessionRouteChangeNotification, object: nil)
-            
-            var msg = TTMessage()
             waitForEvent(ttInst, e: CLIENTEVENT_NONE, waittimeout: 20000, msg: &msg)
                 
             let session = AVAudioSession.sharedInstance()
             print("Switching to speaker")
-            try session.overrideOutputAudioPort(AVAudioSessionPortOverride.Speaker)
+            try session.overrideOutputAudioPort(AVAudioSessionPortOverride.speaker)
         
             waitForEvent(ttInst, e: CLIENTEVENT_NONE, waittimeout: 5000, msg: &msg)
 
@@ -437,9 +459,97 @@ class iTeamTalkTests: XCTestCase {
             XCTAssert(false, "Failed")
         }
     }
+
+    func testBluetooth() {
+        
+        do {
+            print("0 -------------------")
+            
+            let session = AVAudioSession.sharedInstance()
+            print("Audio route: " + session.currentRoute.debugDescription)
+            
+            NotificationCenter.default.addObserver(self, selector: #selector(iTeamTalkTests.audioRouteChangeListenerCallback(_:)), name: NSNotification.Name.AVAudioSessionRouteChange, object: nil)
+            
+            playSound()
+            
+            print("1 -------------------")
+            
+            try session.setMode(AVAudioSessionModeDefault)
+            try session.setCategory(AVAudioSessionCategoryPlayAndRecord, with: AVAudioSessionCategoryOptions.allowBluetooth)
+            
+            playSound()
+            
+            print("2 -------------------")
+            
+            let ttInst = newClient()
+            
+            playSound()
+            
+            print("3 -------------------")
+        }
+        catch {
+            print("Error")
+        }
+    }
     
-    func audioRouteChangeListenerCallback(notification: NSNotification) {
-        print("Route changed")
+    func playSound() {
+        if let resPath = Bundle.main.path(forResource: "newuser", ofType: "mp3") {
+            
+            let url = URL(fileURLWithPath: resPath)
+            
+            do {
+                let player = try AVAudioPlayer(contentsOf: url)
+                player.prepareToPlay()
+                player.play()
+                
+                while player.isPlaying {
+                    sleep(1)
+                }
+            }
+            catch {
+                print("Failed to play")
+            }
+        }
+    }
+    
+    
+    func audioRouteChangeListenerCallback(_ notification: Notification) {
+        let session = AVAudioSession.sharedInstance()
+        print("Audio route: " + session.currentRoute.debugDescription)
+        if let reason = notification.userInfo![AVAudioSessionRouteChangeReasonKey] {
+            
+            switch reason as! UInt {
+            case AVAudioSessionRouteChangeReason.unknown.rawValue :
+                print("ChangeReason Unknown")
+                break
+            case AVAudioSessionRouteChangeReason.newDeviceAvailable.rawValue :
+                print("ChangeReason NewDeviceAvailable")
+                break
+            case AVAudioSessionRouteChangeReason.oldDeviceUnavailable.rawValue:
+                print("ChangeReason Unknown")
+                break
+            case AVAudioSessionRouteChangeReason.categoryChange.rawValue:
+                let session = AVAudioSession.sharedInstance()
+                print("ChangeReason CategoryChange, new category: " + session.category)
+                break
+            case AVAudioSessionRouteChangeReason.override.rawValue :
+                let session = AVAudioSession.sharedInstance()
+                print("ChangeReason Override, new route: " + session.currentRoute.description)
+                break
+            case AVAudioSessionRouteChangeReason.routeConfigurationChange.rawValue :
+                print("ChangeReason RouteConfigurationChange")
+                break
+            case AVAudioSessionRouteChangeReason.wakeFromSleep.rawValue:
+                print("ChangeReason WakeFromSleep")
+                break
+            case AVAudioSessionRouteChangeReason.noSuitableRouteForCategory.rawValue:
+                print("ChangeReason NoSuitableRouteForCategory")
+                break
+            default :
+                print("ChangeReason Default")
+                break
+            }
+        }
     }
     
     func testProximitySensor() {
@@ -447,12 +557,12 @@ class iTeamTalkTests: XCTestCase {
         
         initSound(ttInst)
         
-        let device = UIDevice.currentDevice()
-        device.proximityMonitoringEnabled = true
+        let device = UIDevice.current
+        device.isProximityMonitoringEnabled = true
 
-        XCTAssert(device.proximityMonitoringEnabled, "Proximity sensor ok")
+        XCTAssert(device.isProximityMonitoringEnabled, "Proximity sensor ok")
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(iTeamTalkTests.proximityChanged(_:)), name: UIDeviceProximityStateDidChangeNotification, object: device)
+        NotificationCenter.default.addObserver(self, selector: #selector(iTeamTalkTests.proximityChanged(_:)), name: NSNotification.Name.UIDeviceProximityStateDidChange, object: device)
 
         
         connect(ttInst, ipaddr: IPADDR, tcpport: TCPPORT, udpport: UDPPORT, encrypted: ENCRYPTED)
@@ -464,7 +574,7 @@ class iTeamTalkTests: XCTestCase {
 
     }
     
-    func proximityChanged(notification: NSNotification) {
+    func proximityChanged(_ notification: Notification) {
         let device = notification.object as! UIDevice
         
         if device.proximityState {
@@ -476,12 +586,12 @@ class iTeamTalkTests: XCTestCase {
     }
     
     
-    func initSound(ttInst: UnsafeMutablePointer<Void>) {
+    func initSound(_ ttInst: UnsafeMutableRawPointer) {
         XCTAssert(TT_InitSoundInputDevice(ttInst, 0) != 0, "Init input sound device");
         XCTAssert(TT_InitSoundOutputDevice(ttInst, 0) != 0, "Init output sound device");
     }
     
-    func connect(ttInst: UnsafeMutablePointer<Void>, ipaddr: String, tcpport: INT32, udpport: INT32, encrypted: TTBOOL) {
+    func connect(_ ttInst: UnsafeMutableRawPointer, ipaddr: String, tcpport: INT32, udpport: INT32, encrypted: TTBOOL) {
         
         XCTAssert(TT_Connect(ttInst, ipaddr, tcpport, udpport, 0, 0, encrypted) != 0, "Connect to server")
         
@@ -490,7 +600,7 @@ class iTeamTalkTests: XCTestCase {
         XCTAssert(waitForEvent(ttInst, e: CLIENTEVENT_CON_SUCCESS, waittimeout: DEF_WAIT, msg: &msg), "Wait connect")
     }
     
-    func login(ttInst: UnsafeMutablePointer<Void>, nickname: String, username: String, password: String) -> INT32 {
+    func login(_ ttInst: UnsafeMutableRawPointer, nickname: String, username: String, password: String) {
         
         var msg = TTMessage()
         
@@ -499,12 +609,11 @@ class iTeamTalkTests: XCTestCase {
         
         XCTAssert(waitForEvent(ttInst, e: CLIENTEVENT_CMD_MYSELF_LOGGEDIN, waittimeout: DEF_WAIT, msg: &msg), "Wait Login")
         let userid = msg.nSource;
+        XCTAssertGreaterThan(userid, 0, "user id ok");
         XCTAssert(waitCmdComplete(ttInst, cmdid: cmdid, waittimeout: DEF_WAIT), "cmd complete")
-        
-        return userid;
     }
     
-    func joinRootChannel(ttInst: UnsafeMutablePointer<Void>) {
+    func joinRootChannel(_ ttInst: UnsafeMutableRawPointer) {
         let rootid = TT_GetRootChannelID(ttInst)
         let cmdid = TT_DoJoinChannelByID(ttInst, rootid, "")
         XCTAssertGreaterThan(cmdid, 0, "Join root channel command")
@@ -512,7 +621,7 @@ class iTeamTalkTests: XCTestCase {
         XCTAssert(waitCmdSuccess(ttInst, cmdid: cmdid, waittimeout: DEF_WAIT), "Join root successful")
     }
     
-    func waitForEvent(ttInst : UnsafeMutablePointer<Void>, e: ClientEvent, waittimeout: INT32, inout msg: TTMessage) -> Bool {
+    func waitForEvent(_ ttInst : UnsafeMutableRawPointer, e: ClientEvent, waittimeout: INT32, msg: inout TTMessage) -> Bool {
         
         var tmout = waittimeout
         
@@ -523,7 +632,7 @@ class iTeamTalkTests: XCTestCase {
         return msg.nClientEvent.rawValue == e.rawValue
     }
     
-    func waitCmdComplete(ttInst: UnsafeMutablePointer<Void>, cmdid: INT32, waittimeout: INT32) -> Bool {
+    func waitCmdComplete(_ ttInst: UnsafeMutableRawPointer, cmdid: INT32, waittimeout: INT32) -> Bool {
         
         var msg = TTMessage()
         while waitForEvent(ttInst, e: CLIENTEVENT_CMD_PROCESSING, waittimeout: waittimeout, msg: &msg)  {
@@ -534,7 +643,7 @@ class iTeamTalkTests: XCTestCase {
         return false
     }
     
-    func waitCmdSuccess(ttInst: UnsafeMutablePointer<Void>, cmdid: INT32, waittimeout: INT32) -> Bool {
+    func waitCmdSuccess(_ ttInst: UnsafeMutableRawPointer, cmdid: INT32, waittimeout: INT32) -> Bool {
         
         var msg = TTMessage()
         while waitForEvent(ttInst, e: CLIENTEVENT_CMD_SUCCESS, waittimeout: waittimeout, msg: &msg) {
