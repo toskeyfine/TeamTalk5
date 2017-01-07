@@ -4,9 +4,18 @@
 Version 5.x, unreleased
 Default Qt client:
 - Linux video capture updated to V4L2
+- Reduced shared library dependencies on Linux
 - Mac OS video capture updated to AVFoundation
 - Mac OS client no longer closes when pressing X
 - Video TX hotkey changed to enable/disable by one press
+- Store audio in .ogg format
+- Fixed bug when storing in 4GB .wav file
+- Fixed bug on Mac OS where some sounds where not played
+Accessible Windows client:
+- Store audio in .ogg format
+- Fixed bug when storing in 4GB .wav file
+iOS client:
+- Fixed recording/playback issue related to Bluetooth headsets
 
 Version 5.1.7, released 2016/08/10
 Default Qt client:
