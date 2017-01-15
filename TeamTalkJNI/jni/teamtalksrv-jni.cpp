@@ -297,9 +297,10 @@ extern "C" {
 
         JNIEnv* env = envs[lpTTSInstance];
 
-        jobject kicker_obj = newUser(env, lpKicker);
+        jobject kicker_obj = lpKicker? newUser(env, lpKicker) : 0;
+        assert(lpKickee);
         jobject kickee_obj = newUser(env, lpKickee);
-        jobject channel_obj = newChannel(env, lpChannel);
+        jobject channel_obj = lpChannel? newChannel(env, lpChannel) : 0;
         jclass cls = env->FindClass("dk/bearware/ServerLogger");
         assert(cls);
         jmethodID method = env->GetMethodID(cls, "userKicked", 
@@ -455,7 +456,8 @@ extern "C" {
                                    IN const User* lpUser) {
         JNIEnv* env = envs[lpTTSInstance];
 
-        jobject user_obj = newUser(env, lpUser);
+        jobject user_obj = lpUser ? newUser(env, lpUser) : 0;
+        assert(lpChannel);
         jobject chan_obj = newChannel(env, lpChannel);
         assert(chan_obj);
 
@@ -474,8 +476,8 @@ extern "C" {
                                    IN const User* lpUser) {
         JNIEnv* env = envs[lpTTSInstance];
 
-        jobject user_obj = newUser(env, lpUser);
-        assert(user_obj);
+        jobject user_obj = lpUser ? newUser(env, lpUser) : 0;
+        assert(lpChannel);
         jobject chan_obj = newChannel(env, lpChannel);
         assert(chan_obj);
 
@@ -494,7 +496,8 @@ extern "C" {
                                    IN const User* lpUser) {
         JNIEnv* env = envs[lpTTSInstance];
 
-        jobject user_obj = newUser(env, lpUser);
+        jobject user_obj = lpUser ? newUser(env, lpUser) : 0;
+        assert(lpChannel);
         jobject chan_obj = newChannel(env, lpChannel);
         assert(chan_obj);
 
