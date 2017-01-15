@@ -979,6 +979,7 @@ namespace BearWare
         }
     }
 
+    /** @brief Default values for #BearWare.SpeexDSP. */
     public struct SpeexDSPConstants
     {
         public const bool DEFAULT_AGC_ENABLE = true;
@@ -1240,7 +1241,9 @@ namespace BearWare
         USERRIGHT_TRANSMIT_MEDIAFILE_AUDIO          = 0x00010000,
         /** @brief User is allowed to stream video files to channel.
          * @see TeamTalk.StartStreamingMediaFileToChannel() */
-        USERRIGHT_TRANSMIT_MEDIAFILE_VIDEO          = 0x00020000
+        USERRIGHT_TRANSMIT_MEDIAFILE_VIDEO          = 0x00020000,
+         /** @brief User with all rights.*/
+        USERRIGHT_ALL                               = 0xFFFFFFFF
     }
 
     /** 
@@ -3276,7 +3279,10 @@ namespace BearWare
             {
                 string errmsg = String.Format("Invalid {2} version loaded. {2} is version {0} and {3} is version {1}",
                     dllversion.ToString(), name.Version.ToString(), c_tt.TTDLL.dllname, c_tt.TTDLL.mgtdllname);
-                throw new Exception(errmsg);
+
+                // throw new Exception(errmsg);
+
+                System.Diagnostics.Debug.WriteLine(errmsg);
             }
 
             Debug.Assert(TTDLL.TT_DBG_SIZEOF(TTType.__AUDIOCODEC) == Marshal.SizeOf(new AudioCodec()));
