@@ -1,4 +1,4 @@
-﻿/* log entry */
+/* log entry */
 "%@ joined channel" = "%@ kanala katıldı";
 
 /* log entry */
@@ -52,6 +52,9 @@
 
 /* preferences */
 "Announce user leaving channel" = "Kullanıcının kanaldan ayrılmasını duyur";
+
+/* preferences */
+"App Version" = "App Version";
 
 /* codec detail */
 "Application" = "Uygulama";
@@ -209,6 +212,12 @@
    create channel */
 "Mono" = "Tek Kanal";
 
+/* channel list */
+"Move user" = "Move user";
+
+/* channel list */
+"Move users here" = "Move users here";
+
 /* codec detail */
 "Music" = "Müzik";
 
@@ -228,8 +237,14 @@
 /* preferences */
 "Name displayed in channel list" = "Kanal listesinde görünen ad";
 
+/* Dialog message */
+"New Server" = "New Server";
+
 /* preferences */
 "Nickname" = "Takma ad";
+
+/* Dialog message */
+"No" = "No";
 
 /* codec detail
    create channel */
@@ -297,6 +312,9 @@
 /* serverlist */
 "Preferences" = "Ayarlar";
 
+/* preferences */
+"Pressing Return-key sends text message" = "Pressing Return-key sends text message";
+
 /* serverlist */
 "Private server" = "Özel sunucu";
 
@@ -339,6 +357,9 @@
 /* preferences */
 "Receive webcam streams by default" = "Varsayılan olarak web kamerası akışlarını al";
 
+/* preferences */
+"Return Sends Message" = "Return Sends Message";
+
 /* channel list */
 "Return to previous channel" = "Önceki kanala dön";
 
@@ -347,6 +368,12 @@
 
 /* codec detail */
 "Sample Rate" = "Örnekleme Hızı";
+
+/* Dialog message */
+"Save Server" = "Save Server";
+
+/* Dialog message */
+"Save server to server list?" = "Save server to server list?";
 
 /* preferences */
 "Select the text-to-speech voice to use" = "Kullanmak istediğiniz bilgilendirici konuşmacıyı seçin";
@@ -484,6 +511,9 @@
    user detail */
 "Username" = "Kullanıcı adı";
 
+/* preferences */
+"Version Information" = "Version Information";
+
 /* channel list */
 "View" = "Görüntüle";
 
@@ -513,7 +543,7 @@
 "Voice Volume" = "Ses Düzeyi";
 
 /* codec detail */
-"VoIP" = "VoIP";
+"VoIP" = "Konuşma";
 
 /* user detail */
 "Volume Controls" = "Ses Denetimleri";
@@ -521,6 +551,9 @@
 /* preferences
    user detail */
 "WebCam" = "Web Kamerası";
+
+/* Dialog message */
+"Yes" = "Yes";
 
 /* speech */
 "You have selected %@" = "%@ sesini seçtiniz";
