@@ -53,6 +53,9 @@
 /* preferences */
 "Announce user leaving channel" = "Ansage wenn Benutzer Raum verlässt";
 
+/* preferences */
+"App Version" = "App Version";
+
 /* codec detail */
 "Application" = "Anwendung";
 
@@ -209,6 +212,12 @@
    create channel */
 "Mono" = "Mono";
 
+/* channel list */
+"Move user" = "Move user";
+
+/* channel list */
+"Move users here" = "Move users here";
+
 /* codec detail */
 "Music" = "Musik";
 
@@ -228,8 +237,14 @@
 /* preferences */
 "Name displayed in channel list" = "In Raumliste angezeigter Name";
 
+/* Dialog message */
+"New Server" = "New Server";
+
 /* preferences */
 "Nickname" = "Nickname";
+
+/* Dialog message */
+"No" = "No";
 
 /* codec detail
    create channel */
@@ -297,6 +312,9 @@
 /* serverlist */
 "Preferences" = "Voreinstellungen";
 
+/* preferences */
+"Pressing Return-key sends text message" = "Pressing Return-key sends text message";
+
 /* serverlist */
 "Private server" = "Privater Server";
 
@@ -339,6 +357,9 @@
 /* preferences */
 "Receive webcam streams by default" = "Webcam-Streams standardmäßig empfangen";
 
+/* preferences */
+"Return Sends Message" = "Return Sends Message";
+
 /* channel list */
 "Return to previous channel" = "Zurück Zum vorherigen Raum";
 
@@ -347,6 +368,12 @@
 
 /* codec detail */
 "Sample Rate" = "Sampling-Rate";
+
+/* Dialog message */
+"Save Server" = "Save Server";
+
+/* Dialog message */
+"Save server to server list?" = "Save server to server list?";
 
 /* preferences */
 "Select the text-to-speech voice to use" = "Wähle die zu verwendende Stimme";
@@ -484,6 +511,9 @@
    user detail */
 "Username" = "Benutzername";
 
+/* preferences */
+"Version Information" = "Version Information";
+
 /* channel list */
 "View" = "Ansehen";
 
@@ -513,7 +543,7 @@
 "Voice Volume" = "Sprachlautstärke";
 
 /* codec detail */
-"VoIP" = "VoIP";
+"VoIP" = "Sprachausgabe";
 
 /* user detail */
 "Volume Controls" = "Lautstärkekontrollen";
@@ -521,6 +551,9 @@
 /* preferences
    user detail */
 "WebCam" = "WebCam";
+
+/* Dialog message */
+"Yes" = "Yes";
 
 /* speech */
 "You have selected %@" = "Du hast %@ gewählt";
