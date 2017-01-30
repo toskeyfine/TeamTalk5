@@ -248,7 +248,7 @@ namespace BearWare
             return TTProDLL.TTS_MoveUser(m_ttsInst, nUserID, ref lpChannel);
         }
         /**
-         * @brief Move a user from one channel to another.
+         * @brief Send text message from server to clients.
          *
          * 
          * @param lpTextMessage Text message to send. The message type determines
@@ -725,11 +725,11 @@ namespace BearWare
              }
          }
         [UnmanagedFunctionPointerAttribute(CallingConvention.Cdecl)]
-        public delegate void ChannelCreatedCallback(IntPtr lpTTSInstance,
+        internal delegate void ChannelCreatedCallback(IntPtr lpTTSInstance,
                                         IntPtr lpUserData,[In] ref Channel lpChannel,
                                         IntPtr lpUser);
         private event ChannelCreatedCallback onChannelCreatedCallback;
-        public event ChannelCreatedCallback OnChannelCreatedCallback
+        internal event ChannelCreatedCallback OnChannelCreatedCallback
         {
             add
             {
