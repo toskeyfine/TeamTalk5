@@ -69,6 +69,8 @@ class ChannelListViewController :
     var cmdid : INT32 = 0
     // the command ID which is currently processing
     var currentCmdId : INT32 = 0
+    // the commands awaiting reponse
+    var activeCommands = [INT32: Command]()
     // properties of connected server
     var srvprop = ServerProperties()
     // local instance's user account
@@ -138,12 +140,6 @@ class ChannelListViewController :
         activeCommands[cmdid] = .joinCmd
     }
     
-    enum Command {
-        case loginCmd, joinCmd, moveCmd, kickCmd
-    }
-    
-    var activeCommands = [INT32: Command]()
-    
     func appendTextMessage(_ userid: INT32, txtmsg: MyTextMessage) {
         
         if textmessages[userid] == nil {
@@ -194,10 +190,25 @@ class ChannelListViewController :
 
         let (subchans, chanusers) = getDisplayItems()
 
-        // print("row = \(indexPath.row) cur channel = \(curchannel.nChannelID) subs = \(subchans.count) users = \(chanusers.count)")
+        //print("row = \(indexPath.row) cur channel = \(curchannel.nChannelID) subs = \(subchans.count) users = \(chanusers.count)")
 
         let show_join = curchannel.nChannelID != mychannel.nChannelID && curchannel.nChannelID > 0
         let show_parent = curchannel.nParentID != 0
+        
+        // for some absurd reason UITableView::numberOfRowsInSection() and UITableView::cellForRowAt()
+        // can be interleaved when calling UITableView::reloadData() so row-count and data to be 
+        // displayed (self.channels and self.users) are out of sync
+        var display_rows = subchans.count + chanusers.count
+        if show_join {
+            display_rows += 1
+        }
+        if show_parent {
+            display_rows += 1
+        }
+        
+        if indexPath.row >= display_rows {
+            return UITableViewCell(style: .default, reuseIdentifier: nil)
+        }
         
         // current index for users
         var user_index = indexPath.row
@@ -494,22 +505,31 @@ class ChannelListViewController :
         switch cmd! {
             
         case .loginCmd :
-            self.tableView.reloadData()
-            
             let flags = TT_GetFlags(ttInst)
             
             if (flags & CLIENT_AUTHORIZED.rawValue) != 0 {
                 
-                // if we were previously in a channel then rejoin
                 if rejoinchannel.nChannelID > 0 {
-                    let passwd = chanpasswds[rejoinchannel.nChannelID] != nil ? chanpasswds[rejoinchannel.nChannelID] : ""
+                    // if we were previously in a channel then rejoin
+                    let passwd = chanpasswds[rejoinchannel.nChannelID] != nil ? chanpasswds[rejoinchannel.nChannelID] : fromTTString(rejoinchannel.szPassword)
+                    if chanpasswds[rejoinchannel.nChannelID] == nil {
+                        // if channel password is from initial login (Server-struct) then we need to store it
+                       chanpasswds[rejoinchannel.nChannelID] = fromTTString(rejoinchannel.szPassword)
+                    }
                     toTTString(passwd!, dst: &rejoinchannel.szPassword)
+                    cmdid = TT_DoJoinChannel(ttInst, &rejoinchannel)
+                    activeCommands[cmdid] = .joinCmd
+                }
+                else if fromTTString(rejoinchannel.szName).isEmpty == false {
+                    // join from initial login
+                    let passwd = fromTTString(rejoinchannel.szPassword)
+                    toTTString(passwd, dst: &rejoinchannel.szPassword)
                     cmdid = TT_DoJoinChannel(ttInst, &rejoinchannel)
                     activeCommands[cmdid] = .joinCmd
                 }
                 else if UserDefaults.standard.object(forKey: PREF_JOINROOTCHANNEL) == nil ||
                     UserDefaults.standard.bool(forKey: PREF_JOINROOTCHANNEL) {
-                    
+                    //join root channel automatically (if enabled)
                     cmdid = TT_DoJoinChannelByID(ttInst, TT_GetRootChannelID(ttInst), "")
                     activeCommands[cmdid] = .joinCmd
                 }
@@ -519,12 +539,14 @@ class ChannelListViewController :
         case .joinCmd :
             fallthrough
         case .moveCmd :
-            self.tableView.reloadData()
+            break
 //        default :
 //            print("Command #\(active_cmdid) is not a completion command")
         }
 
         activeCommands.removeValue(forKey: active_cmdid)
+        
+        self.tableView.reloadData()
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -719,7 +741,7 @@ class ChannelListViewController :
             break
             
         case CLIENTEVENT_CMD_PROCESSING :
-            if getTTBOOL(&m) != 0 {
+            if getTTBOOL(&m) == TRUE {
                 // command active
                 self.currentCmdId = m.nSource
             }
@@ -785,9 +807,17 @@ class ChannelListViewController :
             let user = getUser(&m).pointee
             users[user.nUserID] = user
             
+            if currentCmdId == 0 && user.nChannelID == curchannel.nChannelID {
+                self.tableView.reloadData()
+            }
+            
         case CLIENTEVENT_CMD_USER_LOGGEDOUT :
             let user = getUser(&m).pointee
             users.removeValue(forKey: user.nUserID)
+
+            if currentCmdId == 0 && user.nChannelID == curchannel.nChannelID {
+                self.tableView.reloadData()
+            }
             
         case CLIENTEVENT_CMD_USER_JOINED :
             let user = getUser(&m).pointee
@@ -797,7 +827,13 @@ class ChannelListViewController :
             if user.nUserID == TT_GetMyUserID(ttInst) {
                 curchannel = channels[user.nChannelID]!
                 mychannel = channels[user.nChannelID]!
+                
+                //store password if it's from initial login (Server-struct)
+                if rejoinchannel.nChannelID == 0 && chanpasswds[user.nChannelID] == nil {
+                   chanpasswds[user.nChannelID] = fromTTString(rejoinchannel.szPassword)
+                }
                 rejoinchannel = channels[user.nChannelID]! //join this on connection lost
+
                 updateTitle()
             }
             if user.nChannelID == mychannel.nChannelID && mychannel.nChannelID > 0 {
@@ -809,6 +845,7 @@ class ChannelListViewController :
                     newUtterance(name + " " +  NSLocalizedString("has joined the channel", comment: "TTS EVENT"))
                 }
             }
+
             if currentCmdId == 0 {
                 self.tableView.reloadData()
             }
@@ -858,7 +895,7 @@ class ChannelListViewController :
                 if let user = users[txtmsg.nFromUserID] {
                     let name = getDisplayName(user)
                     let newmsg = MyTextMessage(m: txtmsg, nickname: name,
-                        msgtype: TT_GetMyUserID(ttInst) == txtmsg.nFromUserID ? .im_MYSELF : .im)
+                        msgtype: TT_GetMyUserID(ttInst) == txtmsg.nFromUserID ? .PRIV_IM_MYSELF : .PRIV_IM)
                     appendTextMessage(txtmsg.nFromUserID, txtmsg: newmsg)
                     
                     if unreadmessages.count == 0 {
