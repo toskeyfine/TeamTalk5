@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug-SSL|Win32">
@@ -207,7 +207,7 @@
     <ClCompile>
       <AdditionalOptions>/wd4018 /wd4267 /wd4244 /wd4311 /wd4312 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\;.\xml;..\..\..\Library\TeamTalk_DLL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;.\tinyxml;..\..\..\Library\TeamTalk_DLL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_AMD64_;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -289,7 +289,7 @@
     </Midl>
     <ClCompile>
       <AdditionalOptions>/wd4018 /wd4267 /wd4244 /wd4311 /wd4312 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>.\;.\xml;..\..\..\Library\TeamTalk_DLL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;.\tinyxml;..\..\..\Library\TeamTalk_DLL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_AMD64_;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -368,7 +368,7 @@
     <ClCompile>
       <AdditionalOptions>/wd4018 /wd4267 /wd4244 /wd4311 /wd4312 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\;.\xml;..\..\..\Library\TeamTalk_DLL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;.\tinyxml;..\..\..\Library\TeamTalk_DLL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_AMD64_;_WIN64;ENABLE_ENCRYPTION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -445,7 +445,7 @@
     </Midl>
     <ClCompile>
       <AdditionalOptions>/wd4018 /wd4267 /wd4244 /wd4311 /wd4312 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>.\;.\xml;..\..\..\Library\TeamTalk_DLL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;.\tinyxml;..\..\..\Library\TeamTalk_DLL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_AMD64_;_WIN64;ENABLE_ENCRYPTION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
