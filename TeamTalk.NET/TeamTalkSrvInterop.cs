@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2005-2016, BearWare.dk
+ * Copyright (c) 2005-2017, BearWare.dk
  * 
  * Contact Information:
  *
@@ -120,5 +120,10 @@ namespace c_tt
         public static extern bool TTS_RegisterUserDeleteServerBanCallback(IntPtr lpTTSInstance, IntPtr lpCallback, int lpUserData, bool bEnable);
         [DllImport(dllname, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
         public static extern bool TTS_RegisterUserConnectedCallback(IntPtr lpTTSInstance, IntPtr lpCallback, int lpUserData, bool bEnable);
+        [DllImport(dllname, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        public static extern bool TTS_RegisterUserChangeNicknameCallback(IntPtr lpTTSInstance, IntPtr lpCallback, int lpUserData, bool bEnable);
+        [DllImport(dllname, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        public static extern bool TTS_RegisterUserChangeStatusCallback(IntPtr lpTTSInstance, IntPtr lpCallback, int lpUserData, bool bEnable);
+       
     }
 }
