@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug-SSL|Win32">
@@ -487,6 +487,7 @@
     <ClCompile Include="HttpRequest.cpp" />
     <ClCompile Include="Languages.cpp" />
     <ClCompile Include="mdump.cpp" />
+    <ClCompile Include="PlaySoundThread.cpp" />
     <ClCompile Include="settings\ClientXML.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-SSL|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug-SSL|Win32'">
@@ -723,6 +724,7 @@
     <ClInclude Include="Languages.h" />
     <ClInclude Include="License.h" />
     <ClInclude Include="mdump.h" />
+    <ClInclude Include="PlaySoundThread.h" />
     <ClInclude Include="settings\ClientXML.h" />
     <ClInclude Include="settings\MyStd.h" />
     <ClInclude Include="settings\Settings.h" />
