@@ -4,6 +4,9 @@
  * This section contains the list of new features and API changes
  * in TeamTalk SDK releases.
  *
+ * @ref v52drelease
+ * - @ref v52dbugfixes
+ *
  * @ref v52crelease
  * - @ref v52cfeatures
  *   - @ref v52cvirtsnd
@@ -11,7 +14,7 @@
  *   - @ref v52csrvcb
  *   - @ref v52cstatic
  *   - @ref v52cdaemon
- * @ref v52capi
+ * - @ref v52capi
  *
  * @ref v52brelease
  * - @ref v52bapi
@@ -163,6 +166,15 @@
  *
  * <hr>
  *
+ * @section v52drelease TeamTalk 5 SDK v. 5.2d release
+ *
+ * @subsection v52dbugfixes Bugfixes in v5.2d
+ *
+ * Fixed severe crash issue when audio streams are stopped. Crash was
+ * due to a race condition which occurs in rare cases.
+ *
+ * <hr>
+ *
  * @section v52crelease TeamTalk 5 SDK v. 5.2c release
  *
  * @subsection v52cfeatures New features in v5.2c
@@ -222,7 +234,7 @@
  *
  * @subsection v52bapi API changes in v5.2b
  *
- * @subsubsection v52bsendmsg
+ * @subsubsection v52bsendmsg Send text message from Server API
  *
  * Added TTS_SendTextMessage() to TeamTalk Server API.
  *
