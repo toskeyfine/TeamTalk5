@@ -249,42 +249,44 @@ implements ClientListener, Comparator<RemoteFile> {
                         break;
                     }
                     case R.id.download_btn: {
-                        File dlPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                        if (dlPath.mkdirs() || dlPath.isDirectory()) {
-                            final File localFile = new File(dlPath, remoteFile.szFileName);
-                            if (localFile.exists()) {
-                                AlertDialog.Builder alert = new AlertDialog.Builder(context);
-                                alert.setMessage(context.getString(R.string.alert_file_override, localFile.getAbsolutePath()));
-                                alert.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        if (Permissions.setupPermission(context, activity, Permissions.MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE)) {
+                            File dlPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                            if (dlPath.mkdirs() || dlPath.isDirectory()) {
+                                final File localFile = new File(dlPath, remoteFile.szFileName);
+                                if (localFile.exists()) {
+                                    AlertDialog.Builder alert = new AlertDialog.Builder(context);
+                                    alert.setMessage(context.getString(R.string.alert_file_override, localFile.getAbsolutePath()));
+                                    alert.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 
-                                        @Override
+                                            @Override
                                             public void onClick(DialogInterface dialog, int whichButton) {
-                                            if (localFile.delete()) {
-                                                startDownload(remoteFile, localFile);
+                                                if (localFile.delete()) {
+                                                    startDownload(remoteFile, localFile);
+                                                }
+                                                else {
+                                                    Toast.makeText(context,
+                                                                   context.getString(R.string.err_file_delete,
+                                                                                     localFile.getAbsolutePath()),
+                                                                   Toast.LENGTH_LONG).show();
+                                                }
                                             }
-                                            else {
-                                                Toast.makeText(context,
-                                                               context.getString(R.string.err_file_delete,
-                                                                                 localFile.getAbsolutePath()),
-                                                               Toast.LENGTH_LONG).show();
-                                            }
-                                        }
-                                    });
+                                        });
 
-                                alert.setNegativeButton(android.R.string.no, null);
-                                alert.show();
+                                    alert.setNegativeButton(android.R.string.no, null);
+                                    alert.show();
+                                }
+
+                                else {
+                                    startDownload(remoteFile, localFile);
+                                }
                             }
 
                             else {
-                                startDownload(remoteFile, localFile);
+                                Toast.makeText(context,
+                                               context.getString(R.string.err_download_path,
+                                                                 dlPath.getAbsolutePath()),
+                                               Toast.LENGTH_LONG).show();
                             }
-                        }
-
-                        else {
-                            Toast.makeText(context,
-                                           context.getString(R.string.err_download_path,
-                                                             dlPath.getAbsolutePath()),
-                                           Toast.LENGTH_LONG).show();
                         }
                         break;
                     }
@@ -316,7 +318,7 @@ implements ClientListener, Comparator<RemoteFile> {
         switch (getItemViewType(position)) {
         case REMOTE_FILE_VIEW_TYPE: {
             if((convertView == null) || (convertView.findViewById(R.id.fileinfo) == null))
-                convertView = inflater.inflate(R.layout.item_remote_file, null);
+                convertView = inflater.inflate(R.layout.item_remote_file, parent, false);
             ((TextView)convertView.findViewById(R.id.fileinfo)).setText(String.format("%d (%s)", remoteFile.nFileSize, remoteFile.szUsername));
             Button downloadButton = (Button)convertView.findViewById(R.id.download_btn);
             Button removeButton = (Button)convertView.findViewById(R.id.remove_btn);
@@ -328,7 +330,7 @@ implements ClientListener, Comparator<RemoteFile> {
         }
         case FILE_TRANSFER_VIEW_TYPE: {
             if((convertView == null) || (convertView.findViewById(R.id.progress) == null))
-                convertView = inflater.inflate(R.layout.item_file_transfer, null);
+                convertView = inflater.inflate(R.layout.item_file_transfer, parent, false);
             FileTransfer transferinfo = downloads.get(remoteFile.szFileName);
             ((TextView)convertView.findViewById(R.id.progress)).setText(context.getString(R.string.download_progress, getPercentage(transferinfo)));
             Button cancelButton = (Button)convertView.findViewById(R.id.cancel_btn);
@@ -480,8 +482,6 @@ implements ClientListener, Comparator<RemoteFile> {
     }
 
     private void startDownload(RemoteFile remoteFile, File localFile) {
-        Permissions.setupPermission(context, activity, Permissions.MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
-
         if (ttClient.doRecvFile(chanId, remoteFile.nFileID, localFile.getAbsolutePath()) <= 0)
             warnDownloadFailure(remoteFile.szFileName);
     }

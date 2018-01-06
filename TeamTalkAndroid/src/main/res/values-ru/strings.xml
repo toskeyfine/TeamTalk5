@@ -35,14 +35,13 @@
     <string name="pref_header_general">Общие Настройки</string>
     <string name="pref_title_nickname">Псевдоним</string>
     <string name="pref_title_keep_screen_on">Не гасить экран при активном соединении</string>
-    <string name="pref_title_voice_act">Голосовая Активация</string>
     <string name="pref_title_vibrate">Виброотклик кнопки включения передачи</string>
     <string name="pref_show_log_messages">Показывать записи о событиях среди сообщений</string>
     <string name="pref_title_audio_icons">Звуковая Индикация Событий</string>
     <string name="pref_title_rx_tx_audio_icon">Включение и выключение передачи</string>
     <string name="pref_summary_rx_tx_audio_icon">Звуковое оповещение о включении / выключении передачи голоса</string>
-    <string name="pref_title_vox_triggered_icon">Включение и выключение режима голосовой активации</string>
-    <string name="pref_summary_vox_triggered_icon">Звуковое оповещение о включении / выключении режима голосовой активации</string>
+    <string name="pref_title_vox_triggered_icon">Срабатывание голосовой активации</string>
+    <string name="pref_summary_vox_triggered_icon">Звуковое оповещение о включении / выключении передачи при голосовой активации</string>
     <string name="pref_title_personal_message_audio_icon">Личное сообщение</string>
     <string name="pref_summary_personal_message_audio_icon">Звуковое оповещение о приходе личного сообщения</string>
     <string name="pref_title_channel_message_audio_icon">Сообщение в канале</string>
@@ -221,6 +220,12 @@
     <string name="speaker_volume_description">Громкость звука %1$s</string>
     <string name="mic_gain_description">Чувствительность микрофона %1$s</string>
 
+    <string name="voice_activation_on">Включить голосовую активацию</string>
+    <string name="voice_activation_off">Выключить голосовую активацию</string>
+    <string name="decvoxlevel">Понизить порог голосовой активации</string>
+    <string name="incvoxlevel">Повысить порог голосовой активации</string>
+    <string name="vox_level_description">Порог голосовой активации %1$s</string>
+
     <string name="text_samplerate">Частота квантования</string>
     <string name="text_ignore_silence">Игнорировать паузы (DTX)</string>
     <string name="text_audchan">Аудио каналы</string>
@@ -264,8 +269,9 @@
     <string name="permission_audioinput">Запись и воспроизведение звука будут недоступны</string>
     <string name="permission_audiomodify">Запись и воспроизведение звука будут недоступны</string>
     <string name="permission_filerx">Загрузка файлов будет недоступна</string>
-    <string name="permission_filetx">Выкладывание файлов будет недоступно</string>
+    <string name="permission_filetx">Выкладывание и импортирование файлов будет недоступно</string>
     <string name="permission_internet">Клиент не сможет подключаться к серверам</string>
     <string name="permission_vibrate">Виброотклик кнопки включения передачи будет недоступен</string>
-
+    <string name="permission_wake_lock">Соединение с сервером может быть потеряно при выключении экрана</string>
+    <string name="permission_read_phone_state">Правильная реакция на входящие телефонные звонки будет невозможна</string>
 </resources>
