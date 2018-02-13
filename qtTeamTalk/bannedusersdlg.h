@@ -33,6 +33,8 @@ typedef QVector<BannedUser> bannedusers_t;
 
 class BannedUsersModel : public QAbstractItemModel
 {
+    Q_OBJECT
+
 public:
     BannedUsersModel(QObject* parent);
     QVariant headerData ( int section, Qt::Orientation orientation, int role = Qt::DisplayRole ) const;
@@ -54,16 +56,18 @@ class BannedUsersDlg : public QDialog
     Q_OBJECT
 
 public:
-    BannedUsersDlg(const bannedusers_t& bannedusers, QWidget * parent = 0);
+    BannedUsersDlg(const bannedusers_t& bannedusers, const QString& chanpath, QWidget * parent = 0);
 
 private:
     Ui::BannedUsersDlg ui;
     BannedUsersModel* m_bannedmodel, *m_unbannedmodel;
+    QString m_chanpath;
+
 private slots:
     void slotClose();
     void slotUnbanUser();
     void slotBanUser();
-    void slotBanIPAddress();
+    void slotNewBan();
 };
 
 #endif

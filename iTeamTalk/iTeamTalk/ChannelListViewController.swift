@@ -228,7 +228,7 @@ class ChannelListViewController :
             let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! UserTableCell
             let user = chanusers[user_index]
             let name = getDisplayName(user)
-            let statusmsg = fromTTString(user.szStatusMsg)
+            let statusmsg = String(cString: UnsafeRawPointer([user.szStatusMsg]).assumingMemoryBound(to: CChar.self))
             
             cell.nicknameLabel.text = name
             cell.statusmsgLabel.text = statusmsg
@@ -267,6 +267,12 @@ class ChannelListViewController :
                     let action_kick = MyCustomAction(name: NSLocalizedString("Kick user", comment: "channel list"), target: self, selector: #selector(ChannelListViewController.kickUser(_:)), tag: cell.tag)
                     actions.append(action_kick)
                 }
+                
+                if (myuseraccount.uUserRights & USERRIGHT_BAN_USERS.rawValue) != 0 || op {
+                    let action_ban = MyCustomAction(name: NSLocalizedString("Ban user", comment: "channel list"), target: self, selector: #selector(ChannelListViewController.banUser(_:)), tag: cell.tag)
+                    actions.append(action_ban)
+                }
+
                 cell.accessibilityCustomActions = actions
             } else {
                 // Fallback on earlier versions
@@ -298,8 +304,8 @@ class ChannelListViewController :
             
             channel = subchans[chan_index]
             
-            title = fromTTString(srvprop.szServerName)
-            subtitle = fromTTString(channel.szTopic)
+            title = String(cString: UnsafeRawPointer([srvprop.szServerName]).assumingMemoryBound(to: CChar.self))
+            subtitle = String(cString: UnsafeRawPointer([channel.szTopic]).assumingMemoryBound(to: CChar.self))
             
             if channel.bPassword != 0 {
                 cell.chanimage.image = UIImage(named: "channel_pink.png")
@@ -318,10 +324,10 @@ class ChannelListViewController :
             
             title = NSLocalizedString("Parent channel", comment: "channel list")
             if channel.nParentID == 0 {
-                subtitle = fromTTString(srvprop.szServerName)
+                subtitle = String(cString: UnsafeRawPointer([srvprop.szServerName]).assumingMemoryBound(to: CChar.self))
             }
             else {
-                subtitle = fromTTString(channel.szName)
+                subtitle = String(cString: UnsafeRawPointer([channel.szName]).assumingMemoryBound(to: CChar.self))
             }
             
             textcolor = UIColor.gray
@@ -342,8 +348,8 @@ class ChannelListViewController :
             channel = subchans[chan_index]
             
             let user_count = getUsersCount(channel.nChannelID)
-            title = fromTTString(channel.szName) + " (\(user_count))"
-            subtitle = fromTTString(channel.szTopic)
+            title = String(cString: UnsafeRawPointer([channel.szName]).assumingMemoryBound(to: CChar.self)) + " (\(user_count))"
+            subtitle = String(cString: UnsafeRawPointer([channel.szTopic]).assumingMemoryBound(to: CChar.self))
             
             if channel.bPassword != 0 {
                 cell.chanimage.image = UIImage(named: "channel_pink.png")
@@ -465,6 +471,18 @@ class ChannelListViewController :
     }
 
     @objc @available(iOS 8.0, *)
+    func banUser(_ action: UIAccessibilityCustomAction) -> Bool {
+        if let ac = action as? MyCustomAction {
+            
+            cmdid = TT_DoBanUser(ttInst, INT32(ac.tag), curchannel.nChannelID)
+            activeCommands[cmdid] = .banCmd
+            cmdid = TT_DoKickUser(ttInst, INT32(ac.tag), curchannel.nChannelID)
+            activeCommands[cmdid] = .kickCmd
+        }
+        return true
+    }
+
+    @objc @available(iOS 8.0, *)
     func joinThisChannel(_ action: UIAccessibilityCustomAction) -> Bool {
         if let ac = action as? MyCustomAction {
             if let channel = channels[INT32(ac.tag)] {
@@ -538,6 +556,8 @@ class ChannelListViewController :
             fallthrough
         case .joinCmd :
             fallthrough
+        case .banCmd :
+            fallthrough
         case .moveCmd :
             break
 //        default :
@@ -587,7 +607,14 @@ class ChannelListViewController :
             let channel = channels[chanid]
             
             let chanDetail = segue.destination as! ChannelDetailViewController
+
             chanDetail.channel = channel!
+            
+            if fromTTString((channel?.szPassword)!).isEmpty {
+                if let passwd = self.chanpasswds[chanid] {
+                    toTTString(passwd, dst: &chanDetail.channel.szPassword)
+                }
+            }
         }
         else if segue.identifier == "New TextMessage" {
 

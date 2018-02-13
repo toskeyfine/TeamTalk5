@@ -52,7 +52,7 @@ public:
         {
             TTMessage ttmsg;
             INT32 wait_ms = 0;
-            if(TT_GetMessage(ttInst, &ttmsg, &wait_ms))
+            if(TT_GetMessage(ttInst, &ttmsg, &wait_ms) && m_mainwindow)
                 m_mainwindow->processTTMessage(ttmsg);
         }
         return QApplication::winEventFilter(msg, result);
@@ -144,8 +144,8 @@ public:
                 if(keyevent->state & XCB_MOD_MASK_SHIFT)
                     mods |= ShiftMask;
 
-                qDebug() << "Hotkeys are not working in Qt5";
-                m_mainwindow->keysActive(keycode, mods, type == XCB_KEY_PRESS);
+                if(m_mainwindow)
+                    m_mainwindow->keysActive(keycode, mods, type == XCB_KEY_PRESS);
                 break;
             }
             }
@@ -238,7 +238,7 @@ public:
 #endif
     }
 
-    //TeamTalk event handling for MacOS X (Carbon). In QT 4 this is an
+    //TeamTalk event handling for macOS (Carbon). In QT 4 this is an
     //inherited method from QCoreApplication. In QT 5 this is a
     //standalone method.
     bool macEventFilter(EventHandlerCallRef caller, EventRef event)
@@ -280,7 +280,7 @@ protected:
                 m_mainwindow->parseArgs(QStringList() << "abc" << tturi);
         }
 #if QT_VERSION >= 0x050400
-        // This handles press in Dock on Mac OS
+        // This handles press in Dock on macOS
         if (e->type() == QEvent::ApplicationActivated)
         {
             if(m_mainwindow->isHidden())

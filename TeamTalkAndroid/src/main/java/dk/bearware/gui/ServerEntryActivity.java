@@ -33,12 +33,14 @@ import dk.bearware.UserAccount;
 import dk.bearware.backend.TeamTalkConnection;
 import dk.bearware.backend.TeamTalkConnectionListener;
 import dk.bearware.backend.TeamTalkService;
+import dk.bearware.data.AppInfo;
 import dk.bearware.data.ServerEntry;
 import dk.bearware.events.CommandListener;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
@@ -50,6 +52,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
+
 public class ServerEntryActivity
 extends PreferenceActivity
 implements OnPreferenceChangeListener, TeamTalkConnectionListener, CommandListener {
@@ -60,7 +68,9 @@ implements OnPreferenceChangeListener, TeamTalkConnectionListener, CommandListen
     TeamTalkService ttservice;
     TeamTalkBase ttclient;
     ServerEntry serverentry;
-    
+
+    CallbackManager callbackManager;
+
     @SuppressWarnings("deprecation")
     @Deprecated
     @Override
@@ -68,6 +78,8 @@ implements OnPreferenceChangeListener, TeamTalkConnectionListener, CommandListen
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.pref_serverentry);
         getActionBar().setDisplayHomeAsUpEnabled(true);
+
+        callbackManager = CallbackManager.Factory.create();
 
         ServerEntry entry = Utils.getServerEntry(this.getIntent());
         if(entry != null) {
@@ -83,6 +95,7 @@ implements OnPreferenceChangeListener, TeamTalkConnectionListener, CommandListen
         // if(category != null)category.removePreference(findPreference(ServerEntry.KEY_ENCRYPTED));
         findPreference(ServerEntry.KEY_USERNAME).setOnPreferenceChangeListener(this);
         findPreference(ServerEntry.KEY_PASSWORD).setOnPreferenceChangeListener(this);
+        findPreference(ServerEntry.KEY_FACEBOOK).setOnPreferenceChangeListener(this);
         findPreference(ServerEntry.KEY_NICKNAME).setOnPreferenceChangeListener(this);
         findPreference(ServerEntry.KEY_REMEMBER_LAST_CHANNEL).setOnPreferenceChangeListener(this);
         findPreference(ServerEntry.KEY_CHANNEL).setOnPreferenceChangeListener(this);
@@ -165,13 +178,30 @@ implements OnPreferenceChangeListener, TeamTalkConnectionListener, CommandListen
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        callbackManager.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_connect : {
                 serverentry = getServerEntry();
-                ttservice.setServerEntry(serverentry);
-                if (!ttservice.reconnect())
-                    Toast.makeText(this, R.string.err_connection, Toast.LENGTH_LONG).show();
+
+                //unregister so delayed facebook login will not cancel new login session
+                LoginManager.getInstance().unregisterCallback(callbackManager);
+                if(serverentry.isFacebookLogin()) {
+                    LoginManager.getInstance().registerCallback(callbackManager,
+                            Utils.createFacebookLogin(this, ttservice, serverentry));
+
+                    Utils.facebookLogin(this);
+                }
+                else {
+                    ttservice.setServerEntry(serverentry);
+                    if (!ttservice.reconnect())
+                        Toast.makeText(this, R.string.err_connection, Toast.LENGTH_LONG).show();
+                }
             }
             break;
             case R.id.action_saveserver : {
@@ -192,7 +222,7 @@ implements OnPreferenceChangeListener, TeamTalkConnectionListener, CommandListen
         }
         return true;
     }
-    
+
     @SuppressWarnings("deprecation")
     @Deprecated
     ServerEntry getServerEntry() {
@@ -215,15 +245,29 @@ implements OnPreferenceChangeListener, TeamTalkConnectionListener, CommandListen
     @SuppressWarnings("deprecation")
     @Deprecated
     void showServer(ServerEntry entry) {
+
+        // host info
         Utils.setEditTextPreference(findPreference(ServerEntry.KEY_SERVERNAME), entry.servername, entry.servername);
         Utils.setEditTextPreference(findPreference(ServerEntry.KEY_IPADDR), entry.ipaddr, entry.ipaddr);
         Utils.setEditTextPreference(findPreference(ServerEntry.KEY_TCPPORT), String.valueOf(entry.tcpport), String.valueOf(entry.tcpport));        
         Utils.setEditTextPreference(findPreference(ServerEntry.KEY_UDPPORT), String.valueOf(entry.udpport), String.valueOf(entry.udpport));
         CheckBoxPreference p = (CheckBoxPreference)findPreference(ServerEntry.KEY_ENCRYPTED); 
-        if(p != null)p.setChecked(entry.encrypted);
-        Utils.setEditTextPreference(findPreference(ServerEntry.KEY_USERNAME), entry.username, entry.username);
-        Utils.setEditTextPreference(findPreference(ServerEntry.KEY_PASSWORD), entry.password, entry.password);
+        if(p != null) {
+            p.setChecked(entry.encrypted);
+        }
+
+        // auth
+        PreferenceCategory authcat = (PreferenceCategory)findPreference("auth_info");
+        Utils.setEditTextPreference(findPreference(ServerEntry.KEY_USERNAME), entry.username, entry.username, entry.isFacebookLogin());
+        Utils.setEditTextPreference(findPreference(ServerEntry.KEY_PASSWORD), entry.password, entry.password, entry.isFacebookLogin());
+
+        findPreference(ServerEntry.KEY_USERNAME).setEnabled(!entry.isFacebookLogin());
+        findPreference(ServerEntry.KEY_PASSWORD).setEnabled(!entry.isFacebookLogin());
+        ((CheckBoxPreference)findPreference(ServerEntry.KEY_FACEBOOK)).setChecked(entry.isFacebookLogin());
+
         Utils.setEditTextPreference(findPreference(ServerEntry.KEY_NICKNAME), entry.nickname, entry.nickname);
+
+        // join channel
         ((CheckBoxPreference)findPreference(ServerEntry.KEY_REMEMBER_LAST_CHANNEL)).setChecked(entry.rememberLastChannel);
         Utils.setEditTextPreference(findPreference(ServerEntry.KEY_CHANNEL), entry.channel, entry.channel);
         Utils.setEditTextPreference(findPreference(ServerEntry.KEY_CHANPASSWD), entry.chanpasswd, entry.chanpasswd);
@@ -236,6 +280,26 @@ implements OnPreferenceChangeListener, TeamTalkConnectionListener, CommandListen
             EditTextPreference editTextPreference =  (EditTextPreference)preference;
             editTextPreference.setSummary(newValue.toString());
         }
+
+        if(findPreference(ServerEntry.KEY_FACEBOOK) == preference) {
+            boolean fblogin = (Boolean)newValue;
+            CheckBoxPreference cbp = (CheckBoxPreference)preference;
+            findPreference(ServerEntry.KEY_USERNAME).setEnabled(!fblogin);
+            findPreference(ServerEntry.KEY_PASSWORD).setEnabled(!fblogin);
+
+            ServerEntry entry = serverentry == null? Utils.getServerEntry(this.getIntent()) : serverentry;
+            if(entry != null) {
+                String username = fblogin? AppInfo.WEBLOGIN_FACEBOOK : entry.username;
+                String password = fblogin? "" : entry.password;
+                Utils.setEditTextPreference(findPreference(ServerEntry.KEY_USERNAME), username, username, fblogin);
+                Utils.setEditTextPreference(findPreference(ServerEntry.KEY_PASSWORD), password, password, fblogin);
+            }
+            else if(fblogin){
+                Utils.setEditTextPreference(findPreference(ServerEntry.KEY_USERNAME), AppInfo.WEBLOGIN_FACEBOOK, AppInfo.WEBLOGIN_FACEBOOK);
+                Utils.setEditTextPreference(findPreference(ServerEntry.KEY_PASSWORD), "", "", fblogin);
+            }
+        }
+
         return true;
     }
     
