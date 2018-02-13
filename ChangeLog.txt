@@ -3,13 +3,52 @@
 ----------------------------------------------
 Version 5.3, unreleased
 Default Qt client
+- Facebook web-login for Facebook enabled TeamTalk servers
+- Profiles for running multiple TeamTalk clients (Ctrl+N)
+- Ban users from channel
+- Ban option for username and/or IP-address
+- Option to ban subnets using wildcards, e.g. 192.168.0.*
 - Abuse prevention tab in user account administration
+- OPUS audio codec updated to v1.2.1
+- WebM (VPX) video codec updated to v1.6.1
+- TeamTalk client for Windows no longer supports Windows XP
+- TeamTalk clients for Windows updated to Qt v5.8
+- TeamTalk clients for Debian Linux updated to Debian GNU/Linux 9 (stretch) and Qt v5.7 (PTT behaviour changed)
+- TeamTalk client for Mac requires minimum macOS 10.9 (Mavericks)
 Accessible Windows client:
+- Facebook web-login for Facebook enabled TeamTalk servers
+- Profiles for running multiple TeamTalk clients (Ctrl+N)
+- Ban users from channel
+- Ban option for username and/or IP-address
 - Abuse prevention tab in user account administration
 - Tell operator state using Ctrl+G
+- Send text message from Online Users dialog
+- Move multiple users (Store for Move menu-item)
+- Arabic, German, Turkish, Chinese
+- OPUS audio codec updated to v1.2.1
+- WebM (VPX) video codec updated to v1.6.1
+- Windows XP is no longer supported
+Android client:
+- Facebook web-login for Facebook enabled TeamTalk servers
+- Toggle subscriptions in User Information activity
+- URLs in text messages are now clickable
+- Added Indonesian language thanks to Muhammad Gagah
+- OPUS audio codec updated to v1.2.1
+- WebM (VPX) video codec updated to v1.6.1
+iOS client:
+- Facebook web-login for Facebook enabled TeamTalk servers
+- Ban user from channel with accessible action
+- OPUS audio codec updated to v1.2.1
 Server:
+- Facebook user authentication
+- Ban users from channel
+- Ban option for username and/or IP-address
 - Fixed brute force login prevention using ban feature
 - Limit number of issued commands by clients
+- TeamTalk server for Windows no longer supports Windows XP
+- TeamTalk server for Mac requires minimum macOS 10.9 (Mavericks)
+- TeamTalk server for Debian Linux updated to Debian GNU/Linux 9 (stretch)
+- TeamTalk server Raspberry Pi updated to Raspbian GNU/Linux 9 (stretch)
 
 Version 5.2.4, released 2017/11/08
 iOS client:

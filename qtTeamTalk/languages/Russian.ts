@@ -23,34 +23,67 @@
         <translation>Заблокированные пользователи</translation>
     </message>
     <message>
-        <location filename="../bannedusers.ui" line="57"/>
+        <location filename="../bannedusersdlg.cpp" line="148"/>
         <source>Ban IP-address</source>
         <translation>Заблокировать IP-адрес</translation>
     </message>
     <message>
-        <location filename="../bannedusers.ui" line="70"/>
+        <location filename="../bannedusersdlg.cpp" line="149"/>
+        <source>Ban Username</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../bannedusers.ui" line="63"/>
         <source>Add to list of banned users</source>
         <translation>Добавить в список заблокированных пользователей</translation>
     </message>
     <message>
-        <location filename="../bannedusers.ui" line="73"/>
+        <location filename="../bannedusers.ui" line="66"/>
         <source>Add</source>
         <translation>Добавить</translation>
     </message>
     <message>
-        <location filename="../bannedusers.ui" line="100"/>
+        <location filename="../bannedusers.ui" line="93"/>
         <source>Remove banned user</source>
         <translation>Убрать заблокированного пользователя</translation>
     </message>
     <message>
-        <location filename="../bannedusers.ui" line="110"/>
+        <location filename="../bannedusers.ui" line="103"/>
         <source>Put back to banned users</source>
         <translation>Вернуть обратно к заблокированным пользователям</translation>
     </message>
     <message>
-        <location filename="../bannedusers.ui" line="135"/>
+        <location filename="../bannedusers.ui" line="128"/>
         <source>Unbanned Users</source>
         <translation>Разблокированные пользователи</translation>
+    </message>
+</context>
+<context>
+    <name>BannedUsersModel</name>
+    <message>
+        <location filename="../bannedusersdlg.cpp" line="50"/>
+        <source>Nickname</source>
+        <translation type="unfinished">Ник</translation>
+    </message>
+    <message>
+        <location filename="../bannedusersdlg.cpp" line="51"/>
+        <source>Username</source>
+        <translation type="unfinished">Имя пользователя</translation>
+    </message>
+    <message>
+        <location filename="../bannedusersdlg.cpp" line="52"/>
+        <source>Ban Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../bannedusersdlg.cpp" line="53"/>
+        <source>Channel</source>
+        <translation type="unfinished">Канал</translation>
+    </message>
+    <message>
+        <location filename="../bannedusersdlg.cpp" line="54"/>
+        <source>IP-address</source>
+        <translation type="unfinished">IP-Адрес</translation>
     </message>
 </context>
 <context>
@@ -818,7 +851,7 @@
     </message>
     <message>
         <location filename="../keycompdlg.cpp" line="220"/>
-        <source>Mac OS does not support only modifier keys, i.e. Cmd, Option and Shift must be used in combination with other non-modifier keys.</source>
+        <source>macOS does not support only modifier keys, i.e. Cmd, Option and Shift must be used in combination with other non-modifier keys.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -848,7 +881,7 @@
     <message>
         <location filename="../mainwindow.ui" line="213"/>
         <location filename="../mainwindow.ui" line="238"/>
-        <location filename="../mainwindow.cpp" line="2411"/>
+        <location filename="../mainwindow.cpp" line="2453"/>
         <source>Microphone gain</source>
         <translation>Усиление микрофона</translation>
     </message>
@@ -882,7 +915,7 @@
     </message>
     <message>
         <location filename="../mainwindow.ui" line="384"/>
-        <location filename="../mainwindow.ui" line="1514"/>
+        <location filename="../mainwindow.ui" line="1518"/>
         <source>&amp;Video</source>
         <translation>&amp;Видео</translation>
     </message>
@@ -911,7 +944,7 @@
     </message>
     <message>
         <location filename="../mainwindow.ui" line="630"/>
-        <location filename="../mainwindow.cpp" line="5153"/>
+        <location filename="../mainwindow.cpp" line="5312"/>
         <source>Desktops</source>
         <translation>Рабочие столы</translation>
     </message>
@@ -944,7 +977,7 @@
     </message>
     <message>
         <location filename="../mainwindow.ui" line="875"/>
-        <location filename="../mainwindow.cpp" line="2295"/>
+        <location filename="../mainwindow.cpp" line="2337"/>
         <source>Files</source>
         <translation>Файлы</translation>
     </message>
@@ -1002,656 +1035,676 @@
         <translation>В&amp;ыгнать</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1115"/>
+        <location filename="../mainwindow.ui" line="1117"/>
         <source>&amp;Channels</source>
         <translation>&amp;Каналы</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1132"/>
+        <location filename="../mainwindow.ui" line="1136"/>
         <source>&amp;Server</source>
         <translation>&amp;Сервер</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1147"/>
+        <location filename="../mainwindow.ui" line="1151"/>
         <source>&amp;Help</source>
         <translation>&amp;Помощь</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1210"/>
+        <location filename="../mainwindow.ui" line="1214"/>
         <source>&amp;Server List</source>
         <translation>&amp;Список Серверов</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1213"/>
-        <location filename="../mainwindow.ui" line="1425"/>
+        <location filename="../mainwindow.ui" line="1217"/>
+        <location filename="../mainwindow.ui" line="1429"/>
         <source>F3</source>
         <translation>F3</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1225"/>
+        <location filename="../mainwindow.ui" line="1229"/>
         <source>&amp;Connect</source>
         <translation>&amp;Соединить</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1228"/>
+        <location filename="../mainwindow.ui" line="1232"/>
         <source>F2</source>
         <translation>F2</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1233"/>
+        <location filename="../mainwindow.ui" line="1237"/>
         <source>&amp;Preferences</source>
         <translation>&amp;Настройки</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1236"/>
+        <location filename="../mainwindow.ui" line="1240"/>
         <source>F4</source>
         <translation>F4</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1241"/>
-        <location filename="../mainwindow.cpp" line="1991"/>
+        <location filename="../mainwindow.ui" line="1245"/>
+        <location filename="../mainwindow.cpp" line="2026"/>
         <source>&amp;Exit</source>
         <translation>В&amp;ыход</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1244"/>
+        <location filename="../mainwindow.ui" line="1248"/>
         <source>Alt+F4</source>
         <translation>Alt+F4</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1256"/>
+        <location filename="../mainwindow.ui" line="1260"/>
         <source>Enable &amp;Push To Talk</source>
         <translation>Разрешить &amp;Нажми Чтобы Сказать</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1259"/>
+        <location filename="../mainwindow.ui" line="1263"/>
         <source>Ctrl+Shift+T</source>
         <translation>Ctrl+Shift+T</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1264"/>
+        <location filename="../mainwindow.ui" line="1268"/>
         <source>&amp;About</source>
         <translation>&amp;О программе</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1272"/>
+        <location filename="../mainwindow.ui" line="1276"/>
         <source>&amp;Manual</source>
         <translation>&amp;Руководство</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1275"/>
+        <location filename="../mainwindow.ui" line="1279"/>
         <source>F1</source>
         <translation>F1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1280"/>
+        <location filename="../mainwindow.ui" line="1284"/>
         <source>Server &amp;Properties</source>
         <translation>Свойства С&amp;ервера</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1283"/>
+        <location filename="../mainwindow.ui" line="1287"/>
         <source>F9</source>
         <translation>F9</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1288"/>
+        <location filename="../mainwindow.ui" line="1292"/>
         <source>&amp;Create Channel</source>
         <translation>&amp;Создать Канал</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1291"/>
+        <location filename="../mainwindow.ui" line="1295"/>
         <source>F7</source>
         <translation>F7</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1296"/>
+        <location filename="../mainwindow.ui" line="1300"/>
         <source>&amp;Update Channel</source>
         <translation>&amp;Обновить Канал</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1299"/>
+        <location filename="../mainwindow.ui" line="1303"/>
         <source>Shift+F7</source>
         <translation>Shift+F7</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1304"/>
+        <location filename="../mainwindow.ui" line="1308"/>
         <source>&amp;Delete Channel</source>
         <translation>&amp;Удалить Канал</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1307"/>
+        <location filename="../mainwindow.ui" line="1311"/>
         <source>F8</source>
         <translation>F8</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1312"/>
-        <location filename="../mainwindow.cpp" line="4292"/>
+        <location filename="../mainwindow.ui" line="1316"/>
+        <location filename="../mainwindow.cpp" line="4450"/>
         <source>&amp;Join Channel</source>
         <translation>&amp;Подключиться к Каналу</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1315"/>
+        <location filename="../mainwindow.ui" line="1319"/>
         <source>Ctrl+J</source>
         <translation>Ctrl+J</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1327"/>
+        <location filename="../mainwindow.ui" line="1331"/>
         <source>Enable Voice &amp;Activation</source>
         <translation>Разрешить &amp;Голосовую Активацию</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1330"/>
+        <location filename="../mainwindow.ui" line="1334"/>
         <source>Ctrl+Shift+A</source>
         <translation>Ctrl+Shift+A</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1335"/>
+        <location filename="../mainwindow.ui" line="1339"/>
         <source>Change &amp;Nickname</source>
         <translation>Сменить &amp;Ник</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1338"/>
+        <location filename="../mainwindow.ui" line="1342"/>
         <source>F5</source>
         <translation>F5</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1343"/>
+        <location filename="../mainwindow.ui" line="1347"/>
         <source>Change &amp;Status</source>
         <translation>Сменить &amp;Состояние</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1346"/>
+        <location filename="../mainwindow.ui" line="1350"/>
         <source>F6</source>
         <translation>F6</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1351"/>
+        <location filename="../mainwindow.ui" line="1355"/>
         <source>&amp;View User Information</source>
         <translation>&amp;Просмотр Информации Пользователя</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1354"/>
+        <location filename="../mainwindow.ui" line="1358"/>
         <source>Ctrl+I</source>
         <translation>Ctrl+I</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1366"/>
+        <location filename="../mainwindow.ui" line="1370"/>
         <source>Mute &amp;All</source>
         <translation>Выключить &amp;Всех</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1369"/>
+        <location filename="../mainwindow.ui" line="1373"/>
         <source>Ctrl+M</source>
         <translation>Ctrl+M</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1374"/>
+        <location filename="../mainwindow.ui" line="1378"/>
         <source>Up&amp;load File</source>
         <translation>Вы&amp;грузить Файл</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1377"/>
+        <location filename="../mainwindow.ui" line="1381"/>
         <source>Shift+F5</source>
         <translation>Shift+F5</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1382"/>
+        <location filename="../mainwindow.ui" line="1386"/>
         <source>D&amp;ownload File</source>
         <translation>Заг&amp;рузить Файл</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1385"/>
+        <location filename="../mainwindow.ui" line="1389"/>
         <source>Shift+F6</source>
         <translation>Shift+F6</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1390"/>
+        <location filename="../mainwindow.ui" line="1394"/>
         <source>Dele&amp;te File</source>
         <translation>Удали&amp;ть Файл</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1393"/>
+        <location filename="../mainwindow.ui" line="1397"/>
         <source>Shift+Del</source>
         <translation>Shift+Del</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1398"/>
+        <location filename="../mainwindow.ui" line="1402"/>
         <source>&amp;Banned Users</source>
         <translation>&amp;Заблокированные Пользователи</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1401"/>
+        <location filename="../mainwindow.ui" line="1405"/>
         <source>Ctrl+Shift+B</source>
         <translation>Ctrl+Shift+B</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1406"/>
+        <location filename="../mainwindow.ui" line="1410"/>
         <source>&amp;User Accounts</source>
         <translation>&amp;Учётные записи Пользователей</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1409"/>
+        <location filename="../mainwindow.ui" line="1413"/>
         <source>Ctrl+Shift+L</source>
         <translation>Ctrl+Shift+L</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1414"/>
+        <location filename="../mainwindow.ui" line="1418"/>
         <source>&amp;Save Configuration</source>
         <translation>Сохранить &amp;Конфигурацию</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1417"/>
+        <location filename="../mainwindow.ui" line="1421"/>
         <source>Ctrl+Shift+S</source>
         <translation>Ctrl+Shift+S</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1422"/>
+        <location filename="../mainwindow.ui" line="1426"/>
         <source>&amp;View Channel Info</source>
         <translation>П&amp;росмотр Информации Канала</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1430"/>
+        <location filename="../mainwindow.ui" line="1434"/>
         <source>M&amp;essages</source>
         <translation>Соо&amp;бщения</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1433"/>
+        <location filename="../mainwindow.ui" line="1437"/>
         <source>Ctrl+E</source>
         <translation>Ctrl+E</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1438"/>
+        <location filename="../mainwindow.ui" line="1442"/>
         <source>Kick and &amp;Ban From Server</source>
         <translation>Выгнать и &amp;Заблокировать На Сервере</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1441"/>
+        <location filename="../mainwindow.ui" line="1445"/>
         <source>Ctrl+Shift+K</source>
         <translation>Ctrl+Shift+K</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1450"/>
+        <location filename="../mainwindow.ui" line="1454"/>
         <source>&amp;Op</source>
         <translation>&amp;Оп</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1453"/>
+        <location filename="../mainwindow.ui" line="1457"/>
         <source>Ctrl+O</source>
         <translation>Ctrl+O</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1458"/>
+        <location filename="../mainwindow.ui" line="1462"/>
         <source>&amp;Volume</source>
         <translation>Г&amp;ромкость</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1461"/>
+        <location filename="../mainwindow.ui" line="1465"/>
         <source>Ctrl+U</source>
         <translation>Ctrl+U</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1473"/>
+        <location filename="../mainwindow.ui" line="1477"/>
         <source>V&amp;oice</source>
         <translation>&amp;Голос</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1476"/>
+        <location filename="../mainwindow.ui" line="1480"/>
         <source>Ctrl+4</source>
         <translation>Ctrl+4</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1488"/>
+        <location filename="../mainwindow.ui" line="1492"/>
         <source>&amp;User Messages</source>
         <translation>Сообщения &amp;Пользователя</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1491"/>
+        <location filename="../mainwindow.ui" line="1495"/>
         <source>Ctrl+1</source>
         <translation>Ctrl+1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1499"/>
+        <location filename="../mainwindow.ui" line="1503"/>
         <source>&amp;Channel Messages</source>
         <translation>Сообщения &amp;Канала</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1502"/>
+        <location filename="../mainwindow.ui" line="1506"/>
         <source>Ctrl+2</source>
         <translation>Ctrl+2</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1517"/>
+        <location filename="../mainwindow.ui" line="1521"/>
         <source>Ctrl+5</source>
         <translation>Ctrl+5</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1525"/>
+        <location filename="../mainwindow.ui" line="1529"/>
         <source>&amp;Broadcast Messages</source>
         <translation>Сообщения &amp;Трансляции</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1528"/>
+        <location filename="../mainwindow.ui" line="1532"/>
         <source>Ctrl+3</source>
         <translation>Ctrl+3</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1540"/>
+        <location filename="../mainwindow.ui" line="1544"/>
         <source>Enable &amp;Video Transmission</source>
         <translation>Разрешить Передачу &amp;Видео</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1543"/>
+        <location filename="../mainwindow.ui" line="1547"/>
         <source>Ctrl+Shift+V</source>
         <translation>Ctrl+Shift+V</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1551"/>
+        <location filename="../mainwindow.ui" line="1555"/>
         <source>&amp;Stream Audio File to Channel</source>
         <translation>&amp;Транслировать Звуковой Файл в Канал</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1554"/>
+        <location filename="../mainwindow.ui" line="1558"/>
         <source>Ctrl+W</source>
         <translation>Ctrl+W</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1559"/>
+        <location filename="../mainwindow.ui" line="1563"/>
         <source>Stream Audio &amp;File to User</source>
         <translation>Транслировать &amp;Звуковой Файл Пользователю</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1562"/>
+        <location filename="../mainwindow.ui" line="1566"/>
         <source>Ctrl+Shift+W</source>
         <translation>Ctrl+Shift+W</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1574"/>
+        <location filename="../mainwindow.ui" line="1578"/>
         <source>Record Conversations to &amp;Disk</source>
         <translation>Запись Бесед На &amp;Диск</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1577"/>
+        <location filename="../mainwindow.ui" line="1581"/>
         <source>Specify a folder where audio from users will be stored</source>
         <translation>Укажите папку для сохранения звуковых файлов от пользователей</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1580"/>
+        <location filename="../mainwindow.ui" line="1584"/>
         <source>Ctrl+Alt+A</source>
         <translation>Ctrl+Alt+A</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1592"/>
+        <location filename="../mainwindow.ui" line="1596"/>
         <source>Intercept User Messages</source>
         <translation>Перехватить Сообщения Пользователя</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1595"/>
+        <location filename="../mainwindow.ui" line="1599"/>
         <source>Ctrl+Shift+1</source>
         <translation>Ctrl+Shift+1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1603"/>
+        <location filename="../mainwindow.ui" line="1607"/>
         <source>Intercept Channel Messages</source>
         <translation>Перехватить Сообщения Канала</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1606"/>
+        <location filename="../mainwindow.ui" line="1610"/>
         <source>Ctrl+Shift+2</source>
         <translation>Ctrl+Shift+2</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1618"/>
+        <location filename="../mainwindow.ui" line="1622"/>
         <source>Intercept Audio</source>
         <translation>Перехватить Аудио</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1621"/>
+        <location filename="../mainwindow.ui" line="1625"/>
         <source>Ctrl+Shift+4</source>
         <translation>Ctrl+Shift+4</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1633"/>
+        <location filename="../mainwindow.ui" line="1637"/>
         <source>Intercept Video</source>
         <translation>Перехватить Видео</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1636"/>
+        <location filename="../mainwindow.ui" line="1640"/>
         <source>Ctrl+Shift+5</source>
         <translation>Ctrl+Shift+5</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1641"/>
+        <location filename="../mainwindow.ui" line="1645"/>
         <source>&amp;Broadcast Message</source>
         <translation>Сообщение &amp;Трансляции</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1644"/>
+        <location filename="../mainwindow.ui" line="1648"/>
         <source>Ctrl+Alt+B</source>
         <translation>Ctrl+Alt+B</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1649"/>
+        <location filename="../mainwindow.ui" line="1653"/>
         <source>&amp;Increase Voice Volume</source>
         <translation>У&amp;величить Громкость Голоса</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1652"/>
+        <location filename="../mainwindow.ui" line="1656"/>
         <source>Ctrl+Right</source>
         <translation>Ctrl+Right</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1657"/>
+        <location filename="../mainwindow.ui" line="1661"/>
         <source>&amp;Lower Voice Volume</source>
         <translation>У&amp;меньшить Громкость Голоса</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1660"/>
+        <location filename="../mainwindow.ui" line="1664"/>
         <source>Ctrl+Left</source>
         <translation>Ctrl+Left</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1665"/>
+        <location filename="../mainwindow.ui" line="1669"/>
         <source>&amp;Store User(s) for Move</source>
         <translation>&amp;Хранилище для перемещаемого Пользователя(ей)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1668"/>
+        <location filename="../mainwindow.ui" line="1672"/>
         <source>Ctrl+Alt+X</source>
         <translation>Ctrl+Alt+X</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1673"/>
+        <location filename="../mainwindow.ui" line="1677"/>
         <source>&amp;Move User(s)</source>
         <translation>Пере&amp;местить Пользователя(ей)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1676"/>
+        <location filename="../mainwindow.ui" line="1680"/>
         <source>Ctrl+Alt+V</source>
         <translation>Ctrl+Alt+V</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1693"/>
+        <location filename="../mainwindow.ui" line="1697"/>
         <source>Allow V&amp;oice Transmission</source>
         <translation>Позволять Передачу &amp;Голоса</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1696"/>
+        <location filename="../mainwindow.ui" line="1700"/>
         <source>Ctrl+Alt+Q</source>
         <translation>Ctrl+Alt+Q</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1704"/>
+        <location filename="../mainwindow.ui" line="1708"/>
         <source>Allow Video Transmission</source>
         <translation>Позволять Передачу Видео</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1707"/>
+        <location filename="../mainwindow.ui" line="1711"/>
         <source>Ctrl+Alt+W</source>
         <translation>Ctrl+Alt+W</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1712"/>
+        <location filename="../mainwindow.ui" line="1716"/>
         <source>Server S&amp;tatistics</source>
         <translation>С&amp;татистика Сервера</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1715"/>
+        <location filename="../mainwindow.ui" line="1719"/>
         <source>Shift+F9</source>
         <translation>Shift+F9</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1720"/>
+        <location filename="../mainwindow.ui" line="1724"/>
         <source>&amp;New Client Instance</source>
         <translation>&amp;Новый Экземпляр Клиента</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1723"/>
+        <location filename="../mainwindow.ui" line="1727"/>
         <source>Ctrl+N</source>
         <translation>Ctrl+N</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1731"/>
+        <location filename="../mainwindow.ui" line="1735"/>
         <source>&amp;Online Users</source>
         <translation>&amp;Пользователи в Сети</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1734"/>
+        <location filename="../mainwindow.ui" line="1738"/>
         <source>Ctrl+Shift+U</source>
         <translation>Ctrl+Shift+U</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1746"/>
+        <location filename="../mainwindow.ui" line="1750"/>
         <source>Enable Question Mode</source>
         <translation>Разрешить Режим Запроса</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1749"/>
+        <location filename="../mainwindow.ui" line="1753"/>
         <source>Show blinking icon</source>
         <translation>Показать Мигающий Значок</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1761"/>
+        <location filename="../mainwindow.ui" line="1765"/>
         <source>Enable Desktop Sharing</source>
         <translation>Разрешить Предоставление Рабочего стола</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1764"/>
+        <location filename="../mainwindow.ui" line="1768"/>
         <source>Ctrl+Shift+D</source>
         <translation>Ctrl+Shift+D</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1772"/>
+        <location filename="../mainwindow.ui" line="1776"/>
         <source>Allow Desktop Transmission</source>
         <translation>Позволять Передачу Рабочего стола</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1775"/>
+        <location filename="../mainwindow.ui" line="1779"/>
         <source>Ctrl+Alt+E</source>
         <translation>Ctrl+Alt+E</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1787"/>
+        <location filename="../mainwindow.ui" line="1791"/>
         <source>&amp;Desktop</source>
         <translation>&amp;Рабочий стол</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1790"/>
+        <location filename="../mainwindow.ui" line="1794"/>
         <source>Ctrl+6</source>
         <translation>Ctrl+6</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1802"/>
+        <location filename="../mainwindow.ui" line="1806"/>
         <source>Intercept Desktop</source>
         <translation>Перехватить Рабочий стол</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1805"/>
+        <location filename="../mainwindow.ui" line="1809"/>
         <source>Ctrl+Shift+6</source>
         <translation>Ctrl+Shift+6</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1817"/>
+        <location filename="../mainwindow.ui" line="1821"/>
         <source>Stream &amp;Media File to Channel</source>
         <translation>Транслировать &amp;Медиа Файл в Канал</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1820"/>
+        <location filename="../mainwindow.ui" line="1824"/>
         <source>Ctrl+S</source>
         <translation>Ctrl+S</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1832"/>
+        <location filename="../mainwindow.ui" line="1836"/>
         <source>Desktop Acce&amp;ss</source>
         <translation>Доступ к Ра&amp;бочему столу</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1844"/>
+        <location filename="../mainwindow.ui" line="1848"/>
         <source>Allow Desktop Access</source>
         <translation>Позволять Доступ к Рабочему столу</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1847"/>
+        <location filename="../mainwindow.ui" line="1851"/>
         <source>Ctrl+7</source>
         <translation>Ctrl+7</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1855"/>
+        <location filename="../mainwindow.ui" line="1859"/>
         <source>&amp;Deny</source>
         <translation>&amp;Отказ</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1867"/>
+        <location filename="../mainwindow.ui" line="1871"/>
         <source>Media File Stream</source>
         <translation>Поток Медиа Файла</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1870"/>
+        <location filename="../mainwindow.ui" line="1874"/>
         <source>Ctrl+8</source>
         <translation>Ctrl+8</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1882"/>
+        <location filename="../mainwindow.ui" line="1886"/>
         <source>Intercept Media File Stream</source>
         <translation>Перехватить Поток Медиа Файла</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1885"/>
+        <location filename="../mainwindow.ui" line="1889"/>
         <source>Ctrl+Shift+8</source>
         <translation>Ctrl+Shift+8</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1890"/>
+        <location filename="../mainwindow.ui" line="1894"/>
         <source>Allow Media File Transmission</source>
         <translation>Позволять Передачу Медиа Файла</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1893"/>
+        <location filename="../mainwindow.ui" line="1897"/>
         <source>Ctrl+Alt+R</source>
         <translation>Ctrl+Alt+R</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1898"/>
+        <location filename="../mainwindow.ui" line="1902"/>
         <source>Mu&amp;te Voice</source>
         <translation>Вы&amp;ключить Голос</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1901"/>
+        <location filename="../mainwindow.ui" line="1905"/>
         <source>Ctrl+Shift+M</source>
         <translation>Ctrl+Shift+M</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1906"/>
+        <location filename="../mainwindow.ui" line="1910"/>
         <source>Mute Media File</source>
         <translation>Выключить Медиа Файл</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1909"/>
+        <location filename="../mainwindow.ui" line="1913"/>
         <source>Ctrl+Alt+Μ</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1946"/>
+        <location filename="../mainwindow.ui" line="1950"/>
         <source>R&amp;eset Preferences to Default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1955"/>
+        <source>Kick and Ban From &amp;Channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1958"/>
+        <source>Ctrl+B</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1963"/>
+        <source>Banned Users From Channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1966"/>
+        <source>Ctrl+Alt+Shift+B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1659,235 +1712,240 @@
         <translation type="obsolete">Ctrl+Alt+Оњ</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1914"/>
+        <location filename="../mainwindow.ui" line="1918"/>
         <source>Kick From Channel</source>
         <translation>Выгнать Из Канала</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1917"/>
+        <location filename="../mainwindow.ui" line="1921"/>
         <source>Ctrl+K</source>
         <translation>Ctrl+K</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1922"/>
+        <location filename="../mainwindow.ui" line="1926"/>
         <source>Kick From Server</source>
         <translation>Выгнать С Сервера</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1925"/>
+        <location filename="../mainwindow.ui" line="1929"/>
         <source>Ctrl+Alt+K</source>
         <translation>Ctrl+Alt+K</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1930"/>
+        <location filename="../mainwindow.ui" line="1934"/>
         <source>Increase Media File Volume</source>
         <translation>Увеличить Громкость Медиа Файла</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1933"/>
+        <location filename="../mainwindow.ui" line="1937"/>
         <source>Ctrl+Shift+Right</source>
         <translation>Ctrl+Shift+Right</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1938"/>
+        <location filename="../mainwindow.ui" line="1942"/>
         <source>Lower Media File Volume</source>
         <translation>Уменьшить Громкость Медиа Файла</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1941"/>
+        <location filename="../mainwindow.ui" line="1945"/>
         <source>Ctrl+Shift+Left</source>
         <translation>Ctrl+Shift+Left</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="713"/>
-        <location filename="../mainwindow.cpp" line="2070"/>
+        <location filename="../mainwindow.cpp" line="718"/>
+        <location filename="../mainwindow.cpp" line="2112"/>
         <source>Firewall exception</source>
         <translation>Исключение брандмауэра</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="714"/>
+        <location filename="../mainwindow.cpp" line="719"/>
         <source>Failed to remove %1 from Windows Firewall exceptions.</source>
         <translation>Не удалось убрать %1 из исключений Брандмауэра Windows.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="730"/>
+        <location filename="../mainwindow.cpp" line="735"/>
         <source>Startup arguments</source>
         <translation>Параметры Командной Строки</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="731"/>
+        <location filename="../mainwindow.cpp" line="736"/>
         <source>Program argument &quot;%1&quot; is unrecognized.</source>
         <translation>Параметр командной строки &quot;%1&quot; неизвестен</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="764"/>
+        <location filename="../mainwindow.cpp" line="777"/>
         <source>Connected to %1 TCP port %2 UDP port %3</source>
         <translation>Соединён с %1 TCP порт %2 UDP порт %3</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="778"/>
-        <location filename="../mainwindow.cpp" line="1559"/>
+        <location filename="../mainwindow.cpp" line="791"/>
+        <location filename="../mainwindow.cpp" line="1583"/>
         <source>Failed to connect to %1 TCP port %2 UDP port %3</source>
         <translation>Не удалось соединиться с %1 TCP порт %2 UDP порт %3</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="790"/>
+        <location filename="../mainwindow.cpp" line="803"/>
         <source>Connection lost to %1 TCP port %2 UDP port %3</source>
         <translation>Соединение прервано с %1 TCP порт %2 UDP порт %3</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="828"/>
+        <location filename="../mainwindow.cpp" line="841"/>
         <source>Logged in</source>
         <translation>Вход</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="834"/>
+        <location filename="../mainwindow.cpp" line="847"/>
         <source>Logged out</source>
         <translation>Выход</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="844"/>
+        <location filename="../mainwindow.cpp" line="857"/>
         <source>Kicked by %1</source>
         <translation>Выгнал %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="847"/>
+        <location filename="../mainwindow.cpp" line="860"/>
         <source>Kicked by unknown user</source>
         <translation>Выгнал неизвестный пользователь</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1000"/>
-        <location filename="../mainwindow.cpp" line="3908"/>
+        <location filename="../mainwindow.cpp" line="1013"/>
+        <location filename="../mainwindow.cpp" line="4036"/>
         <source>Failed to download file %1</source>
         <translation>Не удалось загрузить файл %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1004"/>
-        <location filename="../mainwindow.cpp" line="4361"/>
+        <location filename="../mainwindow.cpp" line="1017"/>
+        <location filename="../mainwindow.cpp" line="4520"/>
         <source>Failed to upload file %1</source>
         <translation>Не удалось выгрузить файл %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1019"/>
-        <location filename="../mainwindow.cpp" line="1514"/>
+        <location filename="../mainwindow.cpp" line="1032"/>
+        <location filename="../mainwindow.cpp" line="1538"/>
         <source>Failed to initialize sound input device</source>
         <translation>Не удалось инициализировать входное устройство звука</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1021"/>
-        <location filename="../mainwindow.cpp" line="1519"/>
+        <location filename="../mainwindow.cpp" line="1034"/>
+        <location filename="../mainwindow.cpp" line="1543"/>
         <source>Failed to initialize sound output device</source>
         <translation>Не удалось инициализировать выходное устройство звука</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1023"/>
+        <location filename="../mainwindow.cpp" line="1036"/>
         <source>Failed to initialize audio codec</source>
         <translation>Не удалось инициализировать кодек аудио</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1026"/>
+        <location filename="../mainwindow.cpp" line="1039"/>
         <source>Failed to initialize audio configuration</source>
         <translation>Не удалось инициализировать звуковые настройки</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1029"/>
+        <location filename="../mainwindow.cpp" line="1042"/>
         <source>Internal message queue overloaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1035"/>
+        <location filename="../mainwindow.cpp" line="1048"/>
         <source>Internal Error</source>
         <translation>Внутренняя Ошибка</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1077"/>
+        <location filename="../mainwindow.cpp" line="1090"/>
         <source>Error streaming media file to channel</source>
         <translation>Ошибка трансляции медиа файла в канал</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1081"/>
+        <location filename="../mainwindow.cpp" line="1094"/>
         <source>Started streaming media file to channel</source>
         <translation>Началась трансляция медиа файла в канал</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1084"/>
+        <location filename="../mainwindow.cpp" line="1097"/>
         <source>Finished streaming media file to channel</source>
         <translation>Закончилась трансляция медиа файла в канал</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1088"/>
+        <location filename="../mainwindow.cpp" line="1101"/>
         <source>Aborted streaming media file to channel</source>
         <translation>Прервана трансляция медиа файла в канал</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1137"/>
-        <location filename="../mainwindow.cpp" line="1169"/>
+        <location filename="../mainwindow.cpp" line="1150"/>
+        <location filename="../mainwindow.cpp" line="1182"/>
         <source>New video session from %1</source>
         <translation>Новая сессия видео от %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1196"/>
+        <location filename="../mainwindow.cpp" line="1209"/>
         <source>New desktop session from %1</source>
         <translation>Новая сессия рабочего стола от %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1224"/>
+        <location filename="../mainwindow.cpp" line="1237"/>
         <source>Your desktop session was cancelled</source>
         <translation>Ваша сессия рабочего стола была отменена</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1244"/>
+        <location filename="../mainwindow.cpp" line="1257"/>
         <source>Writing audio file %1 for %2</source>
         <translation>Запись звукового файла %1 для %2</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1249"/>
+        <location filename="../mainwindow.cpp" line="1262"/>
         <source>Failed to write audio file %1 for %2</source>
         <translation>Не удалось записать звуковой файл %1 для %2</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1254"/>
+        <location filename="../mainwindow.cpp" line="1267"/>
         <source>Finished audio file %1</source>
         <translation>Закончился звуковой файл %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1258"/>
+        <location filename="../mainwindow.cpp" line="1271"/>
         <source>Aborted audio file %1</source>
         <translation>Прерван звуковой файл %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1449"/>
+        <location filename="../mainwindow.cpp" line="1348"/>
+        <source>Banned Users in Channel %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1473"/>
         <source>Cannot join channel %1</source>
         <translation>Не удалось подключиться к каналу %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1506"/>
+        <location filename="../mainwindow.cpp" line="1530"/>
         <source>Failed to initialize sound duplex mode</source>
         <translation>Не удалось инициализировать дуплексный режим звука</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1530"/>
+        <location filename="../mainwindow.cpp" line="1554"/>
         <source>Switching to default sound devices</source>
         <translation>Переключение на звуковые устройства поумолчанию</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1534"/>
+        <location filename="../mainwindow.cpp" line="1558"/>
         <source>Unable to get default sound devices</source>
         <translation>Не удалось определить звуковые устройства поумолчанию</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1543"/>
+        <location filename="../mainwindow.cpp" line="1567"/>
         <source>Failed to initialize default sound devices</source>
         <translation>Не удалось инициализировать звуковые устройства поумолчанию</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1551"/>
+        <location filename="../mainwindow.cpp" line="1575"/>
         <source>Connecting to %1 TCP port %2 UDP port %3</source>
         <translation>Соединение с %1 TCP порт %2 UDP порт %3</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1599"/>
-        <location filename="../mainwindow.cpp" line="2342"/>
+        <location filename="../mainwindow.cpp" line="1623"/>
+        <location filename="../mainwindow.cpp" line="2384"/>
         <source>Error</source>
         <translation>Ошибка</translation>
     </message>
@@ -1896,484 +1954,536 @@
         <translation type="vanished">Этот клиент не совместим с сервером, поэтому действие не может быть выполнено.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1608"/>
+        <location filename="../mainwindow.cpp" line="1632"/>
         <source>This client is not compatible with the server, so the action cannot be performed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1611"/>
+        <location filename="../mainwindow.cpp" line="1635"/>
         <source>The username is invalid</source>
         <translation>Неправильное имя пользователя</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1617"/>
-        <location filename="../mainwindow.cpp" line="1622"/>
-        <location filename="../mainwindow.cpp" line="1653"/>
-        <location filename="../mainwindow.cpp" line="1658"/>
+        <location filename="../mainwindow.cpp" line="1641"/>
+        <location filename="../mainwindow.cpp" line="1646"/>
+        <location filename="../mainwindow.cpp" line="1677"/>
+        <location filename="../mainwindow.cpp" line="1682"/>
         <source>Login error</source>
         <translation>Ошибка Входа</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1618"/>
+        <location filename="../mainwindow.cpp" line="1642"/>
         <source>Invalid user account. Type username:</source>
         <translation>Неправильная учётная запись пользователя. Введите имя пользователя:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1623"/>
+        <location filename="../mainwindow.cpp" line="1647"/>
         <source>Invalid user account. Type password:</source>
         <translation>Неправильная учётная запись пользователя. Введите пароль:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1640"/>
+        <location filename="../mainwindow.cpp" line="1664"/>
         <source>Join channel error</source>
         <translation>Ошибка подключения к каналу</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1641"/>
+        <location filename="../mainwindow.cpp" line="1665"/>
         <source>Incorrect channel password. Try again:</source>
         <translation>Не правильный пароль Канала Попробуйте снова:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1654"/>
+        <location filename="../mainwindow.cpp" line="1678"/>
         <source>Banned from server</source>
         <translation>Заблокирован сервером</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1656"/>
+        <location filename="../mainwindow.cpp" line="1680"/>
         <source>Command not authorized</source>
         <translation>Команда не авторизована</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1659"/>
+        <location filename="../mainwindow.cpp" line="1683"/>
         <source>Maximum number of users on server exceeded</source>
         <translation>Привышено максимальное число пользователей на сервере</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1661"/>
+        <location filename="../mainwindow.cpp" line="1685"/>
         <source>Maximum disk usage exceeded</source>
         <translation>Привышено максимальное использование диска</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1663"/>
+        <location filename="../mainwindow.cpp" line="1687"/>
         <source>Maximum number of users in channel exceeded</source>
         <translation>Привышено максимальное число пользователей в канале</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1665"/>
+        <location filename="../mainwindow.cpp" line="1689"/>
         <source>Incorrect channel operator password</source>
         <translation>Не правильный пароль оператора канала</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1669"/>
+        <location filename="../mainwindow.cpp" line="1693"/>
         <source>Already logged in</source>
         <translation>Уже вошёл</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1671"/>
+        <location filename="../mainwindow.cpp" line="1695"/>
         <source>Cannot perform action because client is currently not logged in</source>
         <translation>Не удаётся выполнить действие, потому что клиент в настоящее время не вошёл</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1674"/>
+        <location filename="../mainwindow.cpp" line="1698"/>
         <source>Cannot join the same channel twice</source>
         <translation>Нельзя дважды подключиться к одному и тому же каналу</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1676"/>
+        <location filename="../mainwindow.cpp" line="1700"/>
         <source>Channel already exists</source>
         <translation>Канал уже существует</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1682"/>
+        <location filename="../mainwindow.cpp" line="1706"/>
         <source>User not found</source>
         <translation>Пользователь не найден</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1685"/>
+        <location filename="../mainwindow.cpp" line="1709"/>
         <source>Channel not found</source>
         <translation>Канал не найден</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1687"/>
+        <location filename="../mainwindow.cpp" line="1711"/>
         <source>Banned user not found</source>
         <translation>Заблокированный пользователь не найден</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1689"/>
+        <location filename="../mainwindow.cpp" line="1713"/>
         <source>File transfer not found</source>
         <translation>Передача файла не найдена</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1691"/>
+        <location filename="../mainwindow.cpp" line="1715"/>
         <source>User account not found</source>
         <translation>Учётная запись пользователя не найдена</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1693"/>
+        <location filename="../mainwindow.cpp" line="1717"/>
         <source>File not found</source>
         <translation>Файл не найден</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1695"/>
+        <location filename="../mainwindow.cpp" line="1719"/>
         <source>File already exists</source>
         <translation>Файл уже существует</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1697"/>
+        <location filename="../mainwindow.cpp" line="1721"/>
         <source>File sharing is disabled</source>
         <translation>Предоставление файлов запрещено</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1699"/>
+        <location filename="../mainwindow.cpp" line="1723"/>
         <source>Channel has active users</source>
         <translation>Канал содержит активных пользователей</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1704"/>
+        <location filename="../mainwindow.cpp" line="1728"/>
         <source>Unknown error occured</source>
         <translation>Произошла неизвестная ошибка</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1711"/>
+        <location filename="../mainwindow.cpp" line="1735"/>
         <source>The server reported an error:</source>
         <translation>Сервер сообщил об ошибке:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1989"/>
+        <location filename="../mainwindow.cpp" line="2024"/>
         <source>&amp;Restore</source>
         <translation>&amp;Восстановить</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2062"/>
+        <location filename="../mainwindow.cpp" line="2104"/>
         <source>Do you wish to add %1 to the Windows Firewall exception list?</source>
         <translation>Хотите добавить %1 в список исключений брандмауэра Windows?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2071"/>
+        <location filename="../mainwindow.cpp" line="2113"/>
         <source>Failed to add %1 to Windows Firewall exceptions.</source>
         <translation>Не удалось добавить %1 в исключения брандмауэра Windows.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2197"/>
+        <location filename="../mainwindow.cpp" line="2239"/>
         <source>%1 is requesting desktop access</source>
         <translation>%1 запрашивает доступ к рабочему столу</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2203"/>
-        <location filename="../mainwindow.cpp" line="3531"/>
+        <location filename="../mainwindow.cpp" line="2245"/>
+        <location filename="../mainwindow.cpp" line="3650"/>
         <source>%1 granted desktop access</source>
         <translation>%1 получил доступ к рабочему столу</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2209"/>
+        <location filename="../mainwindow.cpp" line="2251"/>
         <source>%1 retracted desktop access</source>
         <translation>%1 отказался от доступа к рабочему столу</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2227"/>
+        <location filename="../mainwindow.cpp" line="2269"/>
         <source>Joined channel %1</source>
         <translation>Подключился к каналу %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2292"/>
+        <location filename="../mainwindow.cpp" line="2334"/>
         <source>Files in channel: %1</source>
         <translation>Файлов в канале: %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2297"/>
+        <location filename="../mainwindow.cpp" line="2339"/>
         <source>Files (%1)</source>
         <translation>Файлы (%1)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2342"/>
+        <location filename="../mainwindow.cpp" line="2384"/>
         <source>Failed to start recording</source>
         <translation>Не удалось начать запись</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2346"/>
+        <location filename="../mainwindow.cpp" line="2388"/>
         <source>Recording to file: %1</source>
         <translation>Запись в файл: %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2405"/>
+        <location filename="../mainwindow.cpp" line="2447"/>
         <source>Microphone gain is controlled by channel</source>
         <translation>Уровень микрофона контролируется каналом</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2770"/>
+        <location filename="../mainwindow.cpp" line="2812"/>
         <source>Failed to stream media file %1</source>
         <translation>Не удалось транслировать медиа файл %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2905"/>
+        <location filename="../mainwindow.cpp" line="2947"/>
         <source>Enable HotKey</source>
         <translation>Разрешить Горячую клавишу</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2906"/>
+        <location filename="../mainwindow.cpp" line="2948"/>
         <source>Failed to register hotkey. Please try another key combination.</source>
         <translation>Не удалось зарегистрировать горячую клавишу. Пожалуйста, попробуйте другую комбинацию клавиш.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2911"/>
+        <location filename="../mainwindow.cpp" line="2953"/>
         <source>Push To Talk: </source>
         <translation>Нажми Чтобы Сказать: </translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3262"/>
+        <location filename="../mainwindow.cpp" line="3140"/>
+        <location filename="../mainwindow.cpp" line="3164"/>
+        <source>New Profile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="3140"/>
+        <source>Delete Profile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="3147"/>
+        <location filename="../mainwindow.cpp" line="3155"/>
+        <source>New Client Instance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="3148"/>
+        <source>Select profile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="3156"/>
+        <source>Delete profile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="3164"/>
+        <source>Profile name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="3375"/>
         <source>Specify new nickname</source>
         <translation>Укажите новый ник</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3326"/>
-        <location filename="../mainwindow.cpp" line="4584"/>
+        <location filename="../mainwindow.cpp" line="3439"/>
+        <location filename="../mainwindow.cpp" line="4743"/>
         <source>Video device hasn&apos;t been configured property. Check settings in &apos;Preferences&apos;</source>
         <translation>Устройство видео настроено не правильно. Проверьте это в диалоге &apos;Настройки&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3336"/>
+        <location filename="../mainwindow.cpp" line="3449"/>
         <source>Failed to configure video codec. Check settings in &apos;Preferences&apos;</source>
         <translation>Не удалось настроить видео кодек. Проверьте диалог &apos;Настройки&apos;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3381"/>
+        <location filename="../mainwindow.cpp" line="3494"/>
         <source>Failed to open X11 display.</source>
         <translation>Не удалось открыть дисплей X11.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3400"/>
+        <location filename="../mainwindow.cpp" line="3513"/>
         <source>Failed to start desktop sharing</source>
         <translation>Не удалось запустить предоставление рабочего стола</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3764"/>
-        <location filename="../mainwindow.cpp" line="3773"/>
+        <location filename="../mainwindow.cpp" line="3883"/>
+        <location filename="../mainwindow.cpp" line="3892"/>
         <source>Failed to issue command to create channel</source>
         <translation>Не удалось запустить команду создания канала</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3787"/>
+        <location filename="../mainwindow.cpp" line="3906"/>
         <source>Failed to issue command to update channel</source>
         <translation>Не удалось запустить команду обновления канала</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3800"/>
+        <location filename="../mainwindow.cpp" line="3919"/>
         <source>Are you sure you want to delete channel &quot;%1&quot;?</source>
         <translation>Вы действительно хотите удалить канал &quot;%1&quot;?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3806"/>
+        <location filename="../mainwindow.cpp" line="3925"/>
         <source>Failed to issue command to delete channel</source>
         <translation>Не удалось запустить команду удаления канала</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3827"/>
-        <location filename="../mainwindow.cpp" line="4148"/>
+        <location filename="../mainwindow.cpp" line="3946"/>
+        <location filename="../mainwindow.cpp" line="4296"/>
         <source>Specify password</source>
         <translation>Укажите пароль</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3842"/>
+        <location filename="../mainwindow.cpp" line="3961"/>
         <source>Failed to issue command to join channel</source>
         <translation>Не удалось запустить команду подключения к каналу</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3879"/>
+        <location filename="../mainwindow.cpp" line="4007"/>
         <source>Open File</source>
         <translation>Открыть Файл</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3899"/>
+        <location filename="../mainwindow.cpp" line="4027"/>
         <source>Save File</source>
         <translation>Сохранить Файл</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3923"/>
+        <location filename="../mainwindow.cpp" line="4051"/>
         <source>Are you sure you want to delete &quot;%1&quot;?</source>
         <translation>Вы действительно хотите удалить &quot;%1&quot;?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3928"/>
+        <location filename="../mainwindow.cpp" line="4056"/>
         <source>Are you sure you want to delete %1 file(s)?</source>
         <translation>Вы действительно хотите удалить файл(ы) %1?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3996"/>
+        <location filename="../mainwindow.cpp" line="4144"/>
         <source>Message to broadcast:</source>
         <translation>Сообщение для трансляции:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4038"/>
+        <location filename="../mainwindow.cpp" line="4186"/>
         <source>Are you sure you want to delete your existing settings?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4047"/>
+        <location filename="../mainwindow.cpp" line="4195"/>
         <source>Cannot find %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4054"/>
+        <location filename="../mainwindow.cpp" line="4202"/>
         <source>Cannot remove %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4061"/>
+        <location filename="../mainwindow.cpp" line="4209"/>
         <source>Failed to copy %1 to %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4290"/>
+        <location filename="../mainwindow.cpp" line="4309"/>
+        <source>IP-address</source>
+        <translation type="unfinished">IP-Адрес</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="4309"/>
+        <source>Username</source>
+        <translation type="unfinished">Имя пользователя</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="4311"/>
+        <source>Ban User From Channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="4311"/>
+        <source>Ban user&apos;s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="4448"/>
         <source>&amp;Leave Channel</source>
         <translation>&amp;Покинуть Канал</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4515"/>
+        <location filename="../mainwindow.cpp" line="4674"/>
         <source>The maximum number of users who can transmit is %1</source>
         <translation>Максимальное количество пользователей, могущих передавать %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4551"/>
+        <location filename="../mainwindow.cpp" line="4710"/>
         <source>You can now transmit audio!</source>
         <translation>Теперь вы можете передавать звук!</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4553"/>
+        <location filename="../mainwindow.cpp" line="4712"/>
         <source>You can no longer transmit audio!</source>
         <translation>Вы больше не можете передавать звук!</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4561"/>
+        <location filename="../mainwindow.cpp" line="4720"/>
         <source>You can now transmit video!</source>
         <translation>Теперь вы можете передавать видео!</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4563"/>
+        <location filename="../mainwindow.cpp" line="4722"/>
         <source>You can no longer transmit video!</source>
         <translation>Вы больше не можете передавать видео!</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4571"/>
+        <location filename="../mainwindow.cpp" line="4730"/>
         <source>You can now transmit desktop windows!</source>
         <translation>Теперь вы можете передавать окна рабочего стола!</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4573"/>
+        <location filename="../mainwindow.cpp" line="4732"/>
         <source>You can no longer transmit desktop windows!</source>
         <translation>Вы больше не можете передавать окна рабочего стола!</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4583"/>
+        <location filename="../mainwindow.cpp" line="4742"/>
         <source>Start Webcam</source>
         <translation>Запуск Вебкамеры</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4606"/>
-        <location filename="../mainwindow.cpp" line="4658"/>
+        <location filename="../mainwindow.cpp" line="4765"/>
+        <location filename="../mainwindow.cpp" line="4817"/>
         <source>Myself</source>
         <translation>Самоуправление</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4990"/>
+        <location filename="../mainwindow.cpp" line="5149"/>
         <source>%1 joined channel</source>
         <translation>%1 подключился к каналу</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5012"/>
+        <location filename="../mainwindow.cpp" line="5171"/>
         <source>%1 left channel</source>
         <translation>%1 покинул канал</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5031"/>
-        <location filename="../mainwindow.cpp" line="5040"/>
-        <location filename="../mainwindow.cpp" line="5049"/>
-        <location filename="../mainwindow.cpp" line="5058"/>
-        <location filename="../mainwindow.cpp" line="5067"/>
-        <location filename="../mainwindow.cpp" line="5076"/>
-        <location filename="../mainwindow.cpp" line="5085"/>
-        <location filename="../mainwindow.cpp" line="5094"/>
-        <location filename="../mainwindow.cpp" line="5103"/>
-        <location filename="../mainwindow.cpp" line="5112"/>
-        <location filename="../mainwindow.cpp" line="5121"/>
+        <location filename="../mainwindow.cpp" line="5190"/>
+        <location filename="../mainwindow.cpp" line="5199"/>
+        <location filename="../mainwindow.cpp" line="5208"/>
+        <location filename="../mainwindow.cpp" line="5217"/>
+        <location filename="../mainwindow.cpp" line="5226"/>
+        <location filename="../mainwindow.cpp" line="5235"/>
+        <location filename="../mainwindow.cpp" line="5244"/>
+        <location filename="../mainwindow.cpp" line="5253"/>
+        <location filename="../mainwindow.cpp" line="5262"/>
+        <location filename="../mainwindow.cpp" line="5271"/>
+        <location filename="../mainwindow.cpp" line="5280"/>
         <source>%1 changed subscription &quot;%2&quot; to: %3</source>
         <translation>%1 изменил подписку &quot;%2&quot; на: %3</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5035"/>
-        <location filename="../mainwindow.cpp" line="5044"/>
-        <location filename="../mainwindow.cpp" line="5053"/>
-        <location filename="../mainwindow.cpp" line="5062"/>
-        <location filename="../mainwindow.cpp" line="5071"/>
-        <location filename="../mainwindow.cpp" line="5080"/>
-        <location filename="../mainwindow.cpp" line="5089"/>
-        <location filename="../mainwindow.cpp" line="5098"/>
-        <location filename="../mainwindow.cpp" line="5107"/>
-        <location filename="../mainwindow.cpp" line="5116"/>
-        <location filename="../mainwindow.cpp" line="5125"/>
+        <location filename="../mainwindow.cpp" line="5194"/>
+        <location filename="../mainwindow.cpp" line="5203"/>
+        <location filename="../mainwindow.cpp" line="5212"/>
+        <location filename="../mainwindow.cpp" line="5221"/>
+        <location filename="../mainwindow.cpp" line="5230"/>
+        <location filename="../mainwindow.cpp" line="5239"/>
+        <location filename="../mainwindow.cpp" line="5248"/>
+        <location filename="../mainwindow.cpp" line="5257"/>
+        <location filename="../mainwindow.cpp" line="5266"/>
+        <location filename="../mainwindow.cpp" line="5275"/>
+        <location filename="../mainwindow.cpp" line="5284"/>
         <source>On</source>
         <translation>Вкл</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5035"/>
-        <location filename="../mainwindow.cpp" line="5044"/>
-        <location filename="../mainwindow.cpp" line="5053"/>
-        <location filename="../mainwindow.cpp" line="5062"/>
-        <location filename="../mainwindow.cpp" line="5071"/>
-        <location filename="../mainwindow.cpp" line="5080"/>
-        <location filename="../mainwindow.cpp" line="5089"/>
-        <location filename="../mainwindow.cpp" line="5098"/>
-        <location filename="../mainwindow.cpp" line="5107"/>
-        <location filename="../mainwindow.cpp" line="5116"/>
-        <location filename="../mainwindow.cpp" line="5125"/>
+        <location filename="../mainwindow.cpp" line="5194"/>
+        <location filename="../mainwindow.cpp" line="5203"/>
+        <location filename="../mainwindow.cpp" line="5212"/>
+        <location filename="../mainwindow.cpp" line="5221"/>
+        <location filename="../mainwindow.cpp" line="5230"/>
+        <location filename="../mainwindow.cpp" line="5239"/>
+        <location filename="../mainwindow.cpp" line="5248"/>
+        <location filename="../mainwindow.cpp" line="5257"/>
+        <location filename="../mainwindow.cpp" line="5266"/>
+        <location filename="../mainwindow.cpp" line="5275"/>
+        <location filename="../mainwindow.cpp" line="5284"/>
         <source>Off</source>
         <translation>Выкл</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5145"/>
+        <location filename="../mainwindow.cpp" line="5304"/>
         <source>Video</source>
         <translation>Видео</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5147"/>
+        <location filename="../mainwindow.cpp" line="5306"/>
         <source>Video (%1)</source>
         <translation>Видео (%1)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5155"/>
+        <location filename="../mainwindow.cpp" line="5314"/>
         <source>Desktops (%1)</source>
         <translation>Рабочие столы (%1)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5206"/>
-        <location filename="../mainwindow.cpp" line="5215"/>
-        <location filename="../mainwindow.cpp" line="5225"/>
-        <location filename="../mainwindow.cpp" line="5236"/>
+        <location filename="../mainwindow.cpp" line="5365"/>
+        <location filename="../mainwindow.cpp" line="5374"/>
+        <location filename="../mainwindow.cpp" line="5384"/>
+        <location filename="../mainwindow.cpp" line="5395"/>
         <source>Load File</source>
         <translation>Загрузить Файл</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5207"/>
-        <location filename="../mainwindow.cpp" line="5216"/>
+        <location filename="../mainwindow.cpp" line="5366"/>
+        <location filename="../mainwindow.cpp" line="5375"/>
         <source>Failed to load file %1</source>
         <translation>Не удалось загрузить файл %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5226"/>
+        <location filename="../mainwindow.cpp" line="5385"/>
         <source>The file &quot;%1&quot; is incompatible with %2</source>
         <translation>Файл &quot;%1&quot; не совместим с %2</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5237"/>
+        <location filename="../mainwindow.cpp" line="5396"/>
         <source>Failed to extract host-information from %1</source>
         <translation>Не удалось извлечь информацию хоста из %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5245"/>
+        <location filename="../mainwindow.cpp" line="5404"/>
         <source>Load %1 File</source>
         <translation>Загрузка Файла %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5246"/>
+        <location filename="../mainwindow.cpp" line="5405"/>
         <source>The file %1 contains %2 setup information.
 Should these settings be applied?</source>
         <translation type="unfinished"></translation>
@@ -2385,7 +2495,7 @@ Should these settings be applied?</source>
 Применить эти параметры?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5315"/>
+        <location filename="../mainwindow.cpp" line="5474"/>
         <source>New version available: %1</source>
         <translation>Доступна новая версия: %1</translation>
     </message>
@@ -3089,121 +3199,121 @@ Should these settings be applied?</source>
         <translation>Входное Устройство По умолчанию</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="331"/>
+        <location filename="../preferencesdlg.cpp" line="336"/>
         <source>Default Output Device</source>
         <translation>Выходное Устройство По умолчанию</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="346"/>
-        <location filename="../preferencesdlg.cpp" line="347"/>
+        <location filename="../preferencesdlg.cpp" line="320"/>
+        <location filename="../preferencesdlg.cpp" line="351"/>
         <source>No Sound Device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="396"/>
+        <location filename="../preferencesdlg.cpp" line="400"/>
         <source>Open Wave File</source>
         <translation>Открыть Звуковой Файл</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="398"/>
+        <location filename="../preferencesdlg.cpp" line="402"/>
         <source>Wave files (*.wav)</source>
         <translation>Звуковые файлы (*.wav)</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="695"/>
-        <location filename="../preferencesdlg.cpp" line="702"/>
+        <location filename="../preferencesdlg.cpp" line="699"/>
+        <location filename="../preferencesdlg.cpp" line="706"/>
         <source>Windows Firewall</source>
         <translation>Брандмауэр Windows</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="696"/>
+        <location filename="../preferencesdlg.cpp" line="700"/>
         <source>Failed to add %1 to Windows Firewall exception list</source>
         <translation>Не удалось добавить %1 в список исключений брандмауэра Windows</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="703"/>
+        <location filename="../preferencesdlg.cpp" line="707"/>
         <source>Failed to remove %1 from Windows Firewall exception list</source>
         <translation>Не удалось удалить %1 из списка исключений брандмауэра Windows</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="757"/>
-        <location filename="../preferencesdlg.cpp" line="774"/>
-        <location filename="../preferencesdlg.cpp" line="785"/>
-        <location filename="../preferencesdlg.cpp" line="1126"/>
+        <location filename="../preferencesdlg.cpp" line="761"/>
+        <location filename="../preferencesdlg.cpp" line="778"/>
+        <location filename="../preferencesdlg.cpp" line="789"/>
+        <location filename="../preferencesdlg.cpp" line="1130"/>
         <source>Sound Initialization</source>
         <translation>Инициализация Звука</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="758"/>
+        <location filename="../preferencesdlg.cpp" line="762"/>
         <source>Failed to initialize sound duplex mode</source>
         <translation>Не удалось инициализировать дуплексный режим звука</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="775"/>
+        <location filename="../preferencesdlg.cpp" line="779"/>
         <source>Failed to initialize new sound input device</source>
         <translation>Не удалось инициализировать новое входное звуковое устройство</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="786"/>
+        <location filename="../preferencesdlg.cpp" line="790"/>
         <source>Failed to initialize new sound output device</source>
         <translation>Не удалось инициализировать новое выходное звуковое устройство</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="947"/>
-        <location filename="../preferencesdlg.cpp" line="959"/>
+        <location filename="../preferencesdlg.cpp" line="951"/>
+        <location filename="../preferencesdlg.cpp" line="963"/>
         <source>Video Device</source>
         <translation>Устройство Видео</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="948"/>
-        <location filename="../preferencesdlg.cpp" line="960"/>
-        <location filename="../preferencesdlg.cpp" line="1470"/>
+        <location filename="../preferencesdlg.cpp" line="952"/>
+        <location filename="../preferencesdlg.cpp" line="964"/>
+        <location filename="../preferencesdlg.cpp" line="1474"/>
         <source>Failed to initialize video device</source>
         <translation>Не удалось инициализировать видео устройства</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="1015"/>
+        <location filename="../preferencesdlg.cpp" line="1019"/>
         <source>Max Input Channels %1</source>
         <translation>Максимум Входных Каналов %1</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="1017"/>
-        <location filename="../preferencesdlg.cpp" line="1040"/>
+        <location filename="../preferencesdlg.cpp" line="1021"/>
+        <location filename="../preferencesdlg.cpp" line="1044"/>
         <source>Sample Rates:</source>
         <translation>Частоты дискретизации:</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="1038"/>
+        <location filename="../preferencesdlg.cpp" line="1042"/>
         <source>Max Output Channels %1</source>
         <translation>Максимум Выходных Каналов %1</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="1078"/>
+        <location filename="../preferencesdlg.cpp" line="1082"/>
         <source>Refresh Sound Devices</source>
         <translation>Обновить Звуковые Устройства</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="1079"/>
+        <location filename="../preferencesdlg.cpp" line="1083"/>
         <source>Failed to restart sound systems. Please restart application.</source>
         <translation>Не удалось перезапустить звуковую систему. Пожалуйста, перезагрузите приложение.</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="1127"/>
+        <location filename="../preferencesdlg.cpp" line="1131"/>
         <source>Failed to initialize new sound devices</source>
         <translation>Не удалось инициализировать новые звуковые устройства</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="1428"/>
+        <location filename="../preferencesdlg.cpp" line="1432"/>
         <source>Custom video format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="1522"/>
+        <location filename="../preferencesdlg.cpp" line="1526"/>
         <source>Default Video Capture</source>
         <translation>Захват Видео По умолчанию</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="1523"/>
+        <location filename="../preferencesdlg.cpp" line="1527"/>
         <source>Unable to find preferred video capture settings</source>
         <translation>Не удаётся найти предпочитаемые настройки захвата видео</translation>
     </message>
@@ -3291,65 +3401,65 @@ Should these settings be applied?</source>
         <translation>Имя пользователя</translation>
     </message>
     <message>
-        <location filename="../serverlist.ui" line="189"/>
-        <location filename="../serverlist.ui" line="231"/>
+        <location filename="../serverlist.ui" line="183"/>
+        <location filename="../serverlist.ui" line="232"/>
         <source>Password</source>
         <translation>Пароль</translation>
     </message>
     <message>
-        <location filename="../serverlist.ui" line="209"/>
-        <location filename="../serverlist.ui" line="212"/>
+        <location filename="../serverlist.ui" line="210"/>
+        <location filename="../serverlist.ui" line="213"/>
         <source>Join specific channel after authentication (optional)</source>
         <translation>Подключиться к определённому каналу после входа (необязательно)</translation>
     </message>
     <message>
-        <location filename="../serverlist.ui" line="218"/>
+        <location filename="../serverlist.ui" line="219"/>
         <source>Channel</source>
         <translation>Канал</translation>
     </message>
     <message>
-        <location filename="../serverlist.ui" line="259"/>
+        <location filename="../serverlist.ui" line="260"/>
         <source>C&amp;lear</source>
         <translation>О&amp;чистить</translation>
     </message>
     <message>
-        <location filename="../serverlist.ui" line="279"/>
+        <location filename="../serverlist.ui" line="280"/>
         <source>&amp;Connect</source>
         <translation>&amp;Соединить</translation>
     </message>
     <message>
-        <location filename="../serverlist.ui" line="291"/>
+        <location filename="../serverlist.ui" line="292"/>
         <source>Save Server Information</source>
         <translation>Сохранить Информацию Сервера</translation>
     </message>
     <message>
-        <location filename="../serverlist.ui" line="299"/>
+        <location filename="../serverlist.ui" line="300"/>
         <source>Entry name</source>
         <translation>Имя Входа</translation>
     </message>
     <message>
-        <location filename="../serverlist.ui" line="316"/>
-        <location filename="../serverlist.ui" line="319"/>
+        <location filename="../serverlist.ui" line="317"/>
+        <location filename="../serverlist.ui" line="320"/>
         <source>.tt files can be double-clicked and the client will automatically start and connect to the specified server</source>
         <translation>по .tt файлам можно дважды щёлкнуть, и клиент автоматически запустится, подключившись к указанному серверу</translation>
     </message>
     <message>
-        <location filename="../serverlist.ui" line="322"/>
+        <location filename="../serverlist.ui" line="323"/>
         <source>&amp;Generate .tt File</source>
         <translation>&amp;Сгенерировать .tt Файл</translation>
     </message>
     <message>
-        <location filename="../serverlist.ui" line="351"/>
+        <location filename="../serverlist.ui" line="352"/>
         <source>&amp;Save</source>
         <translation>&amp;Сохранить</translation>
     </message>
     <message>
-        <location filename="../serverlistdlg.cpp" line="209"/>
+        <location filename="../serverlistdlg.cpp" line="215"/>
         <source>Missing fields</source>
         <translation>Не хватает полей</translation>
     </message>
     <message>
-        <location filename="../serverlistdlg.cpp" line="210"/>
+        <location filename="../serverlistdlg.cpp" line="216"/>
         <source>Please fill the fields &apos;Host IP-address&apos;, &apos;TCP port&apos; and &apos;UDP port&apos;</source>
         <translation>Пожалуйста, заполните поля &apos;Host IP-Адрес&apos;, &apos;TCP порт&apos; и &apos;UDP порт&apos;</translation>
     </message>
@@ -3743,218 +3853,291 @@ Should these settings be applied?</source>
         <translation>Изменить Учётную запись Пользователя</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="95"/>
+        <location filename="../useraccounts.ui" line="127"/>
         <source>Username</source>
         <translation>Имя пользователя</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="115"/>
+        <location filename="../useraccounts.ui" line="147"/>
         <source>Password</source>
         <translation>Пароль</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="135"/>
+        <location filename="../useraccounts.ui" line="167"/>
         <source>Note</source>
         <translation>Примечание</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="148"/>
+        <location filename="../useraccounts.ui" line="180"/>
         <source>Initial Channel</source>
         <translation>Начальный Канал</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="158"/>
+        <location filename="../useraccounts.ui" line="190"/>
         <source>User should automatically join this channel after login</source>
         <translation>Пользователь должен автоматически подключаться к этому каналу после входа</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="168"/>
+        <location filename="../useraccounts.ui" line="96"/>
         <source>User type</source>
         <translation>Тип пользователя</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="180"/>
+        <location filename="../useraccounts.ui" line="118"/>
         <source>Administrator</source>
         <translation>Администратор</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="187"/>
+        <location filename="../useraccounts.ui" line="108"/>
         <source>Default user</source>
         <translation>Пользователь поумолчанию</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="203"/>
-        <location filename="../useraccounts.ui" line="206"/>
+        <location filename="../useraccounts.ui" line="90"/>
+        <source>Basic Account Properties</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../useraccounts.ui" line="226"/>
+        <location filename="../useraccounts.ui" line="229"/>
         <source>Auto-Operator Channels</source>
         <translation>Авто-Оператор Каналов</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="212"/>
+        <location filename="../useraccounts.ui" line="235"/>
         <source>Selected Channels</source>
         <translation>Выбранные Каналы</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="222"/>
+        <location filename="../useraccounts.ui" line="245"/>
         <source>User will automatically become operator when joining these channels</source>
         <translation>Пользователь будет автоматически становиться оператором при подключении к этим каналам</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="235"/>
+        <location filename="../useraccounts.ui" line="258"/>
         <source>Available Channels</source>
         <translation>Доступные Каналы</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="254"/>
+        <location filename="../useraccounts.ui" line="277"/>
         <source>Add</source>
         <translation>Добавить</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="261"/>
+        <location filename="../useraccounts.ui" line="284"/>
         <source>Remove</source>
         <translation>Убрать</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="273"/>
+        <location filename="../useraccounts.ui" line="310"/>
+        <source>Codec Limitations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../useraccounts.ui" line="316"/>
         <source>Audio Codec Limitations</source>
         <translation>Ограничения аудио кодека</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="279"/>
+        <location filename="../useraccounts.ui" line="322"/>
         <source>Max bitrate for audio codecs</source>
         <translation>Максимальный битрейт для аудио кодеков</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="302"/>
+        <location filename="../useraccounts.ui" line="345"/>
         <source>kbps (0 = disabled)</source>
         <translation>КБайт/сек 0 = запрещено)</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="316"/>
+        <location filename="../useraccounts.ui" line="369"/>
+        <source>Abuse Prevention</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../useraccounts.ui" line="375"/>
+        <source>Flood Protection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../useraccounts.ui" line="381"/>
+        <source>Prevent user from e.g. spamming text messages by limiting the number of commands they can issue within a given timeframe.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../useraccounts.ui" line="393"/>
+        <location filename="../useraccountsdlg.cpp" line="662"/>
+        <location filename="../useraccountsdlg.cpp" line="668"/>
+        <source>Limit issued commands</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../useraccounts.ui" line="430"/>
         <source>User Rights</source>
         <translation>Права Пользователя</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="322"/>
+        <location filename="../useraccounts.ui" line="436"/>
         <source>User can log in multiple times</source>
         <translation>Пользователь может войти несколько раз</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="329"/>
+        <location filename="../useraccounts.ui" line="443"/>
         <source>User can upload files</source>
         <translation>Пользователь может выгружать файлы</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="342"/>
+        <location filename="../useraccounts.ui" line="456"/>
         <source>User can see users in all channels</source>
         <translation>Пользователь может видеть пользователей во всех каналах</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="349"/>
+        <location filename="../useraccounts.ui" line="524"/>
+        <source>User can change nickname</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../useraccounts.ui" line="531"/>
         <source>User can download files</source>
         <translation>Пользователь может загружать файлы</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="356"/>
+        <location filename="../useraccounts.ui" line="463"/>
         <source>User can create/modify all channels</source>
         <translation>Пользователь может создавать/изменять все каналы</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="363"/>
+        <location filename="../useraccounts.ui" line="538"/>
         <source>User can update server properties</source>
         <translation>Пользователь может обновлять свойства сервера</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="376"/>
+        <location filename="../useraccounts.ui" line="476"/>
         <source>User can create temporary channels</source>
         <translation>Пользователь может создавать временные каналы</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="383"/>
+        <location filename="../useraccounts.ui" line="545"/>
         <source>User can transmit voice data (microphone)</source>
         <translation>Пользователь может передавать голосовые данные (микрофон)</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="396"/>
+        <location filename="../useraccounts.ui" line="489"/>
         <source>User can broadcast text messages</source>
         <translation>Пользователь может транслировать текстовые сообщения</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="403"/>
+        <location filename="../useraccounts.ui" line="552"/>
         <source>User can transmit video data (webcam)</source>
         <translation>Пользователь может передавать видео данные (веб-камера)</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="410"/>
+        <location filename="../useraccounts.ui" line="496"/>
         <source>User can kick users off the server</source>
         <translation>Пользователь может выгонять пользователей с сервера</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="417"/>
+        <location filename="../useraccounts.ui" line="559"/>
         <source>User can transmit audio files (wav, mp3 files)</source>
         <translation>Пользователь может передавать звуковые файлы (файлы wav, mp3)</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="424"/>
+        <location filename="../useraccounts.ui" line="503"/>
         <source>User can ban users from server</source>
         <translation>Пользователь может блокировать пользователей на сервере</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="431"/>
+        <location filename="../useraccounts.ui" line="566"/>
         <source>User can transmit video files (avi, mp4 files)</source>
         <translation>Пользователь может передавать видео файлы (файлы avi, mp4)</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="438"/>
+        <location filename="../useraccounts.ui" line="510"/>
         <source>User can move users between channels</source>
         <translation>Пользователь может перемещать пользователей между каналами</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="445"/>
+        <location filename="../useraccounts.ui" line="573"/>
         <source>User can transmit desktop sessions (shared desktop)</source>
         <translation>Пользователь может передавать сессии рабочего стола (предоставление рабочего стола)</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="452"/>
+        <location filename="../useraccounts.ui" line="517"/>
         <source>User can make other users channel operator</source>
         <translation>Пользователь может сделать других пользователей операторами канала</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="459"/>
+        <location filename="../useraccounts.ui" line="580"/>
         <source>User can get remote access to desktop sessions</source>
         <translation>Пользователь может получить  удаленный доступ к сессиям рабочего стола</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="484"/>
+        <location filename="../useraccounts.ui" line="605"/>
         <source>&amp;Clear</source>
         <translation>&amp;Очистить</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="504"/>
+        <location filename="../useraccounts.ui" line="625"/>
         <source>&amp;Add/Update</source>
         <translation>&amp;Добавить/Обновить</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="558"/>
+        <location filename="../useraccounts.ui" line="679"/>
         <source>C&amp;lose</source>
         <translation>З&amp;акрыть</translation>
     </message>
     <message>
-        <location filename="../useraccountsdlg.cpp" line="327"/>
+        <location filename="../useraccountsdlg.cpp" line="204"/>
+        <source>Disabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../useraccountsdlg.cpp" line="205"/>
+        <source>10 commands in 10 sec.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../useraccountsdlg.cpp" line="206"/>
+        <source>10 commands in 1 minute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../useraccountsdlg.cpp" line="207"/>
+        <source>60 commands in 1 minute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../useraccountsdlg.cpp" line="208"/>
+        <source>Custom specified</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../useraccountsdlg.cpp" line="448"/>
         <source>Add/Update</source>
         <translation>Добавить/Обновить</translation>
     </message>
     <message>
-        <location filename="../useraccountsdlg.cpp" line="328"/>
+        <location filename="../useraccountsdlg.cpp" line="449"/>
         <source>Create anonymous user account?</source>
         <translation>Создать анонимную учётную запись пользователя?</translation>
     </message>
     <message>
-        <location filename="../useraccountsdlg.cpp" line="508"/>
+        <location filename="../useraccountsdlg.cpp" line="663"/>
+        <source>Number of commands to allow (0 = disabled)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../useraccountsdlg.cpp" line="669"/>
+        <source>Timeframe to allow %1 commands (in seconds)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../useraccounts.ui" line="220"/>
+        <location filename="../useraccountsdlg.cpp" line="615"/>
         <source>Channel Operator</source>
         <translation>Оператор Канала</translation>
     </message>
     <message>
-        <location filename="../useraccountsdlg.cpp" line="509"/>
+        <location filename="../useraccountsdlg.cpp" line="616"/>
         <source>The maximum number of channels where a user can automatically become channel operator is %1.</source>
         <translation>Максимальное число каналов, в которых пользователь может автоматически стать оператором канала %1.</translation>
     </message>
@@ -3962,37 +4145,37 @@ Should these settings be applied?</source>
 <context>
     <name>UserAccountsModel</name>
     <message>
-        <location filename="../useraccountsdlg.cpp" line="52"/>
+        <location filename="../useraccountsdlg.cpp" line="53"/>
         <source>Username</source>
         <translation type="unfinished">Имя пользователя</translation>
     </message>
     <message>
-        <location filename="../useraccountsdlg.cpp" line="53"/>
+        <location filename="../useraccountsdlg.cpp" line="54"/>
         <source>Password</source>
         <translation>Пароль</translation>
     </message>
     <message>
-        <location filename="../useraccountsdlg.cpp" line="54"/>
+        <location filename="../useraccountsdlg.cpp" line="55"/>
         <source>User Type</source>
         <translation>Тип Пользователя</translation>
     </message>
     <message>
-        <location filename="../useraccountsdlg.cpp" line="55"/>
+        <location filename="../useraccountsdlg.cpp" line="56"/>
         <source>Note</source>
         <translation>Примечание</translation>
     </message>
     <message>
-        <location filename="../useraccountsdlg.cpp" line="56"/>
+        <location filename="../useraccountsdlg.cpp" line="57"/>
         <source>Channel</source>
         <translation>Канал</translation>
     </message>
     <message>
-        <location filename="../useraccountsdlg.cpp" line="84"/>
+        <location filename="../useraccountsdlg.cpp" line="85"/>
         <source>Administrator</source>
         <translation>Администратор</translation>
     </message>
     <message>
-        <location filename="../useraccountsdlg.cpp" line="86"/>
+        <location filename="../useraccountsdlg.cpp" line="87"/>
         <source>Default User</source>
         <translation>Пользователь Поумолчанию</translation>
     </message>
@@ -4083,98 +4266,103 @@ Should these settings be applied?</source>
         <translation>Информация Пользователя</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="26"/>
+        <location filename="../userinfo.ui" line="23"/>
         <source>User ID</source>
         <translation>ИД Пользователя</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="46"/>
+        <location filename="../userinfo.ui" line="43"/>
         <source>Nickname</source>
         <translation>Ник</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="66"/>
+        <location filename="../userinfo.ui" line="63"/>
         <source>Username</source>
         <translation>Имя пользователя</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="86"/>
+        <location filename="../userinfo.ui" line="85"/>
+        <source>Profile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../userinfo.ui" line="111"/>
         <source>Status mode</source>
         <translation>Режим Состояния</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="106"/>
+        <location filename="../userinfo.ui" line="131"/>
         <source>Status message</source>
         <translation>Сообщение Состояния</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="129"/>
+        <location filename="../userinfo.ui" line="154"/>
         <source>User type</source>
         <translation>Тип пользователя</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="149"/>
+        <location filename="../userinfo.ui" line="174"/>
         <source>IP-address</source>
         <translation>IP-Адрес</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="169"/>
+        <location filename="../userinfo.ui" line="194"/>
         <source>Version</source>
         <translation>Версия</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="189"/>
+        <location filename="../userinfo.ui" line="214"/>
         <source>Voice packet loss</source>
         <translation>Потеря пакета голоса</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="209"/>
+        <location filename="../userinfo.ui" line="234"/>
         <source>Video frame loss</source>
         <translation>Потеря видео кадра</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="229"/>
+        <location filename="../userinfo.ui" line="254"/>
         <source>Audio file packets loss</source>
         <translation>Потеря пакета звукового файлла</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="242"/>
+        <location filename="../userinfo.ui" line="267"/>
         <source>Video file frame loss</source>
         <translation>Потеря кадра видео файла</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="255"/>
+        <location filename="../userinfo.ui" line="94"/>
         <source>Client name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../userinfodlg.cpp" line="60"/>
+        <location filename="../userinfodlg.cpp" line="65"/>
         <source>Available</source>
         <translation>Доступен</translation>
     </message>
     <message>
-        <location filename="../userinfodlg.cpp" line="62"/>
+        <location filename="../userinfodlg.cpp" line="67"/>
         <source>Away</source>
         <translation>Отсутствует</translation>
     </message>
     <message>
-        <location filename="../userinfodlg.cpp" line="64"/>
+        <location filename="../userinfodlg.cpp" line="69"/>
         <source>Question</source>
         <translation>Запрос</translation>
     </message>
     <message>
-        <location filename="../userinfodlg.cpp" line="66"/>
-        <location filename="../userinfodlg.cpp" line="82"/>
+        <location filename="../userinfodlg.cpp" line="71"/>
+        <location filename="../userinfodlg.cpp" line="96"/>
         <source>Unknown</source>
         <translation>Неизвестно</translation>
     </message>
     <message>
-        <location filename="../userinfodlg.cpp" line="78"/>
+        <location filename="../userinfodlg.cpp" line="92"/>
         <source>Administrator</source>
         <translation>Администратор</translation>
     </message>
     <message>
-        <location filename="../userinfodlg.cpp" line="80"/>
+        <location filename="../userinfodlg.cpp" line="94"/>
         <source>Default</source>
         <translation>Поумолчанию</translation>
     </message>
@@ -4370,6 +4558,24 @@ Should these settings be applied?</source>
         <location filename="../videotextdlg.cpp" line="189"/>
         <source>Status message</source>
         <translation>Сообщение о состоянии</translation>
+    </message>
+</context>
+<context>
+    <name>WebLoginDlg</name>
+    <message>
+        <location filename="../weblogin.ui" line="14"/>
+        <source>Web Login</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../weblogindlg.cpp" line="110"/>
+        <source>Facebook Login</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../weblogindlg.cpp" line="110"/>
+        <source>Do Facebook logout?</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

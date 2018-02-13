@@ -107,6 +107,7 @@ namespace teamtalk {
     {
     public:
         ClientXML(const std::string& rootname) : XMLDocument(rootname, TEAMTALK_XML_VERSION){}
+        virtual bool SaveFile();
 
         /******** <main> ********/
         bool SetWindowPlacement(int x, int y, int cx, int cy);
@@ -120,6 +121,9 @@ namespace teamtalk {
         /******** <general> *******/
         bool SetNickname(const std::string& szNickname);
         std::string GetNickname(std::string def_nickname = std::string());
+
+        bool SetProfileName(const std::string& szProfilename);
+        std::string GetProfileName();
 
         bool SetGender(int nGender);
         int GetGender(int nDefGender = DEFAULT_GENDER);
