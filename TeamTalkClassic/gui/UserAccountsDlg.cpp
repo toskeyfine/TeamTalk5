@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "../Resource.h"
 #include "UserAccountsDlg.h"
+#include "AppInfo.h"
 #include <vector>
 
 using namespace std;
@@ -14,8 +15,9 @@ extern TTInstance* ttInst;
 
 IMPLEMENT_DYNAMIC(CUserAccountsDlg, CDialog)
 
-CUserAccountsDlg::CUserAccountsDlg(CWnd* pParent /*=NULL*/)
+CUserAccountsDlg::CUserAccountsDlg(CWnd* pParent /*=NULL*/, UserAccountsDisplay uad /*= UAD_READWRITE*/)
 	: CDialog(CUserAccountsDlg::IDD, pParent)
+    , m_uad(uad)
     , m_bResizeReady(FALSE)
 {
 
@@ -57,6 +59,7 @@ void CUserAccountsDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_CHECK_TRANSMITAUDIOFILE, m_wndTransmitAudFiles);
     DDX_Control(pDX, IDC_CHECK_TRANSMITVIDEOFILE, m_wndTransmitVidFiles);
     DDX_Control(pDX, IDC_TAB_USERACCOUNT, m_wndTabCtrl);
+    DDX_Control(pDX, IDC_CHECK_CHANGENICKNAME, m_wndChangeNickname);
 }
 
 
@@ -91,7 +94,7 @@ BOOL CUserAccountsDlg::OnInitDialog()
         vector<Channel> channels;
         channels.resize(nCount);
         TT_GetServerChannels(ttInst, &channels[0], &nCount);
-        for(size_t i=0;i<nCount;i++)
+        for(int i=0;i<nCount;i++)
         {
             TTCHAR szPath[TT_STRLEN];
             if((channels[i].uChannelType & CHANNEL_PERMANENT) &&
@@ -107,7 +110,13 @@ BOOL CUserAccountsDlg::OnInitDialog()
 
     ListAccounts();
 
-    OnBnClickedButtonNew();
+    if(m_uad == UAD_READONLY && m_accounts.size() == 1)
+    {
+        m_wndAccounts.SetCurSel(0);
+        ShowUserAccount(m_accounts[0]);
+    }
+    else
+        OnBnClickedButtonNew();
 
     m_bResizeReady = TRUE;
 
@@ -155,6 +164,8 @@ void CUserAccountsDlg::OnBnClickedButtonAdd()
     account.uUserType = (m_wndAdminUser.GetCheck() == BST_CHECKED)? USERTYPE_ADMIN : USERTYPE_DEFAULT;
     if(m_wndDoubleLogin.GetCheck() == BST_CHECKED)
         account.uUserRights |= USERRIGHT_MULTI_LOGIN;
+    if(m_wndChangeNickname.GetCheck() == BST_UNCHECKED)
+        account.uUserRights |= USERRIGHT_LOCKED_NICKNAME;
     if(m_wndViewAllUsers.GetCheck() == BST_CHECKED)
         account.uUserRights |= USERRIGHT_VIEW_ALL_USERS;
     if(m_wndPermChannels.GetCheck() == BST_CHECKED)
@@ -198,7 +209,7 @@ void CUserAccountsDlg::OnBnClickedButtonAdd()
         if(i<m_wndChanOpTab.m_wndSelChannels.GetCount())
         {
             ASSERT(m_wndChanOpTab.m_wndSelChannels.GetItemData(i));
-            account.autoOperatorChannels[i] = m_wndChanOpTab.m_wndSelChannels.GetItemData(i);
+            account.autoOperatorChannels[i] = INT32(m_wndChanOpTab.m_wndSelChannels.GetItemData(i));
         }
         else
             account.autoOperatorChannels[i] = 0;
@@ -267,34 +278,48 @@ void CUserAccountsDlg::OnEnChangeEditPassword()
 void CUserAccountsDlg::UpdateControls()
 {
     CString s;
-    BOOL bEnabled = TRUE;
     m_wndUsername.GetWindowText(s);
     m_wndPassword.GetWindowText(s);
 
     CString szUsername;
     m_wndUsername.GetWindowText(szUsername);
 
-    m_wndDoubleLogin.EnableWindow(m_wndDefaultUser.GetCheck() == BST_CHECKED);
-    m_wndViewAllUsers.EnableWindow(m_wndDefaultUser.GetCheck() == BST_CHECKED);
-    m_wndPermChannels.EnableWindow(m_wndDefaultUser.GetCheck() == BST_CHECKED);
-    m_wndTempChannels.EnableWindow(m_wndDefaultUser.GetCheck() == BST_CHECKED);
-    m_wndUserBcast.EnableWindow(m_wndDefaultUser.GetCheck() == BST_CHECKED);
-    m_wndKickUsers.EnableWindow(m_wndDefaultUser.GetCheck() == BST_CHECKED);
-    m_wndBanUsers.EnableWindow(m_wndDefaultUser.GetCheck() == BST_CHECKED);
-    m_wndMoveUsers.EnableWindow(m_wndDefaultUser.GetCheck() == BST_CHECKED);
-    m_wndChannelOp.EnableWindow(m_wndDefaultUser.GetCheck() == BST_CHECKED);
-    m_wndUploadFiles.EnableWindow(m_wndDefaultUser.GetCheck() == BST_CHECKED);
-    m_wndDownloadFiles.EnableWindow(m_wndDefaultUser.GetCheck() == BST_CHECKED);
-    m_wndSrvProp.EnableWindow(m_wndDefaultUser.GetCheck() == BST_CHECKED);
-    m_wndTransmitVoice.EnableWindow(m_wndDefaultUser.GetCheck() == BST_CHECKED);
-    m_wndTransmitVideo.EnableWindow(m_wndDefaultUser.GetCheck() == BST_CHECKED);
-    m_wndTransmitAudFiles.EnableWindow(m_wndDefaultUser.GetCheck() == BST_CHECKED);
-    m_wndTransmitVidFiles.EnableWindow(m_wndDefaultUser.GetCheck() == BST_CHECKED);
-    m_wndTransmitDesktops.EnableWindow(m_wndDefaultUser.GetCheck() == BST_CHECKED);
-    m_wndTransmitDesktopInput.EnableWindow(m_wndDefaultUser.GetCheck() == BST_CHECKED);
+    BOOL bWrite = m_uad == UAD_READWRITE;
+    BOOL bCheck = m_wndDefaultUser.GetCheck() == BST_CHECKED && bWrite;
+    m_wndDoubleLogin.EnableWindow(bCheck);
+    m_wndChangeNickname.EnableWindow(bCheck);
+    m_wndViewAllUsers.EnableWindow(bCheck);
+    m_wndPermChannels.EnableWindow(bCheck);
+    m_wndTempChannels.EnableWindow(bCheck);
+    m_wndUserBcast.EnableWindow(bCheck);
+    m_wndKickUsers.EnableWindow(bCheck);
+    m_wndBanUsers.EnableWindow(bCheck);
+    m_wndMoveUsers.EnableWindow(bCheck);
+    m_wndChannelOp.EnableWindow(bCheck);
+    m_wndUploadFiles.EnableWindow(bCheck);
+    m_wndDownloadFiles.EnableWindow(bCheck);
+    m_wndSrvProp.EnableWindow(bCheck);
+    m_wndTransmitVoice.EnableWindow(bCheck);
+    m_wndTransmitVideo.EnableWindow(bCheck);
+    m_wndTransmitAudFiles.EnableWindow(bCheck);
+    m_wndTransmitVidFiles.EnableWindow(bCheck);
+    m_wndTransmitDesktops.EnableWindow(bCheck);
+    m_wndTransmitDesktopInput.EnableWindow(bCheck);
 
-    m_btnAdd.EnableWindow(bEnabled);
-    m_btnDel.EnableWindow(m_wndAccounts.GetCurSel()>=0);
+    m_wndUsername.SetReadOnly(!bWrite);
+    m_wndPassword.SetReadOnly(!bWrite || szUsername == WEBLOGIN_FACEBOOK_USERNAME || EndsWith(szUsername, WEBLOGIN_FACEBOOK_USERNAMEPOSTFIX));
+    m_wndNote.SetReadOnly(!bWrite);
+    m_wndAdminUser.EnableWindow(bWrite);
+    m_wndDefaultUser.EnableWindow(bWrite);
+    m_wndInitChannel.EnableWindow(bWrite);
+    m_wndChanOpTab.m_btnAddChan.EnableWindow(bWrite);
+    m_wndChanOpTab.m_btnRmChan.EnableWindow(bWrite);
+    m_wndCodecTab.m_wndBitrate.EnableWindow(bWrite);
+    m_wndAbuseTab.m_wndCmdLimit.EnableWindow(bWrite);
+
+    m_btnNew.EnableWindow(bWrite);
+    m_btnAdd.EnableWindow(bWrite);
+    m_btnDel.EnableWindow(m_wndAccounts.GetCurSel() >= 0 && bWrite);
 }
 
 void CUserAccountsDlg::ShowUserAccount(const UserAccount& useraccount)
@@ -305,6 +330,7 @@ void CUserAccountsDlg::ShowUserAccount(const UserAccount& useraccount)
     m_wndDefaultUser.SetCheck((useraccount.uUserType & USERTYPE_DEFAULT)?BST_CHECKED:BST_UNCHECKED);
 
     m_wndDoubleLogin.SetCheck((useraccount.uUserRights & USERRIGHT_MULTI_LOGIN)?BST_CHECKED:BST_UNCHECKED);
+    m_wndChangeNickname.SetCheck((useraccount.uUserRights & USERRIGHT_LOCKED_NICKNAME) ? BST_UNCHECKED : BST_CHECKED);
     m_wndViewAllUsers.SetCheck((useraccount.uUserRights & USERRIGHT_VIEW_ALL_USERS)?BST_CHECKED:BST_UNCHECKED);
     m_wndPermChannels.SetCheck((useraccount.uUserRights & USERRIGHT_MODIFY_CHANNELS)?BST_CHECKED:BST_UNCHECKED);
     m_wndTempChannels.SetCheck((useraccount.uUserRights & USERRIGHT_CREATE_TEMPORARY_CHANNEL)?BST_CHECKED:BST_UNCHECKED);

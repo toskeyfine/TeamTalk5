@@ -63,6 +63,9 @@ class TextMessageViewController :
         }
     }
 
+    func showLogMessages() -> Bool {
+        return userid == 0
+    }
     
     func dismissKeyboard() {
         if msgTextView.isFirstResponder {
@@ -259,7 +262,7 @@ class TextMessageViewController :
         case CLIENTEVENT_CMD_USER_LOGGEDIN :
             
             let user = getUser(&m).pointee
-            if TT_GetMyUserID(ttInst) == user.nUserID {
+            if showLogMessages() && TT_GetMyUserID(ttInst) == user.nUserID {
                 let logmsg = MyTextMessage(logmsg: NSLocalizedString("Logged on to server", comment: "log entry"))
                 messages.append(logmsg)
                 
@@ -267,10 +270,11 @@ class TextMessageViewController :
                     updateTableView()
                 }
             }
+            
         case CLIENTEVENT_CMD_USER_JOINED :
             
             let user = getUser(&m).pointee
-            if TT_GetMyChannelID(ttInst) == user.nChannelID {
+            if showLogMessages() && TT_GetMyChannelID(ttInst) == user.nChannelID {
                 var logmsg : MyTextMessage?
                 if TT_GetMyUserID(ttInst) == user.nUserID {
                     var channel = Channel()
@@ -299,7 +303,7 @@ class TextMessageViewController :
         case CLIENTEVENT_CMD_USER_LEFT :
             
             let user = getUser(&m).pointee
-            if TT_GetMyChannelID(ttInst) == m.nSource {
+            if showLogMessages() && TT_GetMyChannelID(ttInst) == m.nSource {
                 let name = getDisplayName(user)
                 let txt = String(format: NSLocalizedString("%@ left channel", comment: "log entry"), name)
                 let logmsg = MyTextMessage(logmsg: txt)
