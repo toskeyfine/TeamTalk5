@@ -1,20 +1,8 @@
 TEAMTALK_ROOT=$(PWD)/..
-INCLUDE := -I$(TEAMTALK_ROOT)/TeamTalk_DLL
-INCLUDE += -I/usr/lib/jvm/java-7-openjdk/include #Mac OS
-INCLUDE += -I/usr/lib/jvm/java-7-openjdk-armhf/include #Raspberry
-INCLUDE += -I/usr/lib/jvm/java-7-openjdk-i386/include #Debian i386
-INCLUDE += -I/usr/lib/jvm/java-7-openjdk-amd64/include #Debian amd64
-INCLUDE += -I/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers #Mac OS
-INCLUDE += -I/usr/lib/java/include # Slackware-14.1
-
-TT5DLIBS := -L$(TEAMTALK_ROOT)/TeamTalk_DLL -lTeamTalk5
-TT5PRODLIBS := -L$(TEAMTALK_ROOT)/TeamTalk_DLL -lTeamTalk5Pro
 
 #locations of 'hamcrest-core' and 'junit'
 HAMCRESTCORE_JAR ?= $(PWD)/hamcrest-core-1.3.jar
 JUNIT_JAR ?= $(PWD)/junit-4.11.jar
-
-CPPFLAGS := -fPIC
 
 ifeq ($(shell uname),Darwin)
 SHARED_EXT := dylib
@@ -25,9 +13,6 @@ LIBPATHNAME=LD_LIBRARY_PATH
 endif
 
 CLASSPATH ?= .:$(HAMCRESTCORE_JAR):$(JUNIT_JAR):$(PWD)/libs/TeamTalk5.jar
-
-TT5DLL := $(PWD)/libs/libTeamTalk5-jni.$(SHARED_EXT)
-TT5PRODLL := $(PWD)/libs/libTeamTalk5Pro-jni.$(SHARED_EXT)
 
 # DYLD_LIBRARY_PATH has been removed in Mac OS Sierra, so use
 # -Djava.library.path instead
@@ -41,19 +26,16 @@ JAVAPROP+=-Ddk.bearware.sndinputid=$(INPUTDEVICEID)
 JAVAPROP+=-Ddk.bearware.sndoutputid=$(OUTPUTDEVICEID)
 JAVAPROP+=-Ddk.bearware.proedition=$(PROEDITION)
 JAVAPROP+=-Ddk.bearware.encrypted=$(ENCRYPTED) 
+JAVAPROP+=-Ddk.bearware.videodevid=$(VIDEODEVID) 
 
 help:
 	@echo "Targets:"
-	@echo "  native"
-	@echo "    - Build libTeamTalk5-jni.$(SHARED_EXT) JNI DLL for TeamTalk5 DLL"
 	@echo "  macnative"
-	@echo "    - Build libTeamTalk5-jni.$(SHARED_EXT) JNI DLL for TeamTalk5 DLL"
-	@echo "      and run install_name_tool to set dependency path (otool -L)"
-	@echo "  nativepro"
-	@echo "    - Build libTeamTalk5Pro-jni.$(SHARED_EXT) JNI DLL for TeamTalk5Pro DLL"
+	@echo "    - Setup libTeamTalk5-jni.$(SHARED_EXT) JNI DLL for TeamTalk5 DLL,"
+	@echo "      i.e. run install_name_tool to set dependency path (otool -L)"
 	@echo "  macnativepro"
-	@echo "    - Build libTeamTalk5Pro-jni.$(SHARED_EXT) JNI DLL for TeamTalk5Pro DLL"
-	@echo "      and run install_name_tool to set depencency path (otool -L)"
+	@echo "    - Setup libTeamTalk5Pro-jni.$(SHARED_EXT) JNI DLL for TeamTalk5Pro DLL,"
+	@echo "      i.e. run install_name_tool to set dependency path (otool -L)"
 	@echo "  java"
 	@echo "    - Build TeamTalk5.jar. Java wrapper classes for JNI DLLs"
 	@echo "  clean"
@@ -86,25 +68,29 @@ help:
 	@echo ""
 	@echo "Example:"
 	@echo "$$ export $(LIBPATHNAME)=SDK_ROOT/TeamTalk_DLL:SDK_ROOT/TeamTalkJNI/libs"
+	@echo ""
+	@echo "Useful environment variables:"
+	@echo "  INPUTDEVICEID"
+	@echo "    1978 = virtual sound device, 0 = default audio device."
+	@echo "  OUTPUTDEVICEID"
+	@echo "    1978 = virtual sound device, 0 = default audio device."
+	@echo "  PROEDITION"
+	@echo "    0 = Standard Edition (TeamTalk5-jni), 1 = Professional Edition (TeamTalk5Pro-jni)"
+	@echo "  ENCRYPTED"
+	@echo "    0 = Non-encrypted, 1 = Encrypted"
+	@echo "  VIDEODEVID"
+	@echo "    None = Disable video capure unit tests"
 
+macnative:
+	install_name_tool -change @rpath/libTeamTalk5.dylib $(TEAMTALK_ROOT)/TeamTalk_DLL/libTeamTalk5.dylib libs/libTeamTalk5-jni.dylib
 
-native:
-	cd jni && g++ -O0 -g $(INCLUDE) $(CPPFLAGS) $(TT5DLIBS) -shared teamtalk-jni.cpp ttconvert-jni.cpp -o $(TT5DLL) -Wno-unused-value
-
-nativepro:
-	cd jni && g++ -O0 -g $(INCLUDE) $(CPPFLAGS) $(TT5PRODLIBS) -shared teamtalk-jni.cpp teamtalksrv-jni.cpp ttconvert-jni.cpp -o $(TT5PRODLL) -Wno-unused-value
-
-macnative: native
-	install_name_tool -change libTeamTalk5.dylib $(TEAMTALK_ROOT)/TeamTalk_DLL/libTeamTalk5.dylib $(TT5DLL)
-
-macnativepro: nativepro
-	install_name_tool -change libTeamTalk5Pro.dylib $(TEAMTALK_ROOT)/TeamTalk_DLL/libTeamTalk5Pro.dylib $(TT5PRODLL)
+macnativepro:
+	install_name_tool -change @rpath/libTeamTalk5Pro.dylib $(TEAMTALK_ROOT)/TeamTalk_DLL/libTeamTalk5Pro.dylib libs/libTeamTalk5Pro-jni.dylib
 
 java:
 	cd src && javac $(SRCTARGET) -g ./dk/bearware/*.java ./dk/bearware/events/*.java && jar cf ../libs/TeamTalk5.jar ./dk/bearware/*.class ./dk/bearware/events/*.class
 
 clean: cleanjava
-	cd jni && rm -f $(TT5DLL) $(TT5PRODLL)
 
 cleanjava:
 	cd src && find . -name \*.class -exec rm {} \;
