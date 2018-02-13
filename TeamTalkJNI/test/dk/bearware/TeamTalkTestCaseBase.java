@@ -13,16 +13,14 @@ public class TeamTalkTestCaseBase extends TestCase {
     public static String ADMIN_USERNAME = "admin", ADMIN_PASSWORD = "admin", ADMIN_NICKNAME = "Admin";
     public static String IPADDR = "127.0.0.1";
 
-    public static int TCPPORT = 10333, UDPPORT = 10333;
+    public static int TCPPORT = 0, UDPPORT = 0;
 
     public static String SYSTEMID = "teamtalk";
 
     public static int INPUTDEVICEID = -1, OUTPUTDEVICEID = -1;
-
+    public static String VIDEODEVICEID = "", VIDEODEVDISABLE="None"; //set to "None" to ignore video capture tests
 
     public static final String CRYPTO_CERT_FILE = "ttservercert.pem", CRYPTO_KEY_FILE = "ttserverkey.pem";
-    public static final String UPLOADFILE = "filename.txt";
-    public static final String DOWNLOADFILE = "filename.txt";
     public static final String MUXEDMEDIAFILE_WAVE = "muxwavefile.wav";
     public static final String MUXEDMEDIAFILE_SPEEX = "muxwavefile_speex.ogg";
     public static final String MUXEDMEDIAFILE_SPEEX_VBR = "muxwavefile_speex_vbr.ogg";
@@ -49,6 +47,21 @@ public class TeamTalkTestCaseBase extends TestCase {
         prop = System.getProperty("dk.bearware.encrypted");
         if(prop != null && !prop.isEmpty())
             this.ENCRYPTED = Integer.parseInt(prop) != 0;
+
+        prop = System.getProperty("dk.bearware.videodevid");
+        if(prop != null && !prop.isEmpty())
+            this.VIDEODEVICEID = prop;
+
+        if(TCPPORT == 0 && UDPPORT == 0) {
+            if(this.ENCRYPTED) {
+                TCPPORT = Constants.DEFAULT_TCP_PORT_ENCRYPTED;
+                UDPPORT = Constants.DEFAULT_UDP_PORT_ENCRYPTED;
+            }
+            else {
+                TCPPORT = Constants.DEFAULT_TCP_PORT;
+                UDPPORT = Constants.DEFAULT_UDP_PORT;
+            }
+        }
     }
 
     protected void tearDown() throws Exception {
@@ -137,7 +150,7 @@ public class TeamTalkTestCaseBase extends TestCase {
 
         server.interleave();
 
-        assertTrue("wait connect", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_CON_SUCCESS, 1000));
+        assertTrue("wait connect", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_CON_SUCCESS, DEF_WAIT));
     }
 
     protected static void login(TeamTalkBase ttclient, String nick, String username, String passwd) {
@@ -201,12 +214,21 @@ public class TeamTalkTestCaseBase extends TestCase {
         assertEquals("In root channel", ttclient.getMyChannelID(), ttclient.getRootChannelID());
     }
 
-    protected static boolean waitForEvent(TeamTalkBase ttclient, int nClientEvent, int waittimeout, TTMessage msg)
-    {
+    protected static boolean waitForEvent(TeamTalkBase ttclient, int nClientEvent, 
+                                          int waittimeout, TTMessage msg) {
+        return waitForEvent(ttclient, nClientEvent, waittimeout, msg, nop);
+    }
+
+    protected static boolean waitForEvent(TeamTalkBase ttclient, int nClientEvent, 
+                                          int waittimeout, TTMessage msg, ServerInterleave interleave) {
         long start = System.currentTimeMillis();
         TTMessage tmp = new TTMessage();
-        while (ttclient.getMessage(tmp, waittimeout) && tmp.nClientEvent != nClientEvent)
-        {
+        
+        do {
+            ttclient.getMessage(tmp, 0);
+
+            interleave.interleave();
+
             if(DEBUG_OUTPUT) {
                 System.out.println(System.currentTimeMillis() + " #" + ttclient.getMyUserID() + ": " + tmp.nClientEvent);
                 if(tmp.nClientEvent == ClientEvent.CLIENTEVENT_CMD_ERROR) {
@@ -216,6 +238,21 @@ public class TeamTalkTestCaseBase extends TestCase {
             if(System.currentTimeMillis() - start >= waittimeout)
                 break;
         }
+        while (tmp.nClientEvent != nClientEvent);
+
+        // while (ttclient.getMessage(tmp, 0) && tmp.nClientEvent != nClientEvent)
+        // {
+        //     interleave.interleave();
+
+        //     if(DEBUG_OUTPUT) {
+        //         System.out.println(System.currentTimeMillis() + " #" + ttclient.getMyUserID() + ": " + tmp.nClientEvent);
+        //         if(tmp.nClientEvent == ClientEvent.CLIENTEVENT_CMD_ERROR) {
+        //             System.out.println("Command error: " + tmp.clienterrormsg.szErrorMsg);
+        //         }
+        //     }
+        //     if(System.currentTimeMillis() - start >= waittimeout)
+        //         break;
+        // }
 
         if (tmp.nClientEvent == nClientEvent)
         {
@@ -268,11 +305,15 @@ public class TeamTalkTestCaseBase extends TestCase {
         return false;
     }
     
-    protected static boolean waitCmdSuccess(TeamTalkBase ttclient, int cmdid, int waittimeout)
-    {
+    protected static boolean waitCmdSuccess(TeamTalkBase ttclient, int cmdid, int waittimeout) {
+        return waitCmdSuccess(ttclient, cmdid, waittimeout, nop);
+    }
+
+    protected static boolean waitCmdSuccess(TeamTalkBase ttclient, int cmdid, 
+                                            int waittimeout, ServerInterleave interleave) {
         TTMessage msg = new TTMessage();
 
-        while (waitForEvent(ttclient, ClientEvent.CLIENTEVENT_CMD_SUCCESS, waittimeout, msg))
+        while (waitForEvent(ttclient, ClientEvent.CLIENTEVENT_CMD_SUCCESS, waittimeout, msg, interleave))
         {
             if (msg.nSource == cmdid)
                 return true;
