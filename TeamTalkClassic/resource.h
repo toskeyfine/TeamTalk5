@@ -206,6 +206,12 @@
 #define IDS_CMDNO                       298
 #define IDS_CMDTIMEFRAME                299
 #define IDS_ANONYMOUS                   300
+#define IDD_DIALOG_WEBLOGIN             301
+#define IDD_DIALOG_BANTYPE              302
+#define IDS_NEWPROFILE                  303
+#define IDS_DELETEPROFILE               304
+#define IDS_SELECTPROFILE               305
+#define IDS_PROFILENAME                 306
 #define MAX_STRING_LENGTH               511
 #define MAX_USERS                       1000
 #define IDC_SLIDER_VOICEACT             1001
@@ -306,8 +312,7 @@
 #define IDC_EDIT_AWAYMESSAGE            1115
 #define IDC_STATIC_3DDESCRIP            1117
 #define IDC_RADIO_QUESTION              1118
-#define IDC_STATIC_SUSERID              1119
-#define IDC_STATIC_SNICKNAME            1121
+#define IDC_EDIT_USERID                 1119
 #define IDC_STATIC_IPADDR               1123
 #define IDC_EDIT_TOTALTX                1124
 #define IDC_EDIT_LOCALTCPPORT           1126
@@ -316,7 +321,7 @@
 #define IDC_EDIT_VOICE                  1129
 #define IDC_EDIT_MAXBITRATE             1130
 #define IDC_CHECK_RECONNECT             1131
-#define IDC_STATIC_SCLIENTVER           1132
+#define IDC_EDIT_CLIENTVER              1132
 #define IDC_RICHEDIT_MESSAGE            1135
 #define IDC_EDIT_VIDEOTX                1137
 #define IDC_RICHEDIT_HISTORY            1138
@@ -372,10 +377,10 @@
 #define IDC_STATIC_FONTNAME             1212
 #define IDC_STATIC_SOUNDSYSDESCRIP      1213
 #define IDC_STATIC_TESTDESCRIP          1215
-#define IDC_STATIC_SUSERTYPE            1216
+#define IDC_EDIT_USERTYPE               1216
 #define IDC_CHECK_CHANNELSTEMP          1217
 #define IDC_CHECK_CHANNELSPERMANENT     1218
-#define IDC_STATIC_SIPADDR              1220
+#define IDC_EDIT_IPADDR                 1220
 #define IDC_CHECK_ALWAYSONTOP           1221
 #define IDC_STATIC_COOR                 1222
 #define IDC_STATIC_ROOM                 1223
@@ -385,7 +390,6 @@
 #define IDC_STATIC_AUTHOR               1228
 #define IDC_STATIC_GRPCHANNEL           1230
 #define IDC_BUTTON_SEND                 1231
-#define IDC_STATIC_SUSERNAME            1232
 #define IDC_VERT_SPLITTER               1233
 #define IDC_STATIC_VERSION              1234
 #define IDC_STATIC_WIZWELCOME           1236
@@ -654,7 +658,7 @@
 #define IDC_BUTTON_IMPORTTTILE          1538
 #define IDC_CHECK_SHOWUSERNAME          1539
 #define IDC_STATIC_CLIENTNAME           1540
-#define IDC_STATIC_SCLIENTNAME          1541
+#define IDC_EDIT_CLIENTNAME             1541
 #define IDC_TREE_TTS                    1542
 #define IDC_STATIC_TTS                  1543
 #define IDC_TREE_SOUNDEVENTS            1544
@@ -664,6 +668,12 @@
 #define IDC_STATIC_PREVENTSPAM          1548
 #define IDC_COMBO_CMDLIMIT              1549
 #define IDC_STATIC_CMDLIMIT             1550
+#define IDC_COMBO_USERNAME              1551
+#define IDC_EXPLORER1                   1552
+#define IDC_BUTTON_PROFILE              1553
+#define IDC_CHECK_CHANGENICKNAME        1554
+#define IDC_COMBO_BANTYPE               1555
+#define IDC_COMBO_INPUT                 1556
 #define ID_HELP_WHATISMYIP              32791
 #define ID_USERS_OP                     32798
 #define ID_CHANNELS_VIEWCHANNELMESSAGES 32801
@@ -767,15 +777,19 @@
 #define ID_ADVANCED_ALLOWALLDESKTOPTRANSMISSION 32947
 #define ID_ADVANCED_ALLOWALLMEDIAFILETRANSMISSION 32948
 #define ID_CHANNELINFO_SPEAKCHANNELSTATE 32949
+#define ID_POPUP_MESSAGES               32950
+#define ID_KICK_KICKANDBANFROMCHANNEL   32951
+#define ID_CHANNELS_BANNEDUSERSINCHANNEL 32952
+#define ID_CLIENT_NEWCLIENTINSTANCE     32953
 #define TT_MAX_ID                       0xFFFF
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        301
-#define _APS_NEXT_COMMAND_VALUE         32950
-#define _APS_NEXT_CONTROL_VALUE         1551
-#define _APS_NEXT_SYMED_VALUE           301
+#define _APS_NEXT_RESOURCE_VALUE        307
+#define _APS_NEXT_COMMAND_VALUE         32954
+#define _APS_NEXT_CONTROL_VALUE         1557
+#define _APS_NEXT_SYMED_VALUE           303
 #endif
 #endif

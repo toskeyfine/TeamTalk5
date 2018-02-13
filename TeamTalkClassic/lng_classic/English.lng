@@ -162,6 +162,12 @@
     <item id="298">Number of commands to allow (0 = disabled)</item>
     <item id="299">Timeframe to allow %d commands (in seconds)</item>
     <item id="300">Anonymous</item>
+    <item id="301">Web Login</item>
+    <item id="302">Ban User Properties</item>
+    <item id="303">New profile</item>
+    <item id="304">Delete profile</item>
+    <item id="305">Select profile</item>
+    <item id="306">Profile name</item>
     <item id="1009">Auto join root channel upon connection</item>
     <item id="1011">Host properties</item>
     <item id="1012">Host TCP port</item>
@@ -513,7 +519,7 @@
     <item id="32877">&amp;Store for Move\tCtrl+Alt+X</item>
     <item id="32878">&amp;Move User\tCtrl+Alt+V</item>
     <item id="32882">&amp;Banned Users\tCtrl+Shift+B</item>
-    <item id="32885">Kick and &amp;Ban\tCtrl+Shift+K</item>
+    <item id="32885">Kick and &amp;Ban From Server\tCtrl+Shift+K</item>
     <item id="32888">Recor&amp;d Conversations\tCtrl+Alt+A</item>
     <item id="32890">Move User &amp;Dialog\tCtrl+Alt+M</item>
     <item id="32892">&amp;User Messages\tCtrl+1</item>
@@ -564,4 +570,8 @@
     <item id="32947">Allow All Deskto&amp;p Transmission\tCtrl+Alt+Shift+E</item>
     <item id="32948">Allow All Medi&amp;a File Transmission\tCtrl+Alt+Shift+R</item>
     <item id="32949">Spea&amp;k Channel State\tCtrl+Shift+G</item>
+    <item id="32950">&amp;Messages\tCtrl+E</item>
+    <item id="32951">Kick and Ban From &amp;Channel\tCtrl+B</item>
+    <item id="32952">&amp;Banned Users From Channel\tCtrl+Alt+Shift+B</item>
+    <item id="32953">&amp;New Client Instance\tCtrl+N</item>
 </language>

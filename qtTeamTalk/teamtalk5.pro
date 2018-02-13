@@ -32,3 +32,4 @@ CONFIG(release, debug|release) {
         LIBS += -sectcreate __TEXT __info_plist TeamTalk5.app/Contents/Info.plist
     }
 }
+
