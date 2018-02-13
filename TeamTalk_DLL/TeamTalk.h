@@ -16,7 +16,7 @@
  * client's version can be seen in the @a szVersion member of the
  * #User-struct. */
 
-#define TEAMTALK_VERSION "5.3.0.4898"
+#define TEAMTALK_VERSION "5.3.0.4915"
 
 
 #if defined(WIN32)
@@ -1198,7 +1198,17 @@ extern "C" {
         USERRIGHT_TRANSMIT_MEDIAFILE_AUDIO  = 0x00010000,
         /** @brief User is allowed to stream video files to channel.
          * @see TT_StartStreamingMediaFileToChannel() */
-        USERRIGHT_TRANSMIT_MEDIAFILE_VIDEO  = 0x00020000
+        USERRIGHT_TRANSMIT_MEDIAFILE_VIDEO  = 0x00020000,
+        /** @brief User's nick name is locked.
+         * TT_DoChangeNickname() cannot be used and TT_DoLogin() 
+         * will ignore szNickname parameter. 
+         * @see TT_DoLogin()
+         * @see TT_DoLoginEx()
+         * @see TT_DoChangeNickname() */
+        USERRIGHT_LOCKED_NICKNAME           = 0x00040000,
+        /** @brief User's status is locked. TT_DoChangeStatus()
+        * cannot be used. */
+        USERRIGHT_LOCKED_STATUS             = 0x00080000,
     } UserRight;
 
     /** 
@@ -1332,20 +1342,43 @@ extern "C" {
     } ServerStatistics;
 
     /**
+     * @brief Way to ban a user.
+     * @see BannedUser */
+    typedef enum BanType
+    {
+        /** @brief Ban type not set. */
+        BANTYPE_NONE                = 0x00,
+        /** @brief The ban applies to the channel specified in the @c
+         * szChannel of #BannedUser. Otherwise the ban applies to the
+         * entire server. */
+        BANTYPE_CHANNEL             = 0x01,
+        /** @brief Ban @c szIPAddress specified in #BannedUser. */
+        BANTYPE_IPADDR              = 0x02,
+        /** @brief Ban @c szUsername specified in #BannedUser. */
+        BANTYPE_USERNAME            = 0x04
+    } BanType;
+
+    /** @brief A mask of types of bans that apply. @see #BanType */
+    typedef UINT32 BanTypes;
+
+    /**
      * @brief A struct containing the properties of a banned user.
-     * @see TT_DoListBans() */
+     * @see TT_DoListBans()
+     * @see TT_DoBanUserEx() */
     typedef struct BannedUser
     {
         /** @brief IP-address of banned user. */
         TTCHAR szIPAddress[TT_STRLEN]; 
         /** @brief Channel where user was located when banned. */
         TTCHAR szChannelPath[TT_STRLEN]; 
-        /** @brief Date and time when user was banned. */
+        /** @brief Date and time when user was banned. Read-only property. */
         TTCHAR szBanTime[TT_STRLEN];
-        /** @brief Nickname of banned user. */
+        /** @brief Nickname of banned user. Read-only property.  */
         TTCHAR szNickname[TT_STRLEN];
         /** @brief Username of banned user. */
         TTCHAR szUsername[TT_STRLEN];
+        /** @brief The type of ban that applies to this banned user. */
+        BanTypes uBanTypes;
     } BannedUser;
 
     /** @ingroup users
@@ -4698,6 +4731,8 @@ extern "C" {
      * The event #CLIENTEVENT_CMD_USER_UPDATE will be posted if the
      * update was successful.
      *
+     * Command will be rejected if #USERRIGHT_LOCKED_NICKNAME is set.
+     *
      * Possible errors:
      * - #CMDERR_NOT_LOGGEDIN
      *
@@ -4717,8 +4752,11 @@ extern "C" {
      * The event #CLIENTEVENT_CMD_USER_UPDATE will be posted if the update
      * was successful.
      *
+     * Command will be rejected if #USERRIGHT_LOCKED_STATUS is set.
+     *
      * Possible errors:
      * - #CMDERR_NOT_LOGGEDIN
+     * - #CMDERR_NOT_AUTHORIZED
      *
      * @param lpTTInstance Pointer to client instance created by
      * #TT_InitTeamTalk.
@@ -5216,7 +5254,8 @@ extern "C" {
      * @param lpTTInstance Pointer to client instance created by
      * #TT_InitTeamTalk.
      * @param nUserID The ID of the user to ban.
-     * @param nChannelID Set to zero.
+     * @param nChannelID Set to 0 to ban from logging in. Otherwise specify
+     * user's current channel.
      * @return Returns command ID which will be passed in 
      * #CLIENTEVENT_CMD_PROCESSING event when the server is processing the 
      * command. -1 is returned in case of error.
@@ -5227,6 +5266,12 @@ extern "C" {
                                        IN INT32 nUserID,
                                        IN INT32 nChannelID);
 
+    TEAMTALKDLL_API INT32 TT_DoBanUserEx(IN TTInstance* lpTTInstance,
+                                         IN INT32 nUserID,
+                                         IN BanTypes uBanTypes);
+
+    TEAMTALKDLL_API INT32 TT_DoBanUserProperties(IN TTInstance* lpTTInstance,
+                                                 IN const BannedUser* lpBannedUser);
 
     /**
      * @brief Issue a ban command on an IP-address user. 
@@ -5278,6 +5323,9 @@ extern "C" {
     TEAMTALKDLL_API INT32 TT_DoUnBanUser(IN TTInstance* lpTTInstance,
                                          IN const TTCHAR* szIPAddress,
                                          IN INT32 nChannelID);
+
+    TEAMTALKDLL_API INT32 TT_DoUnBanUserEx(IN TTInstance* lpTTInstance,
+                                        IN const BannedUser* lpBannedUser);
 
     /**
      * @brief Issue a command to list the banned users.
