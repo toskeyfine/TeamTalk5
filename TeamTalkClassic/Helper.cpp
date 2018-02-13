@@ -147,7 +147,7 @@ std::string STR_UTF8(LPCWSTR str, int max_str_len/* = TT_STRLEN*/)
     buff.resize(max_str_len);
     if(buff.size())
     {
-        int ret = WideCharToMultiByte(CP_UTF8, 0, str, -1, &buff[0], buff.size()-1, NULL, NULL);
+        int ret = WideCharToMultiByte(CP_UTF8, 0, str, -1, &buff[0], int(buff.size()-1), NULL, NULL);
         ASSERT(ret>0);
     }
     return buff.c_str();
@@ -263,7 +263,7 @@ int GetItemData(CComboBox& wnd, BOOL* pError)
     if(pError)
         *pError = nCur>=0;
     if(nCur>=0)
-        return wnd.GetItemData(nCur);
+        return int(wnd.GetItemData(nCur));
     return 0;
 }
 
@@ -327,6 +327,30 @@ CString StripAmpersand(const CString& szText)
     CString szResult = szText;
     szResult.Replace(_T("&"), _T(""));
     return szResult;
+}
+
+CString ExtractMenuText(int nID, CString szText)
+{
+    TRANSLATE_ITEM(nID, szText);
+    szText.Replace(_T("&"), _T(""));
+    int i = szText.ReverseFind('\t');
+    if(i >= 0)
+        szText = szText.Left(i);
+    return szText;
+}
+
+CString LoadText(int nID, CString szInitial)
+{
+    szInitial.LoadString(nID);
+    TRANSLATE_ITEM(nID, szInitial);
+    return szInitial;
+}
+
+void RemoveString(CStringList& strList, const CString& szStr)
+{
+    POSITION pos;
+    while((pos = strList.Find(szStr)) != NULL)
+        strList.RemoveAt(pos);
 }
 
 CString GetLogTimeStamp()
@@ -411,6 +435,16 @@ CString GetDisplayName(const User& user)
     if(bShowUsernames)
         return LimitText(user.szUsername);
     return LimitText(user.szNickname);
+}
+
+BOOL EndsWith(const CString& szText, LPCTSTR szEnd, BOOL bCaseSensitive)
+{
+    return bCaseSensitive? szText.Right(int(_tcslen(szEnd))) == szEnd : szText.Right(int(_tcslen(szEnd))).CompareNoCase(szEnd) == 0;
+}
+
+BOOL StartsWith(const CString& szText, LPCTSTR szStart, BOOL bCaseSensitive)
+{
+    return bCaseSensitive ? szText.Left(int(_tcslen(szStart))) == szStart : szText.Left(int(_tcslen(szStart))).CompareNoCase(szStart) == 0;
 }
 
 // The horror... initguid.h must be included before oleacc.h but oleacc.h is included
