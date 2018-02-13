@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="tr">
+<TS language="tr" version="2.1">
 <context>
     <name>AboutDlg</name>
     <message>
@@ -23,34 +23,67 @@
         <translation>Engellenen Kullanıcılar</translation>
     </message>
     <message>
-        <location filename="../bannedusers.ui" line="57"/>
+        <location filename="../bannedusersdlg.cpp" line="148"/>
         <source>Ban IP-address</source>
         <translation>IP adresini engelle</translation>
     </message>
     <message>
-        <location filename="../bannedusers.ui" line="70"/>
+        <location filename="../bannedusersdlg.cpp" line="149"/>
+        <source>Ban Username</source>
+        <translation>Kullanıcı Adını Engelle</translation>
+    </message>
+    <message>
+        <location filename="../bannedusers.ui" line="63"/>
         <source>Add to list of banned users</source>
         <translation>Engellenen kullanıcıların listesine ekle</translation>
     </message>
     <message>
-        <location filename="../bannedusers.ui" line="73"/>
+        <location filename="../bannedusers.ui" line="66"/>
         <source>Add</source>
         <translation>Ekle</translation>
     </message>
     <message>
-        <location filename="../bannedusers.ui" line="100"/>
+        <location filename="../bannedusers.ui" line="93"/>
         <source>Remove banned user</source>
         <translation>Engellenen kullanıcıyı kaldır</translation>
     </message>
     <message>
-        <location filename="../bannedusers.ui" line="110"/>
+        <location filename="../bannedusers.ui" line="103"/>
         <source>Put back to banned users</source>
         <translation>Engellenen kullanıcılara geri al</translation>
     </message>
     <message>
-        <location filename="../bannedusers.ui" line="135"/>
+        <location filename="../bannedusers.ui" line="128"/>
         <source>Unbanned Users</source>
         <translation>Engellenmeyen Kullanıcılar</translation>
+    </message>
+</context>
+<context>
+    <name>BannedUsersModel</name>
+    <message>
+        <location filename="../bannedusersdlg.cpp" line="50"/>
+        <source>Nickname</source>
+        <translation>Takma Ad</translation>
+    </message>
+    <message>
+        <location filename="../bannedusersdlg.cpp" line="51"/>
+        <source>Username</source>
+        <translation>Kullanıcı Adı</translation>
+    </message>
+    <message>
+        <location filename="../bannedusersdlg.cpp" line="52"/>
+        <source>Ban Time</source>
+        <translation>Engellenme Zamanı</translation>
+    </message>
+    <message>
+        <location filename="../bannedusersdlg.cpp" line="53"/>
+        <source>Channel</source>
+        <translation>Kanal</translation>
+    </message>
+    <message>
+        <location filename="../bannedusersdlg.cpp" line="54"/>
+        <source>IP-address</source>
+        <translation>IP Adresi</translation>
     </message>
 </context>
 <context>
@@ -590,7 +623,7 @@
     <message>
         <location filename="../filetransferdlg.cpp" line="64"/>
         <source>File transfer failed.</source>
-        <translation>Dosya aktarılamadı.</translation>
+        <translation>Dosya aktarımı başarısız.</translation>
     </message>
     <message>
         <location filename="../filetransferdlg.cpp" line="101"/>
@@ -605,7 +638,7 @@
     <message>
         <location filename="../filetransferdlg.cpp" line="148"/>
         <source>Unable to open &quot;%1&quot;. File does not have a default file association</source>
-        <translation>&quot;%1&quot; açılamadı. Dosya bir varsayılan dosya ilişkilendirmesine sahip değil</translation>
+        <translation>&quot;%1&quot; açılamıyor. Dosya bir varsayılan dosya ilişkilendirmesine sahip değil</translation>
     </message>
 </context>
 <context>
@@ -767,7 +800,7 @@
     <message>
         <location filename="../generatettfiledlg.cpp" line="182"/>
         <source>Unable to save file</source>
-        <translation>Dosya kaydedilemedi</translation>
+        <translation>Dosya kaydedilemiyor</translation>
     </message>
 </context>
 <context>
@@ -810,8 +843,8 @@
     </message>
     <message>
         <location filename="../keycompdlg.cpp" line="220"/>
-        <source>Mac OS does not support only modifier keys, i.e. Cmd, Option and Shift must be used in combination with other non-modifier keys.</source>
-        <translation>Mac OS, değiştirici tuşları tek başına desteklemediğinden Cmd, Option ve Shift diğer değiştirici olmayan tuşlarla birleştirilerek kullanılmalıdır.</translation>
+        <source>macOS does not support only modifier keys, i.e. Cmd, Option and Shift must be used in combination with other non-modifier keys.</source>
+        <translation>macOS değiştirici tuşları tek başına desteklemediğinden Cmd, Option ve Shift diğer değiştirici olmayan tuşlarla birleştirilerek kullanılmalıdır.</translation>
     </message>
 </context>
 <context>
@@ -836,7 +869,7 @@
     <message>
         <location filename="../mainwindow.ui" line="213"/>
         <location filename="../mainwindow.ui" line="238"/>
-        <location filename="../mainwindow.cpp" line="2411"/>
+        <location filename="../mainwindow.cpp" line="2453"/>
         <source>Microphone gain</source>
         <translation>Mikrofon kazancı</translation>
     </message>
@@ -870,7 +903,7 @@
     </message>
     <message>
         <location filename="../mainwindow.ui" line="384"/>
-        <location filename="../mainwindow.ui" line="1514"/>
+        <location filename="../mainwindow.ui" line="1518"/>
         <source>&amp;Video</source>
         <translation>&amp;Video</translation>
     </message>
@@ -899,7 +932,7 @@
     </message>
     <message>
         <location filename="../mainwindow.ui" line="630"/>
-        <location filename="../mainwindow.cpp" line="5153"/>
+        <location filename="../mainwindow.cpp" line="5312"/>
         <source>Desktops</source>
         <translation>Masaüstleri</translation>
     </message>
@@ -932,7 +965,7 @@
     </message>
     <message>
         <location filename="../mainwindow.ui" line="875"/>
-        <location filename="../mainwindow.cpp" line="2295"/>
+        <location filename="../mainwindow.cpp" line="2337"/>
         <source>Files</source>
         <translation>Dosyalar</translation>
     </message>
@@ -990,1377 +1023,1454 @@
         <translation>&amp;Uzaklaştır</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1115"/>
+        <location filename="../mainwindow.ui" line="1117"/>
         <source>&amp;Channels</source>
         <translation>&amp;Kanallar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1132"/>
+        <location filename="../mainwindow.ui" line="1136"/>
         <source>&amp;Server</source>
         <translation>&amp;Sunucu</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1147"/>
+        <location filename="../mainwindow.ui" line="1151"/>
         <source>&amp;Help</source>
         <translation>&amp;Yardım</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1210"/>
+        <location filename="../mainwindow.ui" line="1214"/>
         <source>&amp;Server List</source>
         <translation>&amp;Sunucu Listesi</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1213"/>
-        <location filename="../mainwindow.ui" line="1425"/>
+        <location filename="../mainwindow.ui" line="1217"/>
+        <location filename="../mainwindow.ui" line="1429"/>
         <source>F3</source>
         <translation>F3</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1225"/>
+        <location filename="../mainwindow.ui" line="1229"/>
         <source>&amp;Connect</source>
         <translation>&amp;Bağlan</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1228"/>
+        <location filename="../mainwindow.ui" line="1232"/>
         <source>F2</source>
         <translation>F2</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1233"/>
+        <location filename="../mainwindow.ui" line="1237"/>
         <source>&amp;Preferences</source>
         <translation>&amp;Tercihler</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1236"/>
+        <location filename="../mainwindow.ui" line="1240"/>
         <source>F4</source>
         <translation>F4</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1241"/>
-        <location filename="../mainwindow.cpp" line="1991"/>
+        <location filename="../mainwindow.ui" line="1245"/>
+        <location filename="../mainwindow.cpp" line="2026"/>
         <source>&amp;Exit</source>
         <translation>&amp;Çıkış</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1244"/>
+        <location filename="../mainwindow.ui" line="1248"/>
         <source>Alt+F4</source>
         <translation>Alt+F4</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1256"/>
+        <location filename="../mainwindow.ui" line="1260"/>
         <source>Enable &amp;Push To Talk</source>
         <translation>&amp;Bas Konuşu Etkinleştir</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1259"/>
+        <location filename="../mainwindow.ui" line="1263"/>
         <source>Ctrl+Shift+T</source>
         <translation>Ctrl+Shift+T</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1264"/>
+        <location filename="../mainwindow.ui" line="1268"/>
         <source>&amp;About</source>
         <translation>&amp;Hakkında</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1272"/>
+        <location filename="../mainwindow.ui" line="1276"/>
         <source>&amp;Manual</source>
         <translation>&amp;Kılavuz</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1275"/>
+        <location filename="../mainwindow.ui" line="1279"/>
         <source>F1</source>
         <translation>F1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1280"/>
+        <location filename="../mainwindow.ui" line="1284"/>
         <source>Server &amp;Properties</source>
         <translation>Sunucu &amp;Özellikleri</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1283"/>
+        <location filename="../mainwindow.ui" line="1287"/>
         <source>F9</source>
         <translation>F9</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1288"/>
+        <location filename="../mainwindow.ui" line="1292"/>
         <source>&amp;Create Channel</source>
         <translation>Kanal &amp;Oluştur</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1291"/>
+        <location filename="../mainwindow.ui" line="1295"/>
         <source>F7</source>
         <translation>F7</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1296"/>
+        <location filename="../mainwindow.ui" line="1300"/>
         <source>&amp;Update Channel</source>
         <translation>Kanalı &amp;Güncelleştir</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1299"/>
+        <location filename="../mainwindow.ui" line="1303"/>
         <source>Shift+F7</source>
         <translation>Shift+F7</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1304"/>
+        <location filename="../mainwindow.ui" line="1308"/>
         <source>&amp;Delete Channel</source>
         <translation>Kanalı &amp;Sil</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1307"/>
+        <location filename="../mainwindow.ui" line="1311"/>
         <source>F8</source>
         <translation>F8</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1312"/>
-        <location filename="../mainwindow.cpp" line="4292"/>
+        <location filename="../mainwindow.ui" line="1316"/>
+        <location filename="../mainwindow.cpp" line="4450"/>
         <source>&amp;Join Channel</source>
         <translation>Kanala &amp;Katıl</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1315"/>
+        <location filename="../mainwindow.ui" line="1319"/>
         <source>Ctrl+J</source>
         <translation>Ctrl+J</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1327"/>
+        <location filename="../mainwindow.ui" line="1331"/>
         <source>Enable Voice &amp;Activation</source>
         <translation>Ses &amp;Etkinleştirmeyi Etkinleştir</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1330"/>
+        <location filename="../mainwindow.ui" line="1334"/>
         <source>Ctrl+Shift+A</source>
         <translation>Ctrl+Shift+A</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1335"/>
+        <location filename="../mainwindow.ui" line="1339"/>
         <source>Change &amp;Nickname</source>
         <translation>&amp;Takma Adı Değiştir</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1338"/>
+        <location filename="../mainwindow.ui" line="1342"/>
         <source>F5</source>
         <translation>F5</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1343"/>
+        <location filename="../mainwindow.ui" line="1347"/>
         <source>Change &amp;Status</source>
         <translation>&amp;Durumu Değiştir</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1346"/>
+        <location filename="../mainwindow.ui" line="1350"/>
         <source>F6</source>
         <translation>F6</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1351"/>
+        <location filename="../mainwindow.ui" line="1355"/>
         <source>&amp;View User Information</source>
         <translation>Kullanıcı Bilgilerini &amp;Görüntüle</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1354"/>
+        <location filename="../mainwindow.ui" line="1358"/>
         <source>Ctrl+I</source>
         <translation>Ctrl+I</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1366"/>
+        <location filename="../mainwindow.ui" line="1370"/>
         <source>Mute &amp;All</source>
         <translation>&amp;Tümünü Sustur</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1369"/>
+        <location filename="../mainwindow.ui" line="1373"/>
         <source>Ctrl+M</source>
         <translation>Ctrl+M</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1374"/>
+        <location filename="../mainwindow.ui" line="1378"/>
         <source>Up&amp;load File</source>
         <translation>Karşıya Dosya &amp;Yükle</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1377"/>
+        <location filename="../mainwindow.ui" line="1381"/>
         <source>Shift+F5</source>
         <translation>Shift+F5</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1382"/>
+        <location filename="../mainwindow.ui" line="1386"/>
         <source>D&amp;ownload File</source>
         <translation>Dosyayı İnd&amp;ir</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1385"/>
+        <location filename="../mainwindow.ui" line="1389"/>
         <source>Shift+F6</source>
         <translation>Shift+F6</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1390"/>
+        <location filename="../mainwindow.ui" line="1394"/>
         <source>Dele&amp;te File</source>
         <translation>Dosyayı &amp;Sil</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1393"/>
+        <location filename="../mainwindow.ui" line="1397"/>
         <source>Shift+Del</source>
         <translation>Shift+Del</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1398"/>
+        <location filename="../mainwindow.ui" line="1402"/>
         <source>&amp;Banned Users</source>
         <translation>&amp;Engellenen Kullanıcılar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1401"/>
+        <location filename="../mainwindow.ui" line="1405"/>
         <source>Ctrl+Shift+B</source>
         <translation>Ctrl+Shift+B</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1406"/>
+        <location filename="../mainwindow.ui" line="1410"/>
         <source>&amp;User Accounts</source>
         <translation>&amp;Kullanıcı Hesapları</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1409"/>
+        <location filename="../mainwindow.ui" line="1413"/>
         <source>Ctrl+Shift+L</source>
         <translation>Ctrl+Shift+L</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1414"/>
+        <location filename="../mainwindow.ui" line="1418"/>
         <source>&amp;Save Configuration</source>
         <translation>Yapılandırmayı &amp;Kaydet</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1417"/>
+        <location filename="../mainwindow.ui" line="1421"/>
         <source>Ctrl+Shift+S</source>
         <translation>Ctrl+Shift+S</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1422"/>
+        <location filename="../mainwindow.ui" line="1426"/>
         <source>&amp;View Channel Info</source>
         <translation>Kanal Bilgilerini &amp;Görüntüle</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1430"/>
+        <location filename="../mainwindow.ui" line="1434"/>
         <source>M&amp;essages</source>
         <translation>İlet&amp;iler</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1433"/>
+        <location filename="../mainwindow.ui" line="1437"/>
         <source>Ctrl+E</source>
         <translation>Ctrl+E</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1438"/>
+        <location filename="../mainwindow.ui" line="1442"/>
         <source>Kick and &amp;Ban From Server</source>
         <translation>Uzaklaştır ve Sunucudan &amp;Engelle</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1441"/>
+        <location filename="../mainwindow.ui" line="1445"/>
         <source>Ctrl+Shift+K</source>
         <translation>Ctrl+Shift+K</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1450"/>
+        <location filename="../mainwindow.ui" line="1454"/>
         <source>&amp;Op</source>
         <translation>İşletme&amp;ci</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1453"/>
+        <location filename="../mainwindow.ui" line="1457"/>
         <source>Ctrl+O</source>
         <translation>Ctrl+O</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1458"/>
+        <location filename="../mainwindow.ui" line="1462"/>
         <source>&amp;Volume</source>
         <translation>Dü&amp;zey</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1461"/>
+        <location filename="../mainwindow.ui" line="1465"/>
         <source>Ctrl+U</source>
         <translation>Ctrl+U</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1473"/>
+        <location filename="../mainwindow.ui" line="1477"/>
         <source>V&amp;oice</source>
         <translation>&amp;Ses</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1476"/>
+        <location filename="../mainwindow.ui" line="1480"/>
         <source>Ctrl+4</source>
         <translation>Ctrl+4</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1488"/>
+        <location filename="../mainwindow.ui" line="1492"/>
         <source>&amp;User Messages</source>
         <translation>K&amp;ullanıcı İletileri</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1491"/>
+        <location filename="../mainwindow.ui" line="1495"/>
         <source>Ctrl+1</source>
         <translation>Ctrl+1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1499"/>
+        <location filename="../mainwindow.ui" line="1503"/>
         <source>&amp;Channel Messages</source>
         <translation>&amp;Kanal İletileri</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1502"/>
+        <location filename="../mainwindow.ui" line="1506"/>
         <source>Ctrl+2</source>
         <translation>Ctrl+2</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1517"/>
+        <location filename="../mainwindow.ui" line="1521"/>
         <source>Ctrl+5</source>
         <translation>Ctrl+5</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1525"/>
+        <location filename="../mainwindow.ui" line="1529"/>
         <source>&amp;Broadcast Messages</source>
         <translation>&amp;Yayınlanan İletiler</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1528"/>
+        <location filename="../mainwindow.ui" line="1532"/>
         <source>Ctrl+3</source>
         <translation>Ctrl+3</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1540"/>
+        <location filename="../mainwindow.ui" line="1544"/>
         <source>Enable &amp;Video Transmission</source>
         <translation>&amp;Video İletimini Etkinleştir</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1543"/>
+        <location filename="../mainwindow.ui" line="1547"/>
         <source>Ctrl+Shift+V</source>
         <translation>Ctrl+Shift+V</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1551"/>
+        <location filename="../mainwindow.ui" line="1555"/>
         <source>&amp;Stream Audio File to Channel</source>
         <translation>Kanala Ses Dosyası &amp;Akıt</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1554"/>
+        <location filename="../mainwindow.ui" line="1558"/>
         <source>Ctrl+W</source>
         <translation>Ctrl+W</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1559"/>
+        <location filename="../mainwindow.ui" line="1563"/>
         <source>Stream Audio &amp;File to User</source>
         <translation>&amp;Kullanıcıya Ses Dosyası Akıt</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1562"/>
+        <location filename="../mainwindow.ui" line="1566"/>
         <source>Ctrl+Shift+W</source>
         <translation>Ctrl+Shift+W</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1574"/>
+        <location filename="../mainwindow.ui" line="1578"/>
         <source>Record Conversations to &amp;Disk</source>
         <translation>Sohbetleri &amp;Diske Kaydet</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1577"/>
+        <location filename="../mainwindow.ui" line="1581"/>
         <source>Specify a folder where audio from users will be stored</source>
         <translation>Kullanıcılardan gelen sesin saklanacağı bir klasör belirtin</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1580"/>
+        <location filename="../mainwindow.ui" line="1584"/>
         <source>Ctrl+Alt+A</source>
         <translation>Ctrl+Alt+A</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1592"/>
+        <location filename="../mainwindow.ui" line="1596"/>
         <source>Intercept User Messages</source>
         <translation>Kullanıcı İletilerini İzle</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1595"/>
+        <location filename="../mainwindow.ui" line="1599"/>
         <source>Ctrl+Shift+1</source>
         <translation>Ctrl+Shift+1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1603"/>
+        <location filename="../mainwindow.ui" line="1607"/>
         <source>Intercept Channel Messages</source>
         <translation>Kanal İletilerini İzle</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1606"/>
+        <location filename="../mainwindow.ui" line="1610"/>
         <source>Ctrl+Shift+2</source>
         <translation>Ctrl+Shift+2</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1618"/>
+        <location filename="../mainwindow.ui" line="1622"/>
         <source>Intercept Audio</source>
         <translation>Sesi İzle</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1621"/>
+        <location filename="../mainwindow.ui" line="1625"/>
         <source>Ctrl+Shift+4</source>
         <translation>Ctrl+Shift+4</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1633"/>
+        <location filename="../mainwindow.ui" line="1637"/>
         <source>Intercept Video</source>
         <translation>Videoyu İzle</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1636"/>
+        <location filename="../mainwindow.ui" line="1640"/>
         <source>Ctrl+Shift+5</source>
         <translation>Ctrl+Shift+5</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1641"/>
+        <location filename="../mainwindow.ui" line="1645"/>
         <source>&amp;Broadcast Message</source>
         <translation>İleti &amp;Yayınla</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1644"/>
+        <location filename="../mainwindow.ui" line="1648"/>
         <source>Ctrl+Alt+B</source>
         <translation>Ctrl+Alt+B</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1649"/>
+        <location filename="../mainwindow.ui" line="1653"/>
         <source>&amp;Increase Voice Volume</source>
         <translation>Ses Düzeyini &amp;Artır</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1652"/>
+        <location filename="../mainwindow.ui" line="1656"/>
         <source>Ctrl+Right</source>
         <translation>Ctrl+Right</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1657"/>
+        <location filename="../mainwindow.ui" line="1661"/>
         <source>&amp;Lower Voice Volume</source>
         <translation>Ses Düzeyini A&amp;zalt</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1660"/>
+        <location filename="../mainwindow.ui" line="1664"/>
         <source>Ctrl+Left</source>
         <translation>Ctrl+Left</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1665"/>
+        <location filename="../mainwindow.ui" line="1669"/>
         <source>&amp;Store User(s) for Move</source>
         <translation>Kullanıcıları &amp;Taşımak için Sakla</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1668"/>
+        <location filename="../mainwindow.ui" line="1672"/>
         <source>Ctrl+Alt+X</source>
         <translation>Ctrl+Alt+X</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1673"/>
+        <location filename="../mainwindow.ui" line="1677"/>
         <source>&amp;Move User(s)</source>
         <translation>Kullanıcıları Ta&amp;şı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1676"/>
+        <location filename="../mainwindow.ui" line="1680"/>
         <source>Ctrl+Alt+V</source>
         <translation>Ctrl+Alt+V</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1693"/>
+        <location filename="../mainwindow.ui" line="1697"/>
         <source>Allow V&amp;oice Transmission</source>
         <translation>&amp;Ses İletimine İzin Ver</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1696"/>
+        <location filename="../mainwindow.ui" line="1700"/>
         <source>Ctrl+Alt+Q</source>
         <translation>Ctrl+Alt+Q</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1704"/>
+        <location filename="../mainwindow.ui" line="1708"/>
         <source>Allow Video Transmission</source>
         <translation>Video İletimine İzin Ver</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1707"/>
+        <location filename="../mainwindow.ui" line="1711"/>
         <source>Ctrl+Alt+W</source>
         <translation>Ctrl+Alt+W</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1712"/>
+        <location filename="../mainwindow.ui" line="1716"/>
         <source>Server S&amp;tatistics</source>
         <translation>Sunucu İstatistikler&amp;i</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1715"/>
+        <location filename="../mainwindow.ui" line="1719"/>
         <source>Shift+F9</source>
         <translation>Shift+F9</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1720"/>
+        <location filename="../mainwindow.ui" line="1724"/>
         <source>&amp;New Client Instance</source>
         <translation>&amp;Yeni İstemci Örneği</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1723"/>
+        <location filename="../mainwindow.ui" line="1727"/>
         <source>Ctrl+N</source>
         <translation>Ctrl+N</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1731"/>
+        <location filename="../mainwindow.ui" line="1735"/>
         <source>&amp;Online Users</source>
         <translation>&amp;Çevrimiçi Kullanıcılar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1734"/>
+        <location filename="../mainwindow.ui" line="1738"/>
         <source>Ctrl+Shift+U</source>
         <translation>Ctrl+Shift+U</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1746"/>
+        <location filename="../mainwindow.ui" line="1750"/>
         <source>Enable Question Mode</source>
         <translation>Soru Kipini Etkinleştir</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1749"/>
+        <location filename="../mainwindow.ui" line="1753"/>
         <source>Show blinking icon</source>
         <translation>Yanıp sönen simge göster</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1761"/>
+        <location filename="../mainwindow.ui" line="1765"/>
         <source>Enable Desktop Sharing</source>
         <translation>Masaüstü Paylaşımını Etkinleştir</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1764"/>
+        <location filename="../mainwindow.ui" line="1768"/>
         <source>Ctrl+Shift+D</source>
         <translation>Ctrl+Shift+D</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1772"/>
+        <location filename="../mainwindow.ui" line="1776"/>
         <source>Allow Desktop Transmission</source>
         <translation>Masaüstü İletimine İzin Ver</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1775"/>
+        <location filename="../mainwindow.ui" line="1779"/>
         <source>Ctrl+Alt+E</source>
         <translation>Ctrl+Alt+E</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1787"/>
+        <location filename="../mainwindow.ui" line="1791"/>
         <source>&amp;Desktop</source>
         <translation>&amp;Masaüstü</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1790"/>
+        <location filename="../mainwindow.ui" line="1794"/>
         <source>Ctrl+6</source>
         <translation>Ctrl+6</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1802"/>
+        <location filename="../mainwindow.ui" line="1806"/>
         <source>Intercept Desktop</source>
         <translation>Masaüstünü İzle</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1805"/>
+        <location filename="../mainwindow.ui" line="1809"/>
         <source>Ctrl+Shift+6</source>
         <translation>Ctrl+Shift+6</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1817"/>
+        <location filename="../mainwindow.ui" line="1821"/>
         <source>Stream &amp;Media File to Channel</source>
         <translation>Kanala &amp;Ortam Dosyası Akıt</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1820"/>
+        <location filename="../mainwindow.ui" line="1824"/>
         <source>Ctrl+S</source>
         <translation>Ctrl+S</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1832"/>
+        <location filename="../mainwindow.ui" line="1836"/>
         <source>Desktop Acce&amp;ss</source>
         <translation>&amp;Masaüstü Erişimi</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1844"/>
+        <location filename="../mainwindow.ui" line="1848"/>
         <source>Allow Desktop Access</source>
         <translation>Masaüstü Erişimine İzin Ver</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1847"/>
+        <location filename="../mainwindow.ui" line="1851"/>
         <source>Ctrl+7</source>
         <translation>Ctrl+7</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1855"/>
+        <location filename="../mainwindow.ui" line="1859"/>
         <source>&amp;Deny</source>
         <translation>&amp;Reddet</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1867"/>
+        <location filename="../mainwindow.ui" line="1871"/>
         <source>Media File Stream</source>
         <translation>Ortam Dosyası Akışı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1870"/>
+        <location filename="../mainwindow.ui" line="1874"/>
         <source>Ctrl+8</source>
         <translation>Ctrl+8</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1882"/>
+        <location filename="../mainwindow.ui" line="1886"/>
         <source>Intercept Media File Stream</source>
         <translation>Ortam Dosyası Akışını İzle</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1885"/>
+        <location filename="../mainwindow.ui" line="1889"/>
         <source>Ctrl+Shift+8</source>
         <translation>Ctrl+Shift+8</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1890"/>
+        <location filename="../mainwindow.ui" line="1894"/>
         <source>Allow Media File Transmission</source>
         <translation>Ortam Dosyası İletimine İzin Ver</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1893"/>
+        <location filename="../mainwindow.ui" line="1897"/>
         <source>Ctrl+Alt+R</source>
         <translation>Ctrl+Alt+R</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1898"/>
+        <location filename="../mainwindow.ui" line="1902"/>
         <source>Mu&amp;te Voice</source>
         <translation>Sesi Sus&amp;tur</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1901"/>
+        <location filename="../mainwindow.ui" line="1905"/>
         <source>Ctrl+Shift+M</source>
         <translation>Ctrl+Shift+M</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1906"/>
+        <location filename="../mainwindow.ui" line="1910"/>
         <source>Mute Media File</source>
         <translation>Ortam Dosyasını Sustur</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1909"/>
+        <location filename="../mainwindow.ui" line="1913"/>
         <source>Ctrl+Alt+Μ</source>
         <translation>Ctrl+Alt+Μ</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1914"/>
+        <location filename="../mainwindow.ui" line="1918"/>
         <source>Kick From Channel</source>
         <translation>Kanaldan Uzaklaştır</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1917"/>
+        <location filename="../mainwindow.ui" line="1921"/>
         <source>Ctrl+K</source>
         <translation>Ctrl+K</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1922"/>
+        <location filename="../mainwindow.ui" line="1926"/>
         <source>Kick From Server</source>
         <translation>Sunucudan Uzaklaştır</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1925"/>
+        <location filename="../mainwindow.ui" line="1929"/>
         <source>Ctrl+Alt+K</source>
         <translation>Ctrl+Alt+K</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1930"/>
+        <location filename="../mainwindow.ui" line="1934"/>
         <source>Increase Media File Volume</source>
         <translation>Ortam Dosyası Düzeyini Artır</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1933"/>
+        <location filename="../mainwindow.ui" line="1937"/>
         <source>Ctrl+Shift+Right</source>
         <translation>Ctrl+Shift+Right</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1938"/>
+        <location filename="../mainwindow.ui" line="1942"/>
         <source>Lower Media File Volume</source>
         <translation>Ortam Dosyası Düzeyini Azalt</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1941"/>
+        <location filename="../mainwindow.ui" line="1945"/>
         <source>Ctrl+Shift+Left</source>
         <translation>Ctrl+Shift+Left</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1946"/>
+        <location filename="../mainwindow.ui" line="1950"/>
         <source>R&amp;eset Preferences to Default</source>
         <translation>Tercihleri Varsayılana &amp;Sıfırla</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="713"/>
-        <location filename="../mainwindow.cpp" line="2070"/>
+        <location filename="../mainwindow.ui" line="1955"/>
+        <source>Kick and Ban From &amp;Channel</source>
+        <translation>Uzaklaştır ve &amp;Kanaldan Engelle</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1958"/>
+        <source>Ctrl+B</source>
+        <translation>Ctrl+B</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1963"/>
+        <source>Banned Users From Channel</source>
+        <translation>Kanaldan Engellenen Kullanıcılar</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1966"/>
+        <source>Ctrl+Alt+Shift+B</source>
+        <translation>Ctrl+Alt+Shift+B</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="718"/>
+        <location filename="../mainwindow.cpp" line="2112"/>
         <source>Firewall exception</source>
         <translation>Güvenlik Duvarı ayrıcalığı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="714"/>
+        <location filename="../mainwindow.cpp" line="719"/>
         <source>Failed to remove %1 from Windows Firewall exceptions.</source>
-        <translation>%1 Windows Güvenlik Duvarı ayrıcalıklarından kaldırılamadı.</translation>
+        <translation>%1 öğesini Windows Güvenlik Duvarı ayrıcalıklarından kaldırma başarısız.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="730"/>
+        <location filename="../mainwindow.cpp" line="735"/>
         <source>Startup arguments</source>
         <translation>Başlatma değişkenleri</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="731"/>
+        <location filename="../mainwindow.cpp" line="736"/>
         <source>Program argument &quot;%1&quot; is unrecognized.</source>
         <translation>&quot;%1&quot; program değişkeni tanınmıyor.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="764"/>
+        <location filename="../mainwindow.cpp" line="777"/>
         <source>Connected to %1 TCP port %2 UDP port %3</source>
-        <translation>%1 konumuna bağlanıldı TCP bağlantı noktası %2 UDP bağlantı noktası %3</translation>
+        <translation>%1 TCP bağlantı noktası %2 UDP bağlantı noktası %3 konumuna bağlanıldı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="778"/>
-        <location filename="../mainwindow.cpp" line="1559"/>
+        <location filename="../mainwindow.cpp" line="791"/>
+        <location filename="../mainwindow.cpp" line="1583"/>
         <source>Failed to connect to %1 TCP port %2 UDP port %3</source>
-        <translation>%1 konumuna bağlanılamadı TCP bağlantı noktası %2 UDP bağlantı noktası %3</translation>
+        <translation>%1 TCP bağlantı noktası %2 UDP bağlantı noktası %3 konumuna bağlanma başarısız</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="790"/>
+        <location filename="../mainwindow.cpp" line="803"/>
         <source>Connection lost to %1 TCP port %2 UDP port %3</source>
-        <translation>%1 bağlantısı kaybedildi TCP bağlantı noktası %2 UDP bağlantı noktası %3</translation>
+        <translation>%1 TCP bağlantı noktası %2 UDP bağlantı noktası %3 bağlantısı kaybedildi</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="828"/>
+        <location filename="../mainwindow.cpp" line="841"/>
         <source>Logged in</source>
         <translation>Oturum açıldı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="834"/>
+        <location filename="../mainwindow.cpp" line="847"/>
         <source>Logged out</source>
         <translation>Oturum kapatıldı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="844"/>
+        <location filename="../mainwindow.cpp" line="857"/>
         <source>Kicked by %1</source>
         <translation>%1 tarafından uzaklaştırıldı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="847"/>
+        <location filename="../mainwindow.cpp" line="860"/>
         <source>Kicked by unknown user</source>
         <translation>Bilinmeyen kullanıcı tarafından uzaklaştırıldı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1000"/>
-        <location filename="../mainwindow.cpp" line="3908"/>
+        <location filename="../mainwindow.cpp" line="1013"/>
+        <location filename="../mainwindow.cpp" line="4036"/>
         <source>Failed to download file %1</source>
-        <translation>%1 dosyası indirilemedi</translation>
+        <translation>%1 dosyasını indirme başarısız</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1004"/>
-        <location filename="../mainwindow.cpp" line="4361"/>
+        <location filename="../mainwindow.cpp" line="1017"/>
+        <location filename="../mainwindow.cpp" line="4520"/>
         <source>Failed to upload file %1</source>
-        <translation>%1 dosyası karşıya yüklenemedi</translation>
+        <translation>%1 dosyasını karşıya yükleme başarısız</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1019"/>
-        <location filename="../mainwindow.cpp" line="1514"/>
+        <location filename="../mainwindow.cpp" line="1032"/>
+        <location filename="../mainwindow.cpp" line="1538"/>
         <source>Failed to initialize sound input device</source>
-        <translation>Ses giriş aygıtı başlatılamadı</translation>
+        <translation>Ses giriş aygıtını başlatma başarısız</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1021"/>
-        <location filename="../mainwindow.cpp" line="1519"/>
+        <location filename="../mainwindow.cpp" line="1034"/>
+        <location filename="../mainwindow.cpp" line="1543"/>
         <source>Failed to initialize sound output device</source>
-        <translation>Ses çıkış aygıtı başlatılamadı</translation>
+        <translation>Ses çıkış aygıtını başlatma başarısız</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1023"/>
+        <location filename="../mainwindow.cpp" line="1036"/>
         <source>Failed to initialize audio codec</source>
-        <translation>Ses kodlayıcı/çözücüsü başlatılamadı</translation>
+        <translation>Ses kodlayıcı/çözücüsünü başlatma başarısız</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1026"/>
+        <location filename="../mainwindow.cpp" line="1039"/>
         <source>Failed to initialize audio configuration</source>
-        <translation>Ses yapılandırması başlatılamadı</translation>
+        <translation>Ses yapılandırmasını başlatma başarısız</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1029"/>
+        <location filename="../mainwindow.cpp" line="1042"/>
         <source>Internal message queue overloaded</source>
         <translation>İç ileti sıralaması aşırı yüklü</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1035"/>
+        <location filename="../mainwindow.cpp" line="1048"/>
         <source>Internal Error</source>
         <translation>İç Hata</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1077"/>
+        <location filename="../mainwindow.cpp" line="1090"/>
         <source>Error streaming media file to channel</source>
         <translation>Kanala ortam dosyası akıtılırken hata</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1081"/>
+        <location filename="../mainwindow.cpp" line="1094"/>
         <source>Started streaming media file to channel</source>
         <translation>Kanala ortam dosyası akıtılmaya başladı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1084"/>
+        <location filename="../mainwindow.cpp" line="1097"/>
         <source>Finished streaming media file to channel</source>
         <translation>Kanala ortam dosyasının akıtılması bitti</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1088"/>
+        <location filename="../mainwindow.cpp" line="1101"/>
         <source>Aborted streaming media file to channel</source>
         <translation>Kanala ortam dosyasının akıtılmasından vazgeçildi</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1137"/>
-        <location filename="../mainwindow.cpp" line="1169"/>
+        <location filename="../mainwindow.cpp" line="1150"/>
+        <location filename="../mainwindow.cpp" line="1182"/>
         <source>New video session from %1</source>
         <translation>%1 kullanıcısından yeni video oturumu</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1196"/>
+        <location filename="../mainwindow.cpp" line="1209"/>
         <source>New desktop session from %1</source>
         <translation>%1 kullanıcısından yeni masaüstü oturumu</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1224"/>
+        <location filename="../mainwindow.cpp" line="1237"/>
         <source>Your desktop session was cancelled</source>
         <translation>Masaüstü oturumunuz iptal edildi</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1244"/>
+        <location filename="../mainwindow.cpp" line="1257"/>
         <source>Writing audio file %1 for %2</source>
         <translation>%1 ses dosyası %2 için yazılıyor</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1249"/>
+        <location filename="../mainwindow.cpp" line="1262"/>
         <source>Failed to write audio file %1 for %2</source>
-        <translation>%1 ses dosyası %2 için yazılamadı</translation>
+        <translation>%1 ses dosyasını %2 için yazma başarısız</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1254"/>
+        <location filename="../mainwindow.cpp" line="1267"/>
         <source>Finished audio file %1</source>
         <translation>%1 ses dosyası bitti</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1258"/>
+        <location filename="../mainwindow.cpp" line="1271"/>
         <source>Aborted audio file %1</source>
         <translation>%1 ses dosyasından vazgeçildi</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1449"/>
-        <source>Cannot join channel %1</source>
-        <translation>%1 kanalına katılınamadı</translation>
+        <location filename="../mainwindow.cpp" line="1348"/>
+        <source>Banned Users in Channel %1</source>
+        <translation>%1 Kanalından Engellenen Kullanıcılar</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1506"/>
-        <source>Failed to initialize sound duplex mode</source>
-        <translation>Çift yönlü ses kipi başlatılamadı</translation>
+        <location filename="../mainwindow.cpp" line="1473"/>
+        <source>Cannot join channel %1</source>
+        <translation>%1 kanalına katılınamıyor</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1530"/>
+        <source>Failed to initialize sound duplex mode</source>
+        <translation>İkili ses kipini başlatma başarısız</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="1554"/>
         <source>Switching to default sound devices</source>
         <translation>Varsayılan ses aygıtlarına geçiliyor</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1534"/>
+        <location filename="../mainwindow.cpp" line="1558"/>
         <source>Unable to get default sound devices</source>
         <translation>Varsayılan ses aygıtları alınamadı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1543"/>
+        <location filename="../mainwindow.cpp" line="1567"/>
         <source>Failed to initialize default sound devices</source>
-        <translation>Varsayılan ses aygıtları başlatılamadı</translation>
+        <translation>Varsayılan ses aygıtlarını başlatma başarısız</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1551"/>
+        <location filename="../mainwindow.cpp" line="1575"/>
         <source>Connecting to %1 TCP port %2 UDP port %3</source>
-        <translation>%1 konumuna bağlanılıyor TCP bağlantı noktası %2 UDP bağlantı noktası %3</translation>
+        <translation>%1 TCP bağlantı noktası %2 UDP bağlantı noktası %3 konumuna bağlanılıyor</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1599"/>
-        <location filename="../mainwindow.cpp" line="2342"/>
+        <location filename="../mainwindow.cpp" line="1623"/>
+        <location filename="../mainwindow.cpp" line="2384"/>
         <source>Error</source>
         <translation>Hata</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1608"/>
+        <location filename="../mainwindow.cpp" line="1632"/>
         <source>This client is not compatible with the server, so the action cannot be performed.</source>
-        <translation>Bu istemci sunucuyla uyumlu olmadığından eylem yürütülemedi.</translation>
+        <translation>Bu istemci sunucuyla uyumlu değil, bu yüzden eylem yürütülemiyor.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1611"/>
+        <location filename="../mainwindow.cpp" line="1635"/>
         <source>The username is invalid</source>
         <translation>Kullanıcı adı geçersiz</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1617"/>
-        <location filename="../mainwindow.cpp" line="1622"/>
-        <location filename="../mainwindow.cpp" line="1653"/>
-        <location filename="../mainwindow.cpp" line="1658"/>
+        <location filename="../mainwindow.cpp" line="1641"/>
+        <location filename="../mainwindow.cpp" line="1646"/>
+        <location filename="../mainwindow.cpp" line="1677"/>
+        <location filename="../mainwindow.cpp" line="1682"/>
         <source>Login error</source>
         <translation>Oturum açma hatası</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1618"/>
+        <location filename="../mainwindow.cpp" line="1642"/>
         <source>Invalid user account. Type username:</source>
         <translation>Geçersiz kullanıcı hesabı. Kullanıcı adını yazın:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1623"/>
+        <location filename="../mainwindow.cpp" line="1647"/>
         <source>Invalid user account. Type password:</source>
         <translation>Geçersiz kullanıcı hesabı. Parolayı yazın:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1640"/>
+        <location filename="../mainwindow.cpp" line="1664"/>
         <source>Join channel error</source>
         <translation>Kanala katılma hatası</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1641"/>
+        <location filename="../mainwindow.cpp" line="1665"/>
         <source>Incorrect channel password. Try again:</source>
         <translation>Yanlış kanal parolası. Yeniden deneyin:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1654"/>
+        <location filename="../mainwindow.cpp" line="1678"/>
         <source>Banned from server</source>
         <translation>Sunucudan engellendi</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1656"/>
+        <location filename="../mainwindow.cpp" line="1680"/>
         <source>Command not authorized</source>
         <translation>Komut yetkili değil</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1659"/>
+        <location filename="../mainwindow.cpp" line="1683"/>
         <source>Maximum number of users on server exceeded</source>
         <translation>Sunucudaki en fazla kullanıcı sayısı aşıldı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1661"/>
+        <location filename="../mainwindow.cpp" line="1685"/>
         <source>Maximum disk usage exceeded</source>
         <translation>En fazla disk kullanımı aşıldı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1663"/>
+        <location filename="../mainwindow.cpp" line="1687"/>
         <source>Maximum number of users in channel exceeded</source>
         <translation>Kanaldaki en fazla kullanıcı sayısı aşıldı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1665"/>
+        <location filename="../mainwindow.cpp" line="1689"/>
         <source>Incorrect channel operator password</source>
         <translation>Yanlış kanal işletmeci parolası</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1669"/>
+        <location filename="../mainwindow.cpp" line="1693"/>
         <source>Already logged in</source>
         <translation>Zaten oturum açıldı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1671"/>
+        <location filename="../mainwindow.cpp" line="1695"/>
         <source>Cannot perform action because client is currently not logged in</source>
-        <translation>İstemci şu anda oturum açmadığından eylem yürütülemedi</translation>
+        <translation>Eylem yürütülemiyor çünkü istemci şu anda oturum açmış değil</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1674"/>
+        <location filename="../mainwindow.cpp" line="1698"/>
         <source>Cannot join the same channel twice</source>
         <translation>Aynı kanala iki kez katılınamaz</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1676"/>
+        <location filename="../mainwindow.cpp" line="1700"/>
         <source>Channel already exists</source>
         <translation>Kanal zaten var</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1682"/>
+        <location filename="../mainwindow.cpp" line="1706"/>
         <source>User not found</source>
         <translation>Kullanıcı bulunamadı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1685"/>
+        <location filename="../mainwindow.cpp" line="1709"/>
         <source>Channel not found</source>
         <translation>Kanal bulunamadı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1687"/>
+        <location filename="../mainwindow.cpp" line="1711"/>
         <source>Banned user not found</source>
         <translation>Engellenen kullanıcı bulunamadı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1689"/>
+        <location filename="../mainwindow.cpp" line="1713"/>
         <source>File transfer not found</source>
         <translation>Dosya aktarımı bulunamadı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1691"/>
+        <location filename="../mainwindow.cpp" line="1715"/>
         <source>User account not found</source>
         <translation>Kullanıcı hesabı bulunamadı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1693"/>
+        <location filename="../mainwindow.cpp" line="1717"/>
         <source>File not found</source>
         <translation>Dosya bulunamadı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1695"/>
+        <location filename="../mainwindow.cpp" line="1719"/>
         <source>File already exists</source>
         <translation>Dosya zaten var</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1697"/>
+        <location filename="../mainwindow.cpp" line="1721"/>
         <source>File sharing is disabled</source>
         <translation>Dosya paylaşımı etkisizleştirildi</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1699"/>
+        <location filename="../mainwindow.cpp" line="1723"/>
         <source>Channel has active users</source>
         <translation>Kanal etkin kullanıcılara sahip</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1704"/>
+        <location filename="../mainwindow.cpp" line="1728"/>
         <source>Unknown error occured</source>
         <translation>Bilinmeyen hata oluştu</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1711"/>
+        <location filename="../mainwindow.cpp" line="1735"/>
         <source>The server reported an error:</source>
         <translation>Sunucu bir hata raporladı:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="1989"/>
+        <location filename="../mainwindow.cpp" line="2024"/>
         <source>&amp;Restore</source>
         <translation>&amp;Geri Yükle</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2062"/>
+        <location filename="../mainwindow.cpp" line="2104"/>
         <source>Do you wish to add %1 to the Windows Firewall exception list?</source>
         <translation>%1 öğesini Windows Güvenlik Duvarı ayrıcalık listesine eklemek istiyor musunuz?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2071"/>
+        <location filename="../mainwindow.cpp" line="2113"/>
         <source>Failed to add %1 to Windows Firewall exceptions.</source>
-        <translation>%1 Windows Güvenlik Duvarı ayrıcalıklarına eklenemedi.</translation>
+        <translation>%1 öğesini Windows Güvenlik Duvarı ayrıcalıklarına ekleme başarısız.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2197"/>
+        <location filename="../mainwindow.cpp" line="2239"/>
         <source>%1 is requesting desktop access</source>
         <translation>%1 masaüstü erişimi istiyor</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2203"/>
-        <location filename="../mainwindow.cpp" line="3531"/>
+        <location filename="../mainwindow.cpp" line="2245"/>
+        <location filename="../mainwindow.cpp" line="3650"/>
         <source>%1 granted desktop access</source>
         <translation>%1 masaüstü erişimini onayladı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2209"/>
+        <location filename="../mainwindow.cpp" line="2251"/>
         <source>%1 retracted desktop access</source>
         <translation>%1 masaüstü erişimini geri aldı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2227"/>
+        <location filename="../mainwindow.cpp" line="2269"/>
         <source>Joined channel %1</source>
         <translation>Katılınan kanal %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2292"/>
+        <location filename="../mainwindow.cpp" line="2334"/>
         <source>Files in channel: %1</source>
         <translation>Kanaldaki dosyalar: %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2297"/>
+        <location filename="../mainwindow.cpp" line="2339"/>
         <source>Files (%1)</source>
         <translation>Dosyalar (%1)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2342"/>
+        <location filename="../mainwindow.cpp" line="2384"/>
         <source>Failed to start recording</source>
-        <translation>Kayıt başlatılamadı</translation>
+        <translation>Kaydı başlatma başarısız</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2346"/>
+        <location filename="../mainwindow.cpp" line="2388"/>
         <source>Recording to file: %1</source>
         <translation>Dosyaya kaydediliyor: %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2405"/>
+        <location filename="../mainwindow.cpp" line="2447"/>
         <source>Microphone gain is controlled by channel</source>
         <translation>Mikrofon kazancı kanal tarafından denetlenir</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2770"/>
+        <location filename="../mainwindow.cpp" line="2812"/>
         <source>Failed to stream media file %1</source>
-        <translation>%1 ortam dosyası akıtılamadı</translation>
+        <translation>%1 ortam dosyasını akıtma başarısız</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2905"/>
+        <location filename="../mainwindow.cpp" line="2947"/>
         <source>Enable HotKey</source>
         <translation>Kısayol Tuşunu Etkinleştir</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2906"/>
+        <location filename="../mainwindow.cpp" line="2948"/>
         <source>Failed to register hotkey. Please try another key combination.</source>
-        <translation>Kısayol tuşu kaydedilemedi. Lütfen başka tuş birleşimi deneyin.</translation>
+        <translation>Kısayol tuşunu kaydetme başarısız. Lütfen başka tuş birleşimi deneyin.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="2911"/>
+        <location filename="../mainwindow.cpp" line="2953"/>
         <source>Push To Talk: </source>
         <translation>Bas Konuş: </translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3262"/>
+        <location filename="../mainwindow.cpp" line="3140"/>
+        <location filename="../mainwindow.cpp" line="3164"/>
+        <source>New Profile</source>
+        <translation>Yeni Profil</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="3140"/>
+        <source>Delete Profile</source>
+        <translation>Profili Sil</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="3147"/>
+        <location filename="../mainwindow.cpp" line="3155"/>
+        <source>New Client Instance</source>
+        <translation>Yeni İstemci Örneği</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="3148"/>
+        <source>Select profile</source>
+        <translation>Profili seç</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="3156"/>
+        <source>Delete profile</source>
+        <translation>Profili sil</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="3164"/>
+        <source>Profile name</source>
+        <translation>Profil adı</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="3375"/>
         <source>Specify new nickname</source>
         <translation>Yeni takma adı belirtin</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3326"/>
-        <location filename="../mainwindow.cpp" line="4584"/>
+        <location filename="../mainwindow.cpp" line="3439"/>
+        <location filename="../mainwindow.cpp" line="4743"/>
         <source>Video device hasn&apos;t been configured property. Check settings in &apos;Preferences&apos;</source>
         <translation>Video aygıt özelliği yapılandırılamadı. &apos;Tercihler&apos;den ayarları denetleyin</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3336"/>
+        <location filename="../mainwindow.cpp" line="3449"/>
         <source>Failed to configure video codec. Check settings in &apos;Preferences&apos;</source>
-        <translation>Video kodlayıcı/çözücüsü yapılandırılamadı. &apos;Tercihler&apos;den ayarları denetleyin</translation>
+        <translation>Video kodlayıcı/çözücüsünü yapılandırma başarısız. &apos;Tercihler&apos;den ayarları denetleyin</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3381"/>
+        <location filename="../mainwindow.cpp" line="3494"/>
         <source>Failed to open X11 display.</source>
-        <translation>X11 görünümü açılamadı.</translation>
+        <translation>X11 görünümünü açma başarısız.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3400"/>
+        <location filename="../mainwindow.cpp" line="3513"/>
         <source>Failed to start desktop sharing</source>
-        <translation>Masaüstü paylaşımı başlatılamadı</translation>
+        <translation>Masaüstü paylaşımını başlatma başarısız</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3764"/>
-        <location filename="../mainwindow.cpp" line="3773"/>
+        <location filename="../mainwindow.cpp" line="3883"/>
+        <location filename="../mainwindow.cpp" line="3892"/>
         <source>Failed to issue command to create channel</source>
-        <translation>Kanal oluşturmak için komut sonuçlandırılamadı</translation>
+        <translation>Kanal oluşturma komutunu sonuçlandırma başarısız</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3787"/>
+        <location filename="../mainwindow.cpp" line="3906"/>
         <source>Failed to issue command to update channel</source>
-        <translation>Kanalı güncelleştirmek için komut sonuçlandırılamadı</translation>
+        <translation>Kanal güncelleştirme komutunu sonuçlandırma başarısız</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3800"/>
+        <location filename="../mainwindow.cpp" line="3919"/>
         <source>Are you sure you want to delete channel &quot;%1&quot;?</source>
         <translation>&quot;%1&quot; kanalını silmek istediğinizden emin misiniz?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3806"/>
+        <location filename="../mainwindow.cpp" line="3925"/>
         <source>Failed to issue command to delete channel</source>
-        <translation>Kanalı silmek için komut sonuçlandırılamadı</translation>
+        <translation>Kanal silme komutunu sonuçlandırma başarısız</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3827"/>
-        <location filename="../mainwindow.cpp" line="4148"/>
+        <location filename="../mainwindow.cpp" line="3946"/>
+        <location filename="../mainwindow.cpp" line="4296"/>
         <source>Specify password</source>
         <translation>Parolayı belirtin</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3842"/>
+        <location filename="../mainwindow.cpp" line="3961"/>
         <source>Failed to issue command to join channel</source>
-        <translation>Kanala katılmak için komut sonuçlandırılamadı</translation>
+        <translation>Kanala katılma komutunu sonuçlandırma başarısız</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3879"/>
+        <location filename="../mainwindow.cpp" line="4007"/>
         <source>Open File</source>
         <translation>Dosya Aç</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3899"/>
+        <location filename="../mainwindow.cpp" line="4027"/>
         <source>Save File</source>
         <translation>Dosyayı Kaydet</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3923"/>
+        <location filename="../mainwindow.cpp" line="4051"/>
         <source>Are you sure you want to delete &quot;%1&quot;?</source>
         <translation>&quot;%1&quot; öğesini silmek istediğinizden emin misiniz?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3928"/>
+        <location filename="../mainwindow.cpp" line="4056"/>
         <source>Are you sure you want to delete %1 file(s)?</source>
         <translation>%1 dosyayı silmek istediğinizden emin misiniz?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="3996"/>
+        <location filename="../mainwindow.cpp" line="4144"/>
         <source>Message to broadcast:</source>
         <translation>Yayınlamak için ileti:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4038"/>
+        <location filename="../mainwindow.cpp" line="4186"/>
         <source>Are you sure you want to delete your existing settings?</source>
         <translation>Varolan ayarlarınızı silmek istediğinizden emin misiniz?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4047"/>
+        <location filename="../mainwindow.cpp" line="4195"/>
         <source>Cannot find %1</source>
-        <translation>%1 bulunamadı</translation>
+        <translation>%1 bulunamıyor</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4054"/>
+        <location filename="../mainwindow.cpp" line="4202"/>
         <source>Cannot remove %1</source>
-        <translation>%1 kaldırılamadı</translation>
+        <translation>%1 kaldırılamıyor</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4061"/>
+        <location filename="../mainwindow.cpp" line="4209"/>
         <source>Failed to copy %1 to %2</source>
-        <translation>%1 %2 üzerine kopyalanamadı</translation>
+        <translation>%1 öğesini %2 üzerine kopyalama başarısız</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4290"/>
+        <location filename="../mainwindow.cpp" line="4309"/>
+        <source>IP-address</source>
+        <translation>IP adresi</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="4309"/>
+        <source>Username</source>
+        <translation>Kullanıcı adı</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="4311"/>
+        <source>Ban User From Channel</source>
+        <translation>Kullanıcıyı Kanaldan Engelle</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="4311"/>
+        <source>Ban user&apos;s</source>
+        <translation>Engellenecek kullanıcının</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="4448"/>
         <source>&amp;Leave Channel</source>
         <translation>Kanaldan &amp;Ayrıl</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4515"/>
+        <location filename="../mainwindow.cpp" line="4674"/>
         <source>The maximum number of users who can transmit is %1</source>
         <translation>İletebilecek en fazla kullanıcı sayısı %1</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4551"/>
+        <location filename="../mainwindow.cpp" line="4710"/>
         <source>You can now transmit audio!</source>
         <translation>Artık ses iletebilirsiniz!</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4553"/>
+        <location filename="../mainwindow.cpp" line="4712"/>
         <source>You can no longer transmit audio!</source>
         <translation>Artık ses iletemezsiniz!</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4561"/>
+        <location filename="../mainwindow.cpp" line="4720"/>
         <source>You can now transmit video!</source>
         <translation>Artık video iletebilirsiniz!</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4563"/>
+        <location filename="../mainwindow.cpp" line="4722"/>
         <source>You can no longer transmit video!</source>
         <translation>Artık video iletemezsiniz!</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4571"/>
+        <location filename="../mainwindow.cpp" line="4730"/>
         <source>You can now transmit desktop windows!</source>
         <translation>Artık masaüstü pencereleri iletebilirsiniz!</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4573"/>
+        <location filename="../mainwindow.cpp" line="4732"/>
         <source>You can no longer transmit desktop windows!</source>
         <translation>Artık masaüstü pencereleri iletemezsiniz!</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4583"/>
+        <location filename="../mainwindow.cpp" line="4742"/>
         <source>Start Webcam</source>
         <translation>Web Kamerasını Başlat</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4606"/>
-        <location filename="../mainwindow.cpp" line="4658"/>
+        <location filename="../mainwindow.cpp" line="4765"/>
+        <location filename="../mainwindow.cpp" line="4817"/>
         <source>Myself</source>
         <translation>Kendim</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="4990"/>
+        <location filename="../mainwindow.cpp" line="5149"/>
         <source>%1 joined channel</source>
         <translation>%1 kanala katıldı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5012"/>
+        <location filename="../mainwindow.cpp" line="5171"/>
         <source>%1 left channel</source>
         <translation>%1 kanaldan ayrıldı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5031"/>
-        <location filename="../mainwindow.cpp" line="5040"/>
-        <location filename="../mainwindow.cpp" line="5049"/>
-        <location filename="../mainwindow.cpp" line="5058"/>
-        <location filename="../mainwindow.cpp" line="5067"/>
-        <location filename="../mainwindow.cpp" line="5076"/>
-        <location filename="../mainwindow.cpp" line="5085"/>
-        <location filename="../mainwindow.cpp" line="5094"/>
-        <location filename="../mainwindow.cpp" line="5103"/>
-        <location filename="../mainwindow.cpp" line="5112"/>
-        <location filename="../mainwindow.cpp" line="5121"/>
+        <location filename="../mainwindow.cpp" line="5190"/>
+        <location filename="../mainwindow.cpp" line="5199"/>
+        <location filename="../mainwindow.cpp" line="5208"/>
+        <location filename="../mainwindow.cpp" line="5217"/>
+        <location filename="../mainwindow.cpp" line="5226"/>
+        <location filename="../mainwindow.cpp" line="5235"/>
+        <location filename="../mainwindow.cpp" line="5244"/>
+        <location filename="../mainwindow.cpp" line="5253"/>
+        <location filename="../mainwindow.cpp" line="5262"/>
+        <location filename="../mainwindow.cpp" line="5271"/>
+        <location filename="../mainwindow.cpp" line="5280"/>
         <source>%1 changed subscription &quot;%2&quot; to: %3</source>
         <translation>%1 &quot;%2&quot; aboneliğini değiştirdi: %3</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5035"/>
-        <location filename="../mainwindow.cpp" line="5044"/>
-        <location filename="../mainwindow.cpp" line="5053"/>
-        <location filename="../mainwindow.cpp" line="5062"/>
-        <location filename="../mainwindow.cpp" line="5071"/>
-        <location filename="../mainwindow.cpp" line="5080"/>
-        <location filename="../mainwindow.cpp" line="5089"/>
-        <location filename="../mainwindow.cpp" line="5098"/>
-        <location filename="../mainwindow.cpp" line="5107"/>
-        <location filename="../mainwindow.cpp" line="5116"/>
-        <location filename="../mainwindow.cpp" line="5125"/>
+        <location filename="../mainwindow.cpp" line="5194"/>
+        <location filename="../mainwindow.cpp" line="5203"/>
+        <location filename="../mainwindow.cpp" line="5212"/>
+        <location filename="../mainwindow.cpp" line="5221"/>
+        <location filename="../mainwindow.cpp" line="5230"/>
+        <location filename="../mainwindow.cpp" line="5239"/>
+        <location filename="../mainwindow.cpp" line="5248"/>
+        <location filename="../mainwindow.cpp" line="5257"/>
+        <location filename="../mainwindow.cpp" line="5266"/>
+        <location filename="../mainwindow.cpp" line="5275"/>
+        <location filename="../mainwindow.cpp" line="5284"/>
         <source>On</source>
         <translation>Açık</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5035"/>
-        <location filename="../mainwindow.cpp" line="5044"/>
-        <location filename="../mainwindow.cpp" line="5053"/>
-        <location filename="../mainwindow.cpp" line="5062"/>
-        <location filename="../mainwindow.cpp" line="5071"/>
-        <location filename="../mainwindow.cpp" line="5080"/>
-        <location filename="../mainwindow.cpp" line="5089"/>
-        <location filename="../mainwindow.cpp" line="5098"/>
-        <location filename="../mainwindow.cpp" line="5107"/>
-        <location filename="../mainwindow.cpp" line="5116"/>
-        <location filename="../mainwindow.cpp" line="5125"/>
+        <location filename="../mainwindow.cpp" line="5194"/>
+        <location filename="../mainwindow.cpp" line="5203"/>
+        <location filename="../mainwindow.cpp" line="5212"/>
+        <location filename="../mainwindow.cpp" line="5221"/>
+        <location filename="../mainwindow.cpp" line="5230"/>
+        <location filename="../mainwindow.cpp" line="5239"/>
+        <location filename="../mainwindow.cpp" line="5248"/>
+        <location filename="../mainwindow.cpp" line="5257"/>
+        <location filename="../mainwindow.cpp" line="5266"/>
+        <location filename="../mainwindow.cpp" line="5275"/>
+        <location filename="../mainwindow.cpp" line="5284"/>
         <source>Off</source>
         <translation>Kapalı</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5145"/>
+        <location filename="../mainwindow.cpp" line="5304"/>
         <source>Video</source>
         <translation>Video</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5147"/>
+        <location filename="../mainwindow.cpp" line="5306"/>
         <source>Video (%1)</source>
         <translation>Video (%1)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5155"/>
+        <location filename="../mainwindow.cpp" line="5314"/>
         <source>Desktops (%1)</source>
         <translation>Masaüstleri (%1)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5206"/>
-        <location filename="../mainwindow.cpp" line="5215"/>
-        <location filename="../mainwindow.cpp" line="5225"/>
-        <location filename="../mainwindow.cpp" line="5236"/>
+        <location filename="../mainwindow.cpp" line="5365"/>
+        <location filename="../mainwindow.cpp" line="5374"/>
+        <location filename="../mainwindow.cpp" line="5384"/>
+        <location filename="../mainwindow.cpp" line="5395"/>
         <source>Load File</source>
         <translation>Dosya Yükle</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5207"/>
-        <location filename="../mainwindow.cpp" line="5216"/>
+        <location filename="../mainwindow.cpp" line="5366"/>
+        <location filename="../mainwindow.cpp" line="5375"/>
         <source>Failed to load file %1</source>
-        <translation>%1 dosyası yüklenemedi</translation>
+        <translation>%1 dosyasını yükleme başarısız</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5226"/>
+        <location filename="../mainwindow.cpp" line="5385"/>
         <source>The file &quot;%1&quot; is incompatible with %2</source>
         <translation>&quot;%1&quot; dosyası %2 ile uyumsuz</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5237"/>
+        <location filename="../mainwindow.cpp" line="5396"/>
         <source>Failed to extract host-information from %1</source>
-        <translation>Ana bilgisayar bilgileri %1 üzerinden çıkartılamadı</translation>
+        <translation>Ana bilgisayar bilgilerini %1 üzerinden çıkartma başarısız</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5245"/>
+        <location filename="../mainwindow.cpp" line="5404"/>
         <source>Load %1 File</source>
         <translation>%1 Dosyayı Yükle</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5246"/>
+        <location filename="../mainwindow.cpp" line="5405"/>
         <source>The file %1 contains %2 setup information.
 Should these settings be applied?</source>
         <translation>%1 dosyası %2 ayarlama bilgisi içeriyor.
 Bu ayarlar uygulansın mı?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="5315"/>
+        <location filename="../mainwindow.cpp" line="5474"/>
         <source>New version available: %1</source>
         <translation>Yeni sürüm kullanılabilir: %1</translation>
     </message>
@@ -2548,12 +2658,12 @@ Bu ayarlar uygulansın mı?</translation>
     <message>
         <location filename="../preferences.ui" line="189"/>
         <source>Set away status after</source>
-        <translation>Sonra uzakta durumunu ayarla</translation>
+        <translation>Uzakta durumunu</translation>
     </message>
     <message>
         <location filename="../preferences.ui" line="206"/>
         <source>seconds of inactivity (0 means disabled)</source>
-        <translation>etkisizlik saniyesi (0 etkisizleştirildi demektir)</translation>
+        <translation>etkisizlik saniyesinden sonra ayarla (0 etkisizleştirildi demektir)</translation>
     </message>
     <message>
         <location filename="../preferences.ui" line="231"/>
@@ -2604,7 +2714,7 @@ Bu ayarlar uygulansın mı?</translation>
     <message>
         <location filename="../preferences.ui" line="329"/>
         <source>Start minimized</source>
-        <translation>Küçülterek başlat</translation>
+        <translation>Küçültüp başlat</translation>
     </message>
     <message>
         <location filename="../preferences.ui" line="336"/>
@@ -2634,7 +2744,7 @@ Bu ayarlar uygulansın mı?</translation>
     <message>
         <location filename="../preferences.ui" line="371"/>
         <source>Show last to talk in yellow</source>
-        <translation>Konuşma sonunda sarı göster</translation>
+        <translation>Konuşma sonu için sarı göster</translation>
     </message>
     <message>
         <location filename="../preferences.ui" line="378"/>
@@ -2853,7 +2963,7 @@ Bu ayarlar uygulansın mı?</translation>
     <message>
         <location filename="../preferences.ui" line="1012"/>
         <source>Enable duplex mode (required for echo cancellation)</source>
-        <translation>Çift yönlü kipi etkinleştir (yankı iptali için gereklidir)</translation>
+        <translation>İkili kipini etkinleştir (yankı iptali için gereklidir)</translation>
     </message>
     <message>
         <location filename="../preferences.ui" line="1019"/>
@@ -3020,7 +3130,7 @@ Bu ayarlar uygulansın mı?</translation>
     <message>
         <location filename="../preferences.ui" line="1677"/>
         <source>Image Format</source>
-        <translation>Görsel Biçimi</translation>
+        <translation>Görüntü Biçimi</translation>
     </message>
     <message>
         <location filename="../preferences.ui" line="1684"/>
@@ -3064,121 +3174,121 @@ Bu ayarlar uygulansın mı?</translation>
         <translation>Varsayılan Giriş Aygıtı</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="331"/>
+        <location filename="../preferencesdlg.cpp" line="336"/>
         <source>Default Output Device</source>
         <translation>Varsayılan Çıkış Aygıtı</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="346"/>
-        <location filename="../preferencesdlg.cpp" line="347"/>
+        <location filename="../preferencesdlg.cpp" line="320"/>
+        <location filename="../preferencesdlg.cpp" line="351"/>
         <source>No Sound Device</source>
         <translation>Ses Aygıtı Yok</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="396"/>
+        <location filename="../preferencesdlg.cpp" line="400"/>
         <source>Open Wave File</source>
         <translation>Dalga Dosyası Aç</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="398"/>
+        <location filename="../preferencesdlg.cpp" line="402"/>
         <source>Wave files (*.wav)</source>
         <translation>Dalga dosyaları (*.wav)</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="695"/>
-        <location filename="../preferencesdlg.cpp" line="702"/>
+        <location filename="../preferencesdlg.cpp" line="699"/>
+        <location filename="../preferencesdlg.cpp" line="706"/>
         <source>Windows Firewall</source>
         <translation>Windows Güvenlik Duvarı</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="696"/>
+        <location filename="../preferencesdlg.cpp" line="700"/>
         <source>Failed to add %1 to Windows Firewall exception list</source>
-        <translation>%1 Windows Güvenlik Duvarı ayrıcalık listesine eklenemedi</translation>
+        <translation>%1 öğesini Windows Güvenlik Duvarı ayrıcalık listesine ekleme başarısız</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="703"/>
+        <location filename="../preferencesdlg.cpp" line="707"/>
         <source>Failed to remove %1 from Windows Firewall exception list</source>
-        <translation>%1 Windows Güvenlik Duvarı ayrıcalık listesinden kaldırılamadı</translation>
+        <translation>%1 öğesini Windows Güvenlik Duvarı ayrıcalık listesinden kaldırma başarısız</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="757"/>
-        <location filename="../preferencesdlg.cpp" line="774"/>
-        <location filename="../preferencesdlg.cpp" line="785"/>
-        <location filename="../preferencesdlg.cpp" line="1126"/>
+        <location filename="../preferencesdlg.cpp" line="761"/>
+        <location filename="../preferencesdlg.cpp" line="778"/>
+        <location filename="../preferencesdlg.cpp" line="789"/>
+        <location filename="../preferencesdlg.cpp" line="1130"/>
         <source>Sound Initialization</source>
         <translation>Ses Başlatma</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="758"/>
+        <location filename="../preferencesdlg.cpp" line="762"/>
         <source>Failed to initialize sound duplex mode</source>
-        <translation>Çift yönlü ses kipi başlatılamadı</translation>
+        <translation>İkili ses kipini başlatma başarısız</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="775"/>
+        <location filename="../preferencesdlg.cpp" line="779"/>
         <source>Failed to initialize new sound input device</source>
-        <translation>Yeni ses giriş aygıtı başlatılamadı</translation>
+        <translation>Yeni ses giriş aygıtını başlatma başarısız</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="786"/>
+        <location filename="../preferencesdlg.cpp" line="790"/>
         <source>Failed to initialize new sound output device</source>
-        <translation>Yeni ses çıkış aygıtı başlatılamadı</translation>
+        <translation>Yeni ses çıkış aygıtını başlatma başarısız</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="947"/>
-        <location filename="../preferencesdlg.cpp" line="959"/>
+        <location filename="../preferencesdlg.cpp" line="951"/>
+        <location filename="../preferencesdlg.cpp" line="963"/>
         <source>Video Device</source>
         <translation>Video Aygıtı</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="948"/>
-        <location filename="../preferencesdlg.cpp" line="960"/>
-        <location filename="../preferencesdlg.cpp" line="1470"/>
+        <location filename="../preferencesdlg.cpp" line="952"/>
+        <location filename="../preferencesdlg.cpp" line="964"/>
+        <location filename="../preferencesdlg.cpp" line="1474"/>
         <source>Failed to initialize video device</source>
-        <translation>Video aygıtı başlatılamadı</translation>
+        <translation>Video aygıtını başlatma başarısız</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="1015"/>
+        <location filename="../preferencesdlg.cpp" line="1019"/>
         <source>Max Input Channels %1</source>
         <translation>En Fazla Giriş Kanalı %1</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="1017"/>
-        <location filename="../preferencesdlg.cpp" line="1040"/>
+        <location filename="../preferencesdlg.cpp" line="1021"/>
+        <location filename="../preferencesdlg.cpp" line="1044"/>
         <source>Sample Rates:</source>
         <translation>Örnekleme Hızları:</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="1038"/>
+        <location filename="../preferencesdlg.cpp" line="1042"/>
         <source>Max Output Channels %1</source>
         <translation>En Fazla Çıkış Kanalı %1</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="1078"/>
+        <location filename="../preferencesdlg.cpp" line="1082"/>
         <source>Refresh Sound Devices</source>
         <translation>Ses Aygıtlarını Yenile</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="1079"/>
+        <location filename="../preferencesdlg.cpp" line="1083"/>
         <source>Failed to restart sound systems. Please restart application.</source>
-        <translation>Ses sistemleri yeniden başlatılamadı. Lütfen uygulamayı yeniden başlatın.</translation>
+        <translation>Ses sistemlerini yeniden başlatma başarısız. Lütfen uygulamayı yeniden başlatın.</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="1127"/>
+        <location filename="../preferencesdlg.cpp" line="1131"/>
         <source>Failed to initialize new sound devices</source>
-        <translation>Yeni ses aygıtları başlatılamadı</translation>
+        <translation>Yeni ses aygıtlarını başlatma başarısız</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="1428"/>
+        <location filename="../preferencesdlg.cpp" line="1432"/>
         <source>Custom video format</source>
         <translation>Özel video biçimi</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="1522"/>
+        <location filename="../preferencesdlg.cpp" line="1526"/>
         <source>Default Video Capture</source>
         <translation>Varsayılan Video Yakalayıcısı</translation>
     </message>
     <message>
-        <location filename="../preferencesdlg.cpp" line="1523"/>
+        <location filename="../preferencesdlg.cpp" line="1527"/>
         <source>Unable to find preferred video capture settings</source>
         <translation>Yeğlenen video yakalama ayarları bulunamadı</translation>
     </message>
@@ -3206,7 +3316,7 @@ Bu ayarlar uygulansın mı?</translation>
     <message>
         <location filename="../serverlist.ui" line="35"/>
         <source>Include public servers (green ones)</source>
-        <translation>Genel sunucuları kat (yeşil olanlar)</translation>
+        <translation>Kamu sunucularını kat (yeşil olanlar)</translation>
     </message>
     <message>
         <location filename="../serverlist.ui" line="44"/>
@@ -3266,65 +3376,65 @@ Bu ayarlar uygulansın mı?</translation>
         <translation>Kullanıcı adı</translation>
     </message>
     <message>
-        <location filename="../serverlist.ui" line="189"/>
-        <location filename="../serverlist.ui" line="231"/>
+        <location filename="../serverlist.ui" line="183"/>
+        <location filename="../serverlist.ui" line="232"/>
         <source>Password</source>
         <translation>Parola</translation>
     </message>
     <message>
-        <location filename="../serverlist.ui" line="209"/>
-        <location filename="../serverlist.ui" line="212"/>
+        <location filename="../serverlist.ui" line="210"/>
+        <location filename="../serverlist.ui" line="213"/>
         <source>Join specific channel after authentication (optional)</source>
         <translation>Yetkilendirmeden sonra belirtilen kanala katıl (isteğe bağlı)</translation>
     </message>
     <message>
-        <location filename="../serverlist.ui" line="218"/>
+        <location filename="../serverlist.ui" line="219"/>
         <source>Channel</source>
         <translation>Kanal</translation>
     </message>
     <message>
-        <location filename="../serverlist.ui" line="259"/>
+        <location filename="../serverlist.ui" line="260"/>
         <source>C&amp;lear</source>
         <translation>&amp;Temizle</translation>
     </message>
     <message>
-        <location filename="../serverlist.ui" line="279"/>
+        <location filename="../serverlist.ui" line="280"/>
         <source>&amp;Connect</source>
         <translation>&amp;Bağlan</translation>
     </message>
     <message>
-        <location filename="../serverlist.ui" line="291"/>
+        <location filename="../serverlist.ui" line="292"/>
         <source>Save Server Information</source>
         <translation>Sunucu Bilgilerini Kaydet</translation>
     </message>
     <message>
-        <location filename="../serverlist.ui" line="299"/>
+        <location filename="../serverlist.ui" line="300"/>
         <source>Entry name</source>
         <translation>Giriş adı</translation>
     </message>
     <message>
-        <location filename="../serverlist.ui" line="316"/>
-        <location filename="../serverlist.ui" line="319"/>
+        <location filename="../serverlist.ui" line="317"/>
+        <location filename="../serverlist.ui" line="320"/>
         <source>.tt files can be double-clicked and the client will automatically start and connect to the specified server</source>
         <translation>.tt dosyaları çift tıklanabilir; istemci otomatik olarak başlayacak ve belirtilen sunucuya bağlanacak</translation>
     </message>
     <message>
-        <location filename="../serverlist.ui" line="322"/>
+        <location filename="../serverlist.ui" line="323"/>
         <source>&amp;Generate .tt File</source>
         <translation>.tt Dosyası &amp;Oluştur</translation>
     </message>
     <message>
-        <location filename="../serverlist.ui" line="351"/>
+        <location filename="../serverlist.ui" line="352"/>
         <source>&amp;Save</source>
         <translation>&amp;Kaydet</translation>
     </message>
     <message>
-        <location filename="../serverlistdlg.cpp" line="209"/>
+        <location filename="../serverlistdlg.cpp" line="215"/>
         <source>Missing fields</source>
         <translation>Eksik alanlar</translation>
     </message>
     <message>
-        <location filename="../serverlistdlg.cpp" line="210"/>
+        <location filename="../serverlistdlg.cpp" line="216"/>
         <source>Please fill the fields &apos;Host IP-address&apos;, &apos;TCP port&apos; and &apos;UDP port&apos;</source>
         <translation>Lütfen &apos;Ana bilgisayar IP adresi&apos;, &apos;TCP bağlantı noktası&apos; ve &apos;UDP bağlantı noktası&apos; alanlarını doldurun</translation>
     </message>
@@ -3441,7 +3551,7 @@ Bu ayarlar uygulansın mı?</translation>
     <message>
         <location filename="../serverproperties.ui" line="407"/>
         <source>Max logins per IP-address</source>
-        <translation>IP adresi başına en fazla oturum açma</translation>
+        <translation>IP adresi başına en fazla oturum</translation>
     </message>
     <message>
         <location filename="../serverproperties.ui" line="434"/>
@@ -3718,218 +3828,291 @@ Bu ayarlar uygulansın mı?</translation>
         <translation>Kullanıcı Hesabını Değiştir</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="95"/>
+        <location filename="../useraccounts.ui" line="127"/>
         <source>Username</source>
         <translation>Kullanıcı adı</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="115"/>
+        <location filename="../useraccounts.ui" line="147"/>
         <source>Password</source>
         <translation>Parola</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="135"/>
+        <location filename="../useraccounts.ui" line="167"/>
         <source>Note</source>
         <translation>Not</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="148"/>
+        <location filename="../useraccounts.ui" line="180"/>
         <source>Initial Channel</source>
         <translation>İlk Kanal</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="158"/>
+        <location filename="../useraccounts.ui" line="190"/>
         <source>User should automatically join this channel after login</source>
         <translation>Kullanıcı oturum açtıktan sonra otomatik olarak bu kanala katılır</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="168"/>
+        <location filename="../useraccounts.ui" line="96"/>
         <source>User type</source>
         <translation>Kullanıcı türü</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="180"/>
+        <location filename="../useraccounts.ui" line="118"/>
         <source>Administrator</source>
         <translation>Yönetici</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="187"/>
+        <location filename="../useraccounts.ui" line="108"/>
         <source>Default user</source>
         <translation>Varsayılan kullanıcı</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="203"/>
-        <location filename="../useraccounts.ui" line="206"/>
+        <location filename="../useraccounts.ui" line="90"/>
+        <source>Basic Account Properties</source>
+        <translation>Temel Hesap Özellikleri</translation>
+    </message>
+    <message>
+        <location filename="../useraccounts.ui" line="226"/>
+        <location filename="../useraccounts.ui" line="229"/>
         <source>Auto-Operator Channels</source>
         <translation>Otomatik İşletmeci Kanalları</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="212"/>
+        <location filename="../useraccounts.ui" line="235"/>
         <source>Selected Channels</source>
         <translation>Seçilen Kanallar</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="222"/>
+        <location filename="../useraccounts.ui" line="245"/>
         <source>User will automatically become operator when joining these channels</source>
         <translation>Kullanıcı bu kanallara katıldığında otomatik olarak işletmeci olacak</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="235"/>
+        <location filename="../useraccounts.ui" line="258"/>
         <source>Available Channels</source>
         <translation>Kullanılabilir Kanallar</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="254"/>
+        <location filename="../useraccounts.ui" line="277"/>
         <source>Add</source>
         <translation>Ekle</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="261"/>
+        <location filename="../useraccounts.ui" line="284"/>
         <source>Remove</source>
         <translation>Kaldır</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="273"/>
+        <location filename="../useraccounts.ui" line="310"/>
+        <source>Codec Limitations</source>
+        <translation>Kodlayıcı/Çözücü Sınırlamaları</translation>
+    </message>
+    <message>
+        <location filename="../useraccounts.ui" line="316"/>
         <source>Audio Codec Limitations</source>
         <translation>Ses Kodlayıcı/Çözücüsü Sınırlamaları</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="279"/>
+        <location filename="../useraccounts.ui" line="322"/>
         <source>Max bitrate for audio codecs</source>
         <translation>Ses kodlayıcı/çözücüleri için en fazla bit hızı</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="302"/>
+        <location filename="../useraccounts.ui" line="345"/>
         <source>kbps (0 = disabled)</source>
         <translation>kbps (0 = etkisizleştirildi)</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="316"/>
+        <location filename="../useraccounts.ui" line="369"/>
+        <source>Abuse Prevention</source>
+        <translation>Taciz Önleme</translation>
+    </message>
+    <message>
+        <location filename="../useraccounts.ui" line="375"/>
+        <source>Flood Protection</source>
+        <translation>Sel Koruması</translation>
+    </message>
+    <message>
+        <location filename="../useraccounts.ui" line="381"/>
+        <source>Prevent user from e.g. spamming text messages by limiting the number of commands they can issue within a given timeframe.</source>
+        <translation>Kullanıcıyı, verilen bir zaman aralığı içinde sonuçlandırabileceği komutların sayısını sınırlandırarak, örn. istenmeyen metin iletileri göndermesini önleyin.</translation>
+    </message>
+    <message>
+        <location filename="../useraccounts.ui" line="393"/>
+        <location filename="../useraccountsdlg.cpp" line="662"/>
+        <location filename="../useraccountsdlg.cpp" line="668"/>
+        <source>Limit issued commands</source>
+        <translation>Sonuçlandırılan komutları sınırla</translation>
+    </message>
+    <message>
+        <location filename="../useraccounts.ui" line="430"/>
         <source>User Rights</source>
         <translation>Kullanıcı Hakları</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="322"/>
+        <location filename="../useraccounts.ui" line="436"/>
         <source>User can log in multiple times</source>
         <translation>Kullanıcı çok kez oturum açabilir</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="329"/>
+        <location filename="../useraccounts.ui" line="443"/>
         <source>User can upload files</source>
         <translation>Kullanıcı dosyaları karşıya yükleyebilir</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="342"/>
+        <location filename="../useraccounts.ui" line="456"/>
         <source>User can see users in all channels</source>
         <translation>Kullanıcı tüm kanallardaki kullanıcıları görebilir</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="349"/>
+        <location filename="../useraccounts.ui" line="524"/>
+        <source>User can change nickname</source>
+        <translation>Kullanıcı takma ad değiştirebilir</translation>
+    </message>
+    <message>
+        <location filename="../useraccounts.ui" line="531"/>
         <source>User can download files</source>
         <translation>Kullanıcı dosyaları indirebilir</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="356"/>
+        <location filename="../useraccounts.ui" line="463"/>
         <source>User can create/modify all channels</source>
         <translation>Kullanıcı kanal oluşturabilir/tüm kanalları değiştirebilir</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="363"/>
+        <location filename="../useraccounts.ui" line="538"/>
         <source>User can update server properties</source>
         <translation>Kullanıcı sunucu özelliklerini güncelleştirebilir</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="376"/>
+        <location filename="../useraccounts.ui" line="476"/>
         <source>User can create temporary channels</source>
         <translation>Kullanıcı geçici kanallar oluşturabilir</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="383"/>
+        <location filename="../useraccounts.ui" line="545"/>
         <source>User can transmit voice data (microphone)</source>
         <translation>Kullanıcı ses verileri iletebilir (mikrofon)</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="396"/>
+        <location filename="../useraccounts.ui" line="489"/>
         <source>User can broadcast text messages</source>
         <translation>Kullanıcı ileti yayınlayabilir</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="403"/>
+        <location filename="../useraccounts.ui" line="552"/>
         <source>User can transmit video data (webcam)</source>
         <translation>Kullanıcı video verileri iletebilir (web kamerası)</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="410"/>
+        <location filename="../useraccounts.ui" line="496"/>
         <source>User can kick users off the server</source>
         <translation>Kullanıcı kullanıcıları sunucudan uzaklaştırabilir</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="417"/>
+        <location filename="../useraccounts.ui" line="559"/>
         <source>User can transmit audio files (wav, mp3 files)</source>
         <translation>Kullanıcı ses dosyaları iletebilir (wav, mp3 dosyaları)</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="424"/>
+        <location filename="../useraccounts.ui" line="503"/>
         <source>User can ban users from server</source>
         <translation>Kullanıcı kullanıcıları sunucudan engelleyebilir</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="431"/>
+        <location filename="../useraccounts.ui" line="566"/>
         <source>User can transmit video files (avi, mp4 files)</source>
         <translation>Kullanıcı video dosyaları iletebilir (avi, mp4 dosyaları)</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="438"/>
+        <location filename="../useraccounts.ui" line="510"/>
         <source>User can move users between channels</source>
         <translation>Kullanıcı kullanıcıları kanallar arasında taşıyabilir</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="445"/>
+        <location filename="../useraccounts.ui" line="573"/>
         <source>User can transmit desktop sessions (shared desktop)</source>
         <translation>Kullanıcı masaüstü oturumları iletebilir (paylaşılan masaüstü)</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="452"/>
+        <location filename="../useraccounts.ui" line="517"/>
         <source>User can make other users channel operator</source>
         <translation>Kullanıcı diğer kullanıcıları kanal işletmecisi yapabilir</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="459"/>
+        <location filename="../useraccounts.ui" line="580"/>
         <source>User can get remote access to desktop sessions</source>
         <translation>Kullanıcı masaüstü oturumlarında uzaktan erişim alabilir</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="484"/>
+        <location filename="../useraccounts.ui" line="605"/>
         <source>&amp;Clear</source>
         <translation>&amp;Temizle</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="504"/>
+        <location filename="../useraccounts.ui" line="625"/>
         <source>&amp;Add/Update</source>
         <translation>&amp;Ekle/Güncelleştir</translation>
     </message>
     <message>
-        <location filename="../useraccounts.ui" line="558"/>
+        <location filename="../useraccounts.ui" line="679"/>
         <source>C&amp;lose</source>
         <translation>&amp;Kapat</translation>
     </message>
     <message>
-        <location filename="../useraccountsdlg.cpp" line="327"/>
+        <location filename="../useraccountsdlg.cpp" line="204"/>
+        <source>Disabled</source>
+        <translation>Etkisizleştirildi</translation>
+    </message>
+    <message>
+        <location filename="../useraccountsdlg.cpp" line="205"/>
+        <source>10 commands in 10 sec.</source>
+        <translation>10 komut, 10 sn.</translation>
+    </message>
+    <message>
+        <location filename="../useraccountsdlg.cpp" line="206"/>
+        <source>10 commands in 1 minute</source>
+        <translation>1 dakikada 10 komut</translation>
+    </message>
+    <message>
+        <location filename="../useraccountsdlg.cpp" line="207"/>
+        <source>60 commands in 1 minute</source>
+        <translation>1 dakikada 60 komut</translation>
+    </message>
+    <message>
+        <location filename="../useraccountsdlg.cpp" line="208"/>
+        <source>Custom specified</source>
+        <translation>Özel belirtilen</translation>
+    </message>
+    <message>
+        <location filename="../useraccountsdlg.cpp" line="448"/>
         <source>Add/Update</source>
         <translation>Ekle/Güncelleştir</translation>
     </message>
     <message>
-        <location filename="../useraccountsdlg.cpp" line="328"/>
+        <location filename="../useraccountsdlg.cpp" line="449"/>
         <source>Create anonymous user account?</source>
         <translation>Belirsiz kullanıcı hesabı oluşturulsun mu?</translation>
     </message>
     <message>
-        <location filename="../useraccountsdlg.cpp" line="508"/>
+        <location filename="../useraccountsdlg.cpp" line="663"/>
+        <source>Number of commands to allow (0 = disabled)</source>
+        <translation>İzin vermek için komutların sayısı (0 = etkisizleştirildi)</translation>
+    </message>
+    <message>
+        <location filename="../useraccountsdlg.cpp" line="669"/>
+        <source>Timeframe to allow %1 commands (in seconds)</source>
+        <translation>%1 komuta izin vermek için zaman aralığı (saniye cinsinden)</translation>
+    </message>
+    <message>
+        <location filename="../useraccounts.ui" line="220"/>
+        <location filename="../useraccountsdlg.cpp" line="615"/>
         <source>Channel Operator</source>
         <translation>Kanal İşletmecisi</translation>
     </message>
     <message>
-        <location filename="../useraccountsdlg.cpp" line="509"/>
+        <location filename="../useraccountsdlg.cpp" line="616"/>
         <source>The maximum number of channels where a user can automatically become channel operator is %1.</source>
         <translation>Bir kullanıcının otomatik olarak kanal işletmecisi olabileceği en fazla kanal sayısı %1.</translation>
     </message>
@@ -3937,37 +4120,37 @@ Bu ayarlar uygulansın mı?</translation>
 <context>
     <name>UserAccountsModel</name>
     <message>
-        <location filename="../useraccountsdlg.cpp" line="52"/>
+        <location filename="../useraccountsdlg.cpp" line="53"/>
         <source>Username</source>
         <translation>Kullanıcı Adı</translation>
     </message>
     <message>
-        <location filename="../useraccountsdlg.cpp" line="53"/>
+        <location filename="../useraccountsdlg.cpp" line="54"/>
         <source>Password</source>
         <translation>Parola</translation>
     </message>
     <message>
-        <location filename="../useraccountsdlg.cpp" line="54"/>
+        <location filename="../useraccountsdlg.cpp" line="55"/>
         <source>User Type</source>
         <translation>Kullanıcı Türü</translation>
     </message>
     <message>
-        <location filename="../useraccountsdlg.cpp" line="55"/>
+        <location filename="../useraccountsdlg.cpp" line="56"/>
         <source>Note</source>
         <translation>Not</translation>
     </message>
     <message>
-        <location filename="../useraccountsdlg.cpp" line="56"/>
+        <location filename="../useraccountsdlg.cpp" line="57"/>
         <source>Channel</source>
         <translation>Kanal</translation>
     </message>
     <message>
-        <location filename="../useraccountsdlg.cpp" line="84"/>
+        <location filename="../useraccountsdlg.cpp" line="85"/>
         <source>Administrator</source>
         <translation>Yönetici</translation>
     </message>
     <message>
-        <location filename="../useraccountsdlg.cpp" line="86"/>
+        <location filename="../useraccountsdlg.cpp" line="87"/>
         <source>Default User</source>
         <translation>Varsayılan Kullanıcı</translation>
     </message>
@@ -3993,7 +4176,7 @@ Bu ayarlar uygulansın mı?</translation>
         <location filename="../userdesktopwidget.cpp" line="239"/>
         <location filename="../userdesktopwidget.cpp" line="256"/>
         <source>&amp;Save to Image File</source>
-        <translation>Görsel Dosyasına &amp;Kaydet</translation>
+        <translation>Görüntü Dosyasına &amp;Kaydet</translation>
     </message>
     <message>
         <location filename="../userdesktopwidget.cpp" line="245"/>
@@ -4018,7 +4201,7 @@ Bu ayarlar uygulansın mı?</translation>
     <message>
         <location filename="../userdesktopwidget.cpp" line="256"/>
         <source>Failed to save file.</source>
-        <translation>Dosya kaydedilemedi.</translation>
+        <translation>Dosyayı kaydetme başarısız.</translation>
     </message>
 </context>
 <context>
@@ -4027,12 +4210,12 @@ Bu ayarlar uygulansın mı?</translation>
         <location filename="../userimagewidget.cpp" line="198"/>
         <location filename="../userimagewidget.cpp" line="208"/>
         <source>&amp;Save to Image File</source>
-        <translation>Görsel Dosyasına &amp;Kaydet</translation>
+        <translation>Görüntü Dosyasına &amp;Kaydet</translation>
     </message>
     <message>
         <location filename="../userimagewidget.cpp" line="199"/>
         <source>&amp;Flip image</source>
-        <translation>Görseli &amp;çevir</translation>
+        <translation>Görüntüyü &amp;çevir</translation>
     </message>
     <message>
         <location filename="../userimagewidget.cpp" line="205"/>
@@ -4047,7 +4230,7 @@ Bu ayarlar uygulansın mı?</translation>
     <message>
         <location filename="../userimagewidget.cpp" line="208"/>
         <source>Failed to save file.</source>
-        <translation>Dosya kaydedilemedi.</translation>
+        <translation>Dosyayı kaydetme başarısız.</translation>
     </message>
 </context>
 <context>
@@ -4058,98 +4241,103 @@ Bu ayarlar uygulansın mı?</translation>
         <translation>Kullanıcı Bilgileri</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="26"/>
+        <location filename="../userinfo.ui" line="23"/>
         <source>User ID</source>
         <translation>Kullanıcı kimliği</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="46"/>
+        <location filename="../userinfo.ui" line="43"/>
         <source>Nickname</source>
         <translation>Takma ad</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="66"/>
+        <location filename="../userinfo.ui" line="63"/>
         <source>Username</source>
         <translation>Kullanıcı adı</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="86"/>
+        <location filename="../userinfo.ui" line="85"/>
+        <source>Profile</source>
+        <translation>Profil</translation>
+    </message>
+    <message>
+        <location filename="../userinfo.ui" line="111"/>
         <source>Status mode</source>
         <translation>Durum kipi</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="106"/>
+        <location filename="../userinfo.ui" line="131"/>
         <source>Status message</source>
         <translation>Durum iletisi</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="129"/>
+        <location filename="../userinfo.ui" line="154"/>
         <source>User type</source>
         <translation>Kullanıcı türü</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="149"/>
+        <location filename="../userinfo.ui" line="174"/>
         <source>IP-address</source>
         <translation>IP adresi</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="169"/>
+        <location filename="../userinfo.ui" line="194"/>
         <source>Version</source>
         <translation>Sürüm</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="189"/>
+        <location filename="../userinfo.ui" line="214"/>
         <source>Voice packet loss</source>
         <translation>Ses paket kaybı</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="209"/>
+        <location filename="../userinfo.ui" line="234"/>
         <source>Video frame loss</source>
         <translation>Video çerçeve kaybı</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="229"/>
+        <location filename="../userinfo.ui" line="254"/>
         <source>Audio file packets loss</source>
         <translation>Ses dosyası paket kaybı</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="242"/>
+        <location filename="../userinfo.ui" line="267"/>
         <source>Video file frame loss</source>
         <translation>Video dosyası çerçeve kaybı</translation>
     </message>
     <message>
-        <location filename="../userinfo.ui" line="255"/>
+        <location filename="../userinfo.ui" line="94"/>
         <source>Client name</source>
         <translation>İstemci adı</translation>
     </message>
     <message>
-        <location filename="../userinfodlg.cpp" line="60"/>
+        <location filename="../userinfodlg.cpp" line="65"/>
         <source>Available</source>
         <translation>Uygun</translation>
     </message>
     <message>
-        <location filename="../userinfodlg.cpp" line="62"/>
+        <location filename="../userinfodlg.cpp" line="67"/>
         <source>Away</source>
         <translation>Uzakta</translation>
     </message>
     <message>
-        <location filename="../userinfodlg.cpp" line="64"/>
+        <location filename="../userinfodlg.cpp" line="69"/>
         <source>Question</source>
         <translation>Soru</translation>
     </message>
     <message>
-        <location filename="../userinfodlg.cpp" line="66"/>
-        <location filename="../userinfodlg.cpp" line="82"/>
+        <location filename="../userinfodlg.cpp" line="71"/>
+        <location filename="../userinfodlg.cpp" line="96"/>
         <source>Unknown</source>
         <translation>Bilinmeyen</translation>
     </message>
     <message>
-        <location filename="../userinfodlg.cpp" line="78"/>
+        <location filename="../userinfodlg.cpp" line="92"/>
         <source>Administrator</source>
         <translation>Yönetici</translation>
     </message>
     <message>
-        <location filename="../userinfodlg.cpp" line="80"/>
+        <location filename="../userinfodlg.cpp" line="94"/>
         <source>Default</source>
         <translation>Varsayılan</translation>
     </message>
@@ -4233,7 +4421,7 @@ Bu ayarlar uygulansın mı?</translation>
     <message>
         <location filename="../uservolumedlg.cpp" line="78"/>
         <source>Failed to change user&apos;s volume</source>
-        <translation>Kullanıcının düzeyi değiştirilemedi</translation>
+        <translation>Kullanıcının düzeyini değiştirme başarısız</translation>
     </message>
 </context>
 <context>
@@ -4341,6 +4529,24 @@ Bu ayarlar uygulansın mı?</translation>
         <location filename="../videotextdlg.cpp" line="189"/>
         <source>Status message</source>
         <translation>Durum iletisi</translation>
+    </message>
+</context>
+<context>
+    <name>WebLoginDlg</name>
+    <message>
+        <location filename="../weblogin.ui" line="14"/>
+        <source>Web Login</source>
+        <translation>Web Oturumu Açma</translation>
+    </message>
+    <message>
+        <location filename="../weblogindlg.cpp" line="110"/>
+        <source>Facebook Login</source>
+        <translation>Facebook Oturumu Açma</translation>
+    </message>
+    <message>
+        <location filename="../weblogindlg.cpp" line="110"/>
+        <source>Do Facebook logout?</source>
+        <translation>Facebook oturumu kapatılsın mı?</translation>
     </message>
 </context>
 </TS>
