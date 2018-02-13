@@ -40,6 +40,13 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
 import com.google.gson.Gson;
 
 import dk.bearware.AudioCodec;
@@ -50,9 +57,12 @@ import dk.bearware.FileTransfer;
 import dk.bearware.RemoteFile;
 import dk.bearware.SoundLevel;
 import dk.bearware.User;
+import dk.bearware.backend.TeamTalkService;
+import dk.bearware.data.AppInfo;
 import dk.bearware.data.Preferences;
 import dk.bearware.data.ServerEntry;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -62,9 +72,12 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.CountDownTimer;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+import android.util.Log;
 import android.widget.Toast;
 
 public class Utils {
@@ -101,9 +114,13 @@ public class Utils {
     }
 
     public static void setEditTextPreference(Preference preference, String text, String summary) {
+        setEditTextPreference(preference, text, summary, false);
+    }
+
+    public static void setEditTextPreference(Preference preference, String text, String summary, boolean forcesummary) {
         EditTextPreference textpref = (EditTextPreference) preference;
         textpref.setText(text);
-        if (summary.length() > 0)
+        if (summary.length() > 0 || forcesummary)
             textpref.setSummary(summary);
     }
 
@@ -316,6 +333,55 @@ public class Utils {
         }
         
         return servers;
+    }
+
+    public static void facebookLogin(Activity activity) {
+        Vector<String> permission = new Vector<>();
+        permission.add("public_profile");
+        LoginManager.getInstance().logInWithReadPermissions(activity, permission);
+    }
+
+    public static FacebookCallback<LoginResult> createFacebookLogin(final Activity activity,
+                                                                    final TeamTalkService ttservice,
+                                                                    final ServerEntry serverentry) {
+        FacebookCallback<LoginResult> fbcallback = new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                String token = loginResult.getAccessToken().getToken();
+
+                serverentry.password = AppInfo.WEBLOGIN_FACEBOOK_PASSWDPREFIX + token;
+                ttservice.setServerEntry(serverentry);
+
+                // no idea why a timer is necessary to kick-start the ttservice's connect method...
+                new CountDownTimer(1, 1) {
+                    @Override
+                    public void onFinish() {
+                        if (!ttservice.reconnect())
+                            Toast.makeText(activity,
+                                    R.string.err_connection, Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onTick(long millisUntilFinished) {
+                    }
+                }.start();
+            }
+
+            @Override
+            public void onCancel() {
+                Log.d(AppInfo.TAG, String.format("Facebook login was cancelled."));
+                Toast.makeText(activity,
+                        R.string.err_facebooklogin, Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+                Toast.makeText(activity,
+                        R.string.err_facebooklogin, Toast.LENGTH_LONG).show();
+                Log.d(AppInfo.TAG, String.format("Facebook login failed. Exception: %s", error.toString()));
+            }
+        };
+        return fbcallback;
     }
     
     public static int refVolume(double percent)
