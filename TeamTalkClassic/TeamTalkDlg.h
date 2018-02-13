@@ -44,6 +44,7 @@
 #include <map>
 #include <queue>
 #include <set>
+#include <memory>
 
 #include "afxcmn.h"
 #include "afxwin.h"
@@ -60,7 +61,7 @@
 #define RECONNECT_TIMEOUT 7000
 #define VUMETER_UPDATE_TIMEOUT 50
 
-enum
+enum : UINT_PTR
 {
     TIMER_VOICELEVEL_ID = 1,
     TIMER_ONESECOND_ID,
@@ -92,7 +93,8 @@ enum CommmandComplete
     CMD_COMPLETE_LOGIN,
     CMD_COMPLETE_JOIN,
     CMD_COMPLETE_LISTACCOUNTS,
-    CMD_COMPLETE_LISTBANS,
+    CMD_COMPLETE_LIST_SERVERBANS,
+    CMD_COMPLETE_LIST_CHANNELBANS,
     CMD_COMPLETE_SUBSCRIBE,
     CMD_COMPLETE_UNSUBSCRIBE,
     CMD_COMPLETE_SERVERSTATS
@@ -130,6 +132,8 @@ public:
 
     void CloseMessageSessions();
     CMessageDlg* GetUsersMessageSession(int nUserID, BOOL bCreateNew, BOOL* lpbNew = NULL);
+    void OnUsersMessages(int nUserID);
+
     void OpenVideoSession(int nUserID);
     void CloseVideoSession(int nUserID);
     void CloseDesktopSession(int nUserID);
@@ -192,8 +196,8 @@ protected:
     CSystemTray* m_pTray;
 
     BOOL m_bBoostBugComp;
-    UINT m_nLastRecvBytes;
-    UINT m_nLastSentBytes;
+    INT64 m_nLastRecvBytes;
+    INT64 m_nLastSentBytes;
     BOOL m_bTempMixerInput;
     UINT m_nLastMixerInput;
     CFont m_Font;
@@ -225,7 +229,7 @@ protected:
     chanpasswd_t m_channelPasswords;
 
     std::queue<CString> m_qStatusMsgs;
-    UINT m_nStatusTimerID;
+    UINT_PTR m_nStatusTimerID;
     int m_nStatusMode;
     CString m_szAwayMessage;
     BOOL m_bResizeReady;
@@ -254,7 +258,7 @@ protected:
     std::vector<UserAccount> m_useraccounts;
     std::vector<BannedUser> m_bannedusers;
 
-    int m_nMoveUserID;
+    std::set<int> m_moveusers;
 
     //from tt instance
     afx_msg LRESULT OnClientEvent(WPARAM wParam, LPARAM lParam);
@@ -349,7 +353,7 @@ public:
 
     BOOL m_bIdledOut;
     BOOL m_bPreferencesOpen;
-    std::auto_ptr<CHttpRequest> m_httpUpdate;
+    std::unique_ptr<CHttpRequest> m_httpUpdate;
     CFile m_logChan;
 
     afx_msg void OnUpdateStats(CCmdUI *pCmdUI);
@@ -436,7 +440,7 @@ public:
     afx_msg void OnServerListbannedusers();
     afx_msg void OnUpdateUsersKickchannel(CCmdUI *pCmdUI);
     afx_msg void OnUpdateUsersKickandban(CCmdUI *pCmdUI);
-    afx_msg void OnUsersKickFromChannelandban();
+    afx_msg void OnUsersKickandban();
     afx_msg void OnUpdateUsersStoreconversationstodisk(CCmdUI *pCmdUI);
     afx_msg void OnUsersStoreconversationstodisk();
     afx_msg void OnUpdateAdvancedMoveuserdialog(CCmdUI *pCmdUI);
@@ -519,5 +523,10 @@ public:
     afx_msg void OnAdvancedAllowalldesktoptransmission();
     afx_msg void OnUpdateChannelinfoSpeakchannelstate(CCmdUI *pCmdUI);
     afx_msg void OnChannelinfoSpeakchannelstate();
+    afx_msg void OnUpdateKickKickandbanfromchannel(CCmdUI *pCmdUI);
+    afx_msg void OnKickKickandbanfromchannel();
+    afx_msg void OnUpdateChannelsBannedusersinchannel(CCmdUI *pCmdUI);
+    afx_msg void OnChannelsBannedusersinchannel();
+    afx_msg void OnClientNewclientinstance();
 };
 

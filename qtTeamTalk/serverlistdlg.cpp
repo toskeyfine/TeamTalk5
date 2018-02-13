@@ -44,6 +44,8 @@ ServerListDlg::ServerListDlg(QWidget * parent/* = 0*/)
     ui.cryptChkBox->hide();
 #endif
 
+    ui.usernameBox->addItem(WEBLOGIN_FACEBOOK_USERNAME);
+
     connect(ui.addupdButton, SIGNAL(clicked()),
             SLOT(slotAddUpdServer()));
     connect(ui.delButton, SIGNAL(clicked()),
@@ -73,7 +75,7 @@ ServerListDlg::ServerListDlg(QWidget * parent/* = 0*/)
             SLOT(slotDeleteLatestHost()));
     connect(ui.tcpportEdit, SIGNAL(textChanged(const QString&)),
             SLOT(slotGenerateEntryName(const QString&)));
-    connect(ui.usernameEdit, SIGNAL(textChanged(const QString&)),
+    connect(ui.usernameBox, SIGNAL(editTextChanged(const QString&)),
             SLOT(slotGenerateEntryName(const QString&)));
 
     clearServer();
@@ -111,7 +113,7 @@ void ServerListDlg::clearServer()
     ui.tcpportEdit->setText(QString::number(DEFAULT_TCPPORT));
     ui.udpportEdit->setText(QString::number(DEFAULT_UDPPORT));
     ui.cryptChkBox->setChecked(false);
-    ui.usernameEdit->setText("");
+    ui.usernameBox->lineEdit()->setText("");
     ui.passwordEdit->setText("");
     ui.channelEdit->setText("");
     ui.chanpasswdEdit->setText("");
@@ -136,8 +138,12 @@ void ServerListDlg::showHost(const HostEntry& entry)
     ui.tcpportEdit->setText(QString::number(entry.tcpport));
     ui.udpportEdit->setText(QString::number(entry.udpport));
     ui.cryptChkBox->setChecked(entry.encrypted);
-    ui.usernameEdit->setText(entry.username);
-    ui.passwordEdit->setText(entry.password);
+    ui.usernameBox->lineEdit()->setText(entry.username);
+    if(entry.username == WEBLOGIN_FACEBOOK_USERNAME)
+        ui.passwordEdit->setText("");
+    else
+        ui.passwordEdit->setText(entry.password);
+    ui.passwordEdit->setDisabled(entry.username == WEBLOGIN_FACEBOOK_USERNAME);
     ui.channelEdit->setText(entry.channel);
     ui.chanpasswdEdit->setText(entry.chanpasswd);
 
@@ -216,7 +222,7 @@ bool ServerListDlg::getHostEntry(HostEntry& entry)
     entry.tcpport = ui.tcpportEdit->text().toInt();
     entry.udpport = ui.udpportEdit->text().toInt();
     entry.encrypted = ui.cryptChkBox->isChecked();
-    entry.username = ui.usernameEdit->text();
+    entry.username = ui.usernameBox->lineEdit()->text();
     entry.password = ui.passwordEdit->text();
     entry.channel = ui.channelEdit->text();
     entry.chanpasswd = ui.chanpasswdEdit->text();
@@ -320,7 +326,7 @@ void ServerListDlg::slotSaveEntryChanged(const QString& text)
 
 void ServerListDlg::slotGenerateEntryName(const QString&)
 {
-    QString username = ui.usernameEdit->text();
+    QString username = ui.usernameBox->lineEdit()->text();
     if(username.size())
         ui.nameEdit->setText(QString("%1@%2:%3")
                              .arg(username)
@@ -332,4 +338,8 @@ void ServerListDlg::slotGenerateEntryName(const QString&)
                              .arg(ui.tcpportEdit->text()));
     else
         ui.nameEdit->setText(QString());
+
+    ui.passwordEdit->setDisabled(username == WEBLOGIN_FACEBOOK_USERNAME);
+    if(username == WEBLOGIN_FACEBOOK_USERNAME)
+        ui.passwordEdit->setText("");
 }
