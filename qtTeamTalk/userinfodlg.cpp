@@ -23,6 +23,9 @@
 #include "appinfo.h"
 #include "common.h"
 
+#include <QUrl>
+#include <QDesktopServices>
+
 extern TTInstance* ttInst;
 
 UserInfoDlg::UserInfoDlg(int userid, QWidget * parent/* = 0*/)
@@ -34,6 +37,8 @@ UserInfoDlg::UserInfoDlg(int userid, QWidget * parent/* = 0*/)
 
     startTimer(250);
     updateUser();
+
+    connect(ui.profileBtn, SIGNAL(clicked(bool)), SLOT(slotProfile(bool)));
 }
 
 void UserInfoDlg::timerEvent(QTimerEvent *)
@@ -44,56 +49,78 @@ void UserInfoDlg::timerEvent(QTimerEvent *)
 void UserInfoDlg::updateUser()
 {
     User user;
-    UserStatistics stats;
     if(!TT_GetUser(ttInst, m_userid, &user))
         return;
 
-    if(!TT_GetUserStatistics(ttInst, m_userid, &stats))
-        return;
+    if(ui.userid->text() != QString::number(user.nUserID))
+        ui.userid->setText(QString::number(user.nUserID));
 
-    ui.userid->setText(QString::number(user.nUserID));
     if(ui.nickname->text() != _Q(user.szNickname))
         ui.nickname->setText(_Q(user.szNickname));
+
+    QString status;
     switch(user.nStatusMode & STATUSMODE_MODE)
     {
     case STATUSMODE_AVAILABLE :
-        ui.statusmode->setText(tr("Available")); break;
+        status = tr("Available"); break;
     case STATUSMODE_AWAY :
-        ui.statusmode->setText(tr("Away")); break;
+        status = tr("Away"); break;
     case STATUSMODE_QUESTION :
-        ui.statusmode->setText(tr("Question")); break;
+        status = tr("Question"); break;
     default :
-        ui.statusmode->setText(tr("Unknown")); break;
+        status = tr("Unknown"); break;
     }
+    
+    if(ui.statusmode->text() != status)
+        ui.statusmode->setText(status);
 
     if(ui.statusmsg->text() != _Q(user.szStatusMsg))
         ui.statusmsg->setText(_Q(user.szStatusMsg));
     if(ui.username->text() != _Q(user.szUsername))
         ui.username->setText(_Q(user.szUsername));
+
+    QStringList tokens = _Q(user.szUsername).split(WEBLOGIN_FACEBOOK_USERNAMEPOSTFIX);
+    if(tokens.size() && tokens[0] == _Q(user.szUsername))
+        ui.profileBtn->hide();
+
     if(ui.clientname->text() != _Q(user.szClientName))
         ui.clientname->setText(_Q(user.szClientName));
+
     switch(user.uUserType)
     {
     case USERTYPE_ADMIN :
-        ui.usertype->setText(tr("Administrator"));break;
+        status = tr("Administrator");break;
     case USERTYPE_DEFAULT :
-        ui.usertype->setText(tr("Default")); break;
+        status = tr("Default"); break;
     default:
-        ui.usertype->setText(tr("Unknown")); break;
+        status = tr("Unknown"); break;
     }
 
-    if(TT_GetMyUserType(ttInst) & USERTYPE_ADMIN)
-    {
-        if(ui.ipaddr->text() != _Q(user.szIPAddress))
-            ui.ipaddr->setText(_Q(user.szIPAddress));
-    }
-    else
-        ui.ipaddr->setText(QString());
+    if(ui.usertype->text() != status)
+        ui.usertype->setText(status);
+
+    if(ui.ipaddr->text() != _Q(user.szIPAddress))
+        ui.ipaddr->setText(_Q(user.szIPAddress));
+
     if(ui.version->text() != getVersion(user))
         ui.version->setText(getVersion(user));
+
+    UserStatistics stats;
+    if(!TT_GetUserStatistics(ttInst, m_userid, &stats))
+        return;
 
     ui.voicepacketloss->setText(QString("%1/%2").arg(stats.nVoicePacketsLost).arg(stats.nVoicePacketsRecv+stats.nVoicePacketsLost));
     ui.vidpacketloss->setText(QString("%1/%2").arg(stats.nVideoCaptureFramesLost).arg(stats.nVideoCaptureFramesRecv+stats.nVideoCaptureFramesLost));
     ui.mediaaudpacketloss->setText(QString("%1/%2").arg(stats.nMediaFileAudioPacketsLost).arg(stats.nMediaFileAudioPacketsRecv+stats.nMediaFileAudioPacketsLost));
     ui.mediavidpacketloss->setText(QString("%1/%2").arg(stats.nMediaFileVideoFramesLost).arg(stats.nMediaFileVideoFramesRecv+stats.nMediaFileVideoFramesLost));
+}
+
+void UserInfoDlg::slotProfile(bool)
+{
+    QStringList tokens = ui.username->text().split(WEBLOGIN_FACEBOOK_USERNAMEPOSTFIX);
+    if(tokens.size())
+    {
+        QString url = QString("%1%2").arg(WEBLOGIN_FACEBOOK_PROFILE_URL).arg(tokens[0]);
+        QDesktopServices::openUrl(QUrl(url));
+    }
 }
