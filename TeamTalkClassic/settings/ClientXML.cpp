@@ -28,6 +28,11 @@
 using namespace std;
 namespace teamtalk {
 
+    bool ClientXML::SaveFile()
+    {
+        SetFileVersion(TEAMTALK_XML_VERSION);
+        return XMLDocument::SaveFile();
+    }
 
     TiXmlElement* ClientXML::GetRootElement()
     {
@@ -456,6 +461,23 @@ namespace teamtalk {
                 GetString(*child, "nickname", def_nickname);
         }
         return def_nickname;
+    }
+
+    bool ClientXML::SetProfileName(const std::string& szProfilename)
+    {
+        TiXmlElement* pParent = GetGeneralElement();
+        if(pParent)
+        {
+            PutString(*pParent, "profile-name", szProfilename);
+            return true;
+        }
+        else
+            return false;
+    }
+    
+    std::string ClientXML::GetProfileName()
+    {
+        return GetValue(m_rootname + "/general/profile-name");
     }
 
     bool ClientXML::SetGender(int nGender)
@@ -2753,7 +2775,7 @@ namespace teamtalk {
         if(entry.hotkey.size())
         {
             TiXmlElement hotkey("win-hotkey");
-            for(int i=0;i<entry.hotkey.size();i++)
+            for(size_t i=0;i<entry.hotkey.size();i++)
             {
                 TiXmlElement newelement("key");
                 TiXmlText text(i2str(entry.hotkey[i]).c_str());

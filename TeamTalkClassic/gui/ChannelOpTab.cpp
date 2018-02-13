@@ -25,6 +25,8 @@ void CChannelOpTab::DoDataExchange(CDataExchange* pDX)
     CMyTab::DoDataExchange(pDX);
     DDX_Control(pDX, IDC_LIST_AVAILCHANNELS, m_wndAvailChannels);
     DDX_Control(pDX, IDC_LIST_SELECTEDCHANNELS, m_wndSelChannels);
+    DDX_Control(pDX, IDC_BUTTON_ADDCHANNEL, m_btnAddChan);
+    DDX_Control(pDX, IDC_BUTTON_DELCHANNEL, m_btnRmChan);
 }
 
 
@@ -102,7 +104,7 @@ void CChannelOpTab::OnBnClickedButtonAddchannel()
     int i = m_wndAvailChannels.GetCurSel();
     if(i == LB_ERR)
         return;
-    int nItemData = m_wndAvailChannels.GetItemData(i);
+    DWORD_PTR nItemData = m_wndAvailChannels.GetItemData(i);
     CString szChan;
     m_wndAvailChannels.GetText(i, szChan);
     i = m_wndSelChannels.AddString(szChan);
