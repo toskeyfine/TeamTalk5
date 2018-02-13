@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "Resource.h"
 #include "OnlineUsersDlg.h"
+#include "TeamTalkDlg.h"
 #include <vector>
 
 extern TTInstance* ttInst;
@@ -12,8 +13,9 @@ extern TTInstance* ttInst;
 
 IMPLEMENT_DYNAMIC(COnlineUsersDlg, CDialog)
 
-COnlineUsersDlg::COnlineUsersDlg(CWnd* pParent /*=NULL*/)
+COnlineUsersDlg::COnlineUsersDlg(CTeamTalkDlg* pParent /*=NULL*/)
 	: CDialog(COnlineUsersDlg::IDD, pParent)
+    , m_pParent(pParent)
 {
 #ifndef _WIN32_WCE
 	EnableActiveAccessibility();
@@ -38,6 +40,8 @@ BEGIN_MESSAGE_MAP(COnlineUsersDlg, CDialog)
     ON_COMMAND(ID_POPUP_KICKANDBAN, &COnlineUsersDlg::OnPopupKickandban)
     ON_COMMAND(ID_POPUP_OP, &COnlineUsersDlg::OnPopupOp)
     ON_COMMAND(ID_POPUP_COPYUSERINFORMATION, &COnlineUsersDlg::OnPopupCopyuserinformation)
+    ON_WM_SIZE()
+    ON_COMMAND(ID_POPUP_MESSAGES, &COnlineUsersDlg::OnPopupMessages)
 END_MESSAGE_MAP()
 
 
@@ -48,6 +52,24 @@ BOOL COnlineUsersDlg::OnInitDialog()
     CDialog::OnInitDialog();
 
     TRANSLATE(*this, IDD);
+
+    static CResizer::CBorderInfo s_bi[] = {
+
+        { IDC_STATIC_CURUSERS,
+        { CResizer::eFixed, IDC_MAIN, CResizer::eLeft },
+        { CResizer::eFixed, IDC_MAIN, CResizer::eTop },
+        { CResizer::eFixed, IDC_MAIN, CResizer::eRight },
+        { CResizer::eFixed, IDC_MAIN, CResizer::eBottom } },
+
+        { IDC_LIST_ONLINEUSERS,
+        { CResizer::eFixed, IDC_MAIN, CResizer::eLeft },
+        { CResizer::eFixed, IDC_MAIN, CResizer::eTop },
+        { CResizer::eFixed, IDC_MAIN, CResizer::eRight },
+        { CResizer::eFixed, IDC_MAIN, CResizer::eBottom } },
+
+    };
+    const int nSize = sizeof(s_bi) / sizeof(s_bi[0]);
+    m_resizer.Init(m_hWnd, NULL, s_bi, nSize);
 
     //load accelerators
     m_hAccel = ::LoadAccelerators(AfxGetResourceHandle(), (LPCTSTR)IDR_ACCELERATOR3);
@@ -79,7 +101,7 @@ BOOL COnlineUsersDlg::OnInitDialog()
     {
         users.resize(nUsers);
         TT_GetServerUsers(ttInst, &users[0], &nUsers);
-        for(size_t i=0;i<nUsers;i++)
+        for(int i=0;i<nUsers;i++)
         {
             CString s;
             s.Format(_T("%d"), users[i].nUserID);
@@ -131,7 +153,7 @@ void COnlineUsersDlg::MenuCommand(UINT uCmd)
     for(int i=0;i<count;i++)
     {
         if(m_wndUsers.GetItemState(i, LVIS_SELECTED) == LVIS_SELECTED)
-            nUserID = m_wndUsers.GetItemData(i);
+            nUserID = INT32(m_wndUsers.GetItemData(i));
     }
 
     User user = {0};
@@ -195,6 +217,11 @@ void COnlineUsersDlg::MenuCommand(UINT uCmd)
             CloseClipboard();
         }
     }
+    break;
+    case ID_POPUP_MESSAGES :
+        if(m_pParent)
+            m_pParent->OnUsersMessages(nUserID);
+        break;
     }
 }
 
@@ -217,3 +244,17 @@ void COnlineUsersDlg::OnPopupCopyuserinformation()
 {
     MenuCommand(ID_POPUP_COPYUSERINFORMATION);
 }
+
+void COnlineUsersDlg::OnPopupMessages()
+{
+    MenuCommand(ID_POPUP_MESSAGES);
+}
+
+void COnlineUsersDlg::OnSize(UINT nType, int cx, int cy)
+{
+    CDialog::OnSize(nType, cx, cy);
+
+    // TODO: Group box overlaps listbox for some reason...
+    //m_resizer.Move();
+}
+
