@@ -65,9 +65,9 @@ void CHostManagerDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Text(pDX, IDC_EDIT_CHPASSWD, m_szChPassword);
     DDX_Control(pDX, IDC_EDIT_CHANNEL, m_wndChannel);
     DDX_Control(pDX, IDC_EDIT_CHPASSWD, m_wndChPasswd);
-    DDX_Text(pDX, IDC_EDIT_USERNAME, m_szUsername);
+    DDX_Text(pDX, IDC_COMBO_USERNAME, m_szUsername);
     DDX_Text(pDX, IDC_EDIT_PASSWORD, m_szPassword);
-    DDX_Control(pDX, IDC_EDIT_USERNAME, m_wndUsername);
+    DDX_Control(pDX, IDC_COMBO_USERNAME, m_wndUsername);
     DDX_Control(pDX, IDC_EDIT_PASSWORD, m_wndPassword);
     DDX_Control(pDX, IDC_CHECK_PUBLICSERVERS, m_btnPubServers);
     DDX_Check(pDX, IDC_CHECK_PUBLICSERVERS, m_bPubServers);
@@ -94,6 +94,11 @@ BEGIN_MESSAGE_MAP(CHostManagerDlg, CDialog)
     ON_BN_CLICKED(IDC_BUTTON_DELENTRY, &CHostManagerDlg::OnBnClickedButtonDelentry)
     ON_CBN_SELCHANGE(IDC_COMBO_HOSTADDRESS, &CHostManagerDlg::OnCbnSelchangeComboHostaddress)
     ON_BN_CLICKED(IDC_BUTTON_IMPORTTTILE, &CHostManagerDlg::OnBnClickedButtonImportttile)
+    ON_CBN_EDITCHANGE(IDC_COMBO_USERNAME, &CHostManagerDlg::OnCbnEditchangeComboUsername)
+//    ON_CBN_SELCHANGE(IDC_COMBO_USERNAME, &CHostManagerDlg::OnCbnSelchangeComboUsername)
+//    ON_CBN_EDITUPDATE(IDC_COMBO_USERNAME, &CHostManagerDlg::OnCbnEditupdateComboUsername)
+    ON_CBN_KILLFOCUS(IDC_COMBO_USERNAME, &CHostManagerDlg::OnCbnKillfocusComboUsername)
+    ON_EN_SETFOCUS(IDC_EDIT_ENTRYNAME, &CHostManagerDlg::OnEnSetfocusEditEntryname)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -110,6 +115,8 @@ BOOL CHostManagerDlg::OnInitDialog()
 #endif
 
     m_wndDelete.EnableWindow(FALSE);
+
+    m_wndUsername.AddString(WEBLOGIN_FACEBOOK_USERNAME);
 
     if(m_bPubServers)
         ShowPublicServers();
@@ -135,7 +142,7 @@ void CHostManagerDlg::DisplayHosts()
     if(m_wndHosts.GetCount()==0)
         OnButtonNew();
 
-    for(int i=0;i<m_vecHosts.size();i++)
+    for(size_t i=0;i<m_vecHosts.size();i++)
         m_wndHostAddress.AddString( STR_UTF8(m_vecHosts[i].szAddress.c_str()));
 
     if(m_vecHosts.size()>0)
@@ -154,6 +161,15 @@ void CHostManagerDlg::DisplayHosts()
         m_wndChPasswd.SetWindowText(STR_UTF8(m_vecHosts[0].szChPasswd.c_str()));
         */
     }
+}
+
+void CHostManagerDlg::ShowFieldError()
+{
+    AfxMessageBox(_T("Please fill in all the required fields.\r\n")
+        _T("- Entry name\r\n")
+        _T("- Host address\r\n")
+        _T("- TCP port\r\n")
+        _T("- UDP port\r\n"));
 }
 
 BOOL CHostManagerDlg::GetHostEntry(teamtalk::HostEntry& entry)
@@ -183,11 +199,7 @@ BOOL CHostManagerDlg::GetHostEntry(teamtalk::HostEntry& entry)
         (entry.nTcpPort<=0 || entry.nTcpPort>65535) ||
         (entry.nUdpPort<=0 || entry.nUdpPort>65535))
     {
-        AfxMessageBox(    _T("Please fill in all the required fields.\r\n")
-                        _T("- Entry name\r\n")
-                        _T("- Host address\r\n")
-                        _T("- TCP port\r\n")
-                        _T("- UDP port\r\n"));
+        ShowFieldError();
         return FALSE;
     }
     return TRUE;
@@ -204,6 +216,7 @@ void CHostManagerDlg::OnButtonNew()
     m_wndHostPort.SetWindowText(s);
     m_wndEncrypted.SetCheck(BST_UNCHECKED);
     m_wndUsername.SetWindowText(_T(""));
+    OnCbnEditchangeComboUsername();
     m_wndPassword.SetWindowText(_T(""));
     m_wndChannel.SetWindowText(_T(""));
     m_wndChPasswd.SetWindowText(_T(""));
@@ -286,8 +299,8 @@ void CHostManagerDlg::OnSelchangeListHosts()
             int first = 0;
             while((m_wndHosts.GetItemData(first) & PUBSERVER_ITEMDATA) == 0)first++;
             index = index - first;
-            ASSERT(index < m_pubservers.size());
-            if(index < m_pubservers.size())
+            ASSERT(index < int(m_pubservers.size()));
+            if(index < int(m_pubservers.size()))
             {
                 entry = m_pubservers[index];
                 ok = TRUE;
@@ -310,6 +323,7 @@ void CHostManagerDlg::OnSelchangeListHosts()
             m_wndHostUdpPort.SetWindowText(s);
             m_wndEncrypted.SetCheck(entry.bEncrypted?BST_CHECKED:BST_UNCHECKED);
             m_wndUsername.SetWindowText(STR_UTF8(entry.szUsername.c_str()));
+            OnCbnEditchangeComboUsername();
             m_wndPassword.SetWindowText(STR_UTF8(entry.szPassword.c_str()));
             m_wndChannel.SetWindowText(STR_UTF8(entry.szChannel.c_str()));
             m_wndChPasswd.SetWindowText(STR_UTF8(entry.szChPasswd.c_str()));
@@ -321,15 +335,16 @@ void CHostManagerDlg::OnSelchangeListHosts()
 
 void CHostManagerDlg::OnBnClickedOk()
 {
-    if(m_wndHostAddress.GetWindowTextLength()==0 ||
-        m_wndHostPort.GetWindowTextLength()==0 ||
-        m_wndHostUdpPort.GetWindowTextLength()==0)
-        AfxMessageBox(_T("Please fill in all the required fields.\r\n")
-                                    _T("- Host address\r\n")
-                                    _T("- Host port\r\n")
-                                    _T("- Sound port\r\n"));
+    if(m_wndHostAddress.GetWindowTextLength() == 0 ||
+        m_wndHostPort.GetWindowTextLength() == 0 ||
+        m_wndHostUdpPort.GetWindowTextLength() == 0)
+    {
+        ShowFieldError();
+    }
     else
+    {
         OnOK();
+    }
 }
 
 void CHostManagerDlg::OnTimer(UINT_PTR nIDEvent)
@@ -429,7 +444,7 @@ void CHostManagerDlg::OnBnClickedButtonDelentry()
     int index = m_wndHostAddress.GetCurSel();
     if(index == CB_ERR)
         return;
-    if(index < m_vecHosts.size())
+    if(index < int(m_vecHosts.size()))
     {
         m_delHosts.push_back(m_vecHosts[index]);
         m_vecHosts.erase(m_vecHosts.begin()+index);
@@ -440,7 +455,7 @@ void CHostManagerDlg::OnBnClickedButtonDelentry()
 void CHostManagerDlg::OnCbnSelchangeComboHostaddress()
 {
     int index = m_wndHostAddress.GetCurSel();
-    if(index != CB_ERR && index<m_vecHosts.size())
+    if(index != CB_ERR && index < int(m_vecHosts.size()))
     {
         CString s;s.Format(_T("%d"),m_vecHosts[index].nTcpPort);
         m_wndHostPort.SetWindowText(s);
@@ -448,6 +463,7 @@ void CHostManagerDlg::OnCbnSelchangeComboHostaddress()
         m_wndHostUdpPort.SetWindowText(s);
         m_wndEncrypted.SetCheck(m_vecHosts[index].bEncrypted?BST_CHECKED:BST_UNCHECKED);
         m_wndUsername.SetWindowText(STR_UTF8(m_vecHosts[index].szUsername.c_str()));
+        OnCbnEditchangeComboUsername();
         m_wndPassword.SetWindowText(STR_UTF8(m_vecHosts[index].szPassword.c_str()));
         m_wndChannel.SetWindowText(STR_UTF8(m_vecHosts[index].szChannel.c_str()));
         m_wndChPasswd.SetWindowText(STR_UTF8(m_vecHosts[index].szChPasswd.c_str()));
@@ -480,5 +496,34 @@ void CHostManagerDlg::OnBnClickedButtonImportttile()
             m_wndImportBtn.GetWindowText(szCaption);
             MessageBox(s, StripAmpersand(szCaption), MB_ICONERROR);
         }
+    }
+}
+
+void CHostManagerDlg::OnCbnEditchangeComboUsername()
+{
+    CString szUsername;
+    m_wndUsername.GetWindowText(szUsername);
+    m_wndPassword.EnableWindow(szUsername != WEBLOGIN_FACEBOOK_USERNAME);
+    if(szUsername == WEBLOGIN_FACEBOOK_USERNAME)
+        m_wndPassword.SetWindowText(_T(""));
+}
+
+void CHostManagerDlg::OnCbnKillfocusComboUsername()
+{
+    OnCbnEditchangeComboUsername();
+}
+
+
+void CHostManagerDlg::OnEnSetfocusEditEntryname()
+{
+    CString szName, szHost, szUsername, szPort;
+    m_wndEntryName.GetWindowText(szName);
+    m_wndHostAddress.GetWindowText(szHost);
+    m_wndUsername.GetWindowText(szUsername);
+    m_wndHostPort.GetWindowText(szPort);
+    if (szName.IsEmpty() && szHost.GetLength() && szUsername.GetLength() && szPort.GetLength())
+    {
+        szName.Format(_T("%s@%s:%s"), szUsername, szHost, szPort);
+        m_wndEntryName.SetWindowText(szName);
     }
 }
