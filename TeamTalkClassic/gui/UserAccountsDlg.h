@@ -9,12 +9,18 @@
 
 // CUserAccountsDlg dialog
 
+enum UserAccountsDisplay
+{
+    UAD_READWRITE,
+    UAD_READONLY,
+};
+
 class CUserAccountsDlg : public CDialog
 {
 	DECLARE_DYNAMIC(CUserAccountsDlg)
 
 public:
-	CUserAccountsDlg(CWnd* pParent = NULL);   // standard constructor
+	CUserAccountsDlg(CWnd* pParent = NULL, UserAccountsDisplay uad = UAD_READWRITE);   // standard constructor
 	virtual ~CUserAccountsDlg();
 
 // Dialog Data
@@ -29,10 +35,13 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 	DECLARE_MESSAGE_MAP()
+
+    UserAccountsDisplay m_uad;
 public:
     CButton m_btnNew;
     CButton m_btnAdd;
     CButton m_btnDel;
+
     CListBox m_wndAccounts;
     CEdit m_wndUsername;
     CEdit m_wndPassword;
@@ -74,4 +83,5 @@ public:
     CAbuseTab m_wndAbuseTab;
     afx_msg void OnSize(UINT nType, int cx, int cy);
     BOOL m_bResizeReady;
+    CButton m_wndChangeNickname;
 };

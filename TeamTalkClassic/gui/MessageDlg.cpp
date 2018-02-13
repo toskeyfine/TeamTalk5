@@ -79,7 +79,7 @@ BOOL CMessageDlg::OnInitDialog()
 
     if(IsAlive())
     {
-        for(int i=0;i<m_messages.size();i++)
+        for(size_t i=0;i<m_messages.size();i++)
             AppendMessage(m_messages[i], FALSE);
 
         CString s;
@@ -198,7 +198,7 @@ void CMessageDlg::AppendMessage(const TextMessage& msg, BOOL bStore/* = TRUE*/)
     cf.dwMask        = CFM_COLOR | CFM_UNDERLINE | CFM_BOLD;
     cf.dwEffects    = (unsigned long)~(CFE_AUTOCOLOR | CFE_UNDERLINE | CFE_BOLD);
     cf.crTextColor    = RGB(0, 0, 0); 
-    m_richHistory.SetSel(0, _tcslen(msg.szMessage));
+    m_richHistory.SetSel(0, long(_tcslen(msg.szMessage)));
     m_richHistory.SetSelectionCharFormat(cf); 
 
     //insert enter
