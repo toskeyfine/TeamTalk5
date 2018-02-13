@@ -44,6 +44,7 @@
 #include "uservideodlg.h"
 #include "userdesktopdlg.h"
 #include "appinfo.h"
+#include "weblogindlg.h"
 
 #include <QMessageBox>
 #include <QInputDialog>
@@ -324,10 +325,12 @@ MainWindow::MainWindow(const QString& cfgfile)
             SLOT(slotUsersOp(bool)));
     connect(ui.actionKickFromChannel, SIGNAL(triggered(bool)),
             SLOT(slotUsersKickFromChannel(bool)));
+    connect(ui.actionKickAndBanFromChannel, SIGNAL(triggered(bool)),
+        SLOT(slotUsersKickBanFromChannel(bool)));
     connect(ui.actionKickFromServer, SIGNAL(triggered(bool)),
             SLOT(slotUsersKickFromServer(bool)));
     connect(ui.actionKickBan, SIGNAL(triggered(bool)),
-            SLOT(slotUsersKickBan(bool)));
+            SLOT(slotUsersKickBanFromServer(bool)));
     connect(ui.actionMuteAll, SIGNAL(triggered(bool)),
             SLOT(slotUsersMuteVoiceAll(bool)));
     connect(ui.actionMediaStorage, SIGNAL(triggered(bool)),
@@ -399,6 +402,8 @@ MainWindow::MainWindow(const QString& cfgfile)
             SLOT(slotChannelsJoinChannel(bool)));
     connect(ui.actionViewChannelInfo, SIGNAL(triggered(bool)),
             SLOT(slotChannelsViewChannelInfo(bool)));
+    connect(ui.actionBannedUsersInChannel, SIGNAL(triggered(bool)),
+            SLOT(slotChannelsListBans(bool)));
 
     connect(ui.actionStreamMediaFileToChannel, SIGNAL(triggered(bool)),
             SLOT(slotChannelsStreamMediaFile(bool)));
@@ -755,6 +760,14 @@ void MainWindow::processTTMessage(const TTMessage& msg)
         ZERO_STRUCT(m_clientstats);
 
         QString nick = ttSettings->value(QString(SETTINGS_GENERAL_NICKNAME)).toString();
+
+        if(m_host.username.compare(WEBLOGIN_FACEBOOK_USERNAME, Qt::CaseInsensitive) == 0)
+        {
+            WebLoginDlg dlg(this);
+            if(dlg.exec() != QDialog::Accepted)
+                return;
+            m_host.password = dlg.m_password;
+        }
 
         int cmdid = TT_DoLoginEx(ttInst, _W(nick), _W(m_host.username),
                                  _W(m_host.password), _W(QString(APPNAME_SHORT)));
@@ -1317,11 +1330,22 @@ void MainWindow::commandProcessing(int cmdid, bool complete)
             //unsubscribe
             cmdJoinedChannel(TT_GetMyChannelID(ttInst));
             break;
-        case CMD_COMPLETE_LISTBANS :
+        case CMD_COMPLETE_LIST_CHANNELBANS :
+        case CMD_COMPLETE_LIST_SERVERBANS :
         {
             if(!m_bannedusersdlg)
             {
-                m_bannedusersdlg = new BannedUsersDlg(m_bannedusers);
+                QString chanpath;
+                if (*ite == CMD_COMPLETE_LIST_CHANNELBANS)
+                {
+                    int chanid = ui.channelsWidget->selectedChannel(true);
+                    TTCHAR path[TT_STRLEN] = {0};
+                    TT_GetChannelPath(ttInst, chanid, path);
+                    chanpath = _Q(path);
+                }
+                m_bannedusersdlg = new BannedUsersDlg(m_bannedusers, chanpath);
+                if (chanpath.size())
+                    m_bannedusersdlg->setWindowTitle(tr("Banned Users in Channel %1").arg(chanpath));
                 connect(m_bannedusersdlg, SIGNAL(finished(int)),
                         SLOT(slotClosedBannedUsersDlg(int)));
                 m_bannedusersdlg->setAttribute(Qt::WA_DeleteOnClose);
@@ -1336,7 +1360,7 @@ void MainWindow::commandProcessing(int cmdid, bool complete)
         {
             if(!m_useraccountsdlg)
             {
-                m_useraccountsdlg = new UserAccountsDlg(m_useraccounts);
+                m_useraccountsdlg = new UserAccountsDlg(m_useraccounts, UAD_READWRITE);
                 connect(this, SIGNAL(cmdSuccess(int)), m_useraccountsdlg, 
                         SLOT(slotCmdSuccess(int)));
                 connect(this, SIGNAL(cmdError(int, int)), m_useraccountsdlg, 
@@ -1742,9 +1766,20 @@ void MainWindow::hotkeyToggle(HotKeyID id, bool active)
     switch(id)
     {
     case HOTKEY_PUSHTOTALK :
+#if defined(Q_OS_LINUX) && QT_VERSION >= 0x050000
+        if(active)
+        {
+            qDebug() << "Hotkeys are using PTT lock in Qt5 for now";
+            bool tx = (TT_GetFlags(ttInst) & CLIENT_TX_VOICE) != CLIENT_CLOSED;
+            TT_EnableVoiceTransmission(ttInst, !tx);
+            emit(updateMyself());
+            playSoundEvent(SOUNDEVENT_HOTKEY);
+        }
+#else
         TT_EnableVoiceTransmission(ttInst, active);
         emit(updateMyself());
         playSoundEvent(SOUNDEVENT_HOTKEY);
+#endif
         break;
     case HOTKEY_VOICEACTIVATION :
         if(active)
@@ -2042,11 +2077,18 @@ bool MainWindow::nativeEvent(const QByteArray& eventType, void* message,
 
 void MainWindow::updateWindowTitle()
 {
+    QString profilename, title;
+    if(ttSettings)
+        profilename = ttSettings->value(SETTINGS_GENERAL_PROFILENAME).toString();
+
     if(m_mychannel.nChannelID > 0 &&
        m_mychannel.nChannelID != TT_GetRootChannelID(ttInst))
-        setWindowTitle(QString("%1 - %2").arg(_Q(m_mychannel.szName)).arg(APPTITLE));
+        title = QString("%1 - %2").arg(_Q(m_mychannel.szName)).arg(APPTITLE);
     else
-        setWindowTitle(APPTITLE);
+        title = APPTITLE;
+    if(profilename.size())
+        title = QString("%1 - %2").arg(title).arg(profilename);
+    setWindowTitle(title);
 }
 
 #if defined(Q_OS_WIN32)
@@ -2420,7 +2462,7 @@ bool MainWindow::sendDesktopWindow()
     {
     case DESKTOPSHARE_DESKTOP :
 #if defined(Q_OS_DARWIN)
-        //TODO: MacOS, entire desktop
+        //TODO: macOS, entire desktop
         m_nCGShareWnd = kCGNullWindowID;
 #endif
         break;
@@ -2441,7 +2483,7 @@ bool MainWindow::sendDesktopWindow()
         m_nWindowShareWnd = winid;
     }
 #elif defined(Q_OS_DARWIN)
-    //TODO: MacOS, active window
+    //TODO: macOS, active window
         m_nCGShareWnd = kCGNullWindowID;
 #endif
     break;
@@ -2669,7 +2711,7 @@ void MainWindow::processDesktopInput(int userid, const DesktopInput& input)
         }
      }
 #else
-        qDebug() << "Ignoring desktop input. Share specific window not supported on Mac OS";
+        qDebug() << "Ignoring desktop input. Share specific window not supported on macOS";
         return;
 #endif
      break;
@@ -3067,12 +3109,83 @@ void MainWindow::checkAppUpdate()
 
 void MainWindow::slotClientNewInstance(bool /*checked=false*/)
 {
+    QString inipath = ttSettings->fileName();
+
+    // check if we are creating a new profile from a profile
+    if(ttSettings->value(SETTINGS_GENERAL_PROFILENAME).toString().size())
+    {
+        inipath.remove(QRegExp(".\\d{1,2}$"));
+    }
+
+    // load existing profiles
+    QMap<QString, QString> profiles;
+    QStringList profilenames;
+    const int MAX_PROFILES = 16;
+    int freeno = -1;
+    for (int i = 1;i <= MAX_PROFILES;i++)
+    {
+        QString inifile = QString("%1.%2").arg(inipath).arg(i);
+        if(QFile::exists(inifile))
+        {
+            QSettings settings(inifile, QSettings::IniFormat, this);
+            QString name = settings.value(SETTINGS_GENERAL_PROFILENAME).toString();
+            profilenames.push_back(name);
+            profiles[name] = inifile;
+        }
+        else if(freeno < 0)
+            freeno = i;
+    }
+    
+
+    const QString newprofile = tr("New Profile"), delprofile = tr("Delete Profile");
+    if(profiles.size() < MAX_PROFILES)
+        profilenames.push_back(newprofile);
+    if(profiles.size() > 0)
+        profilenames.push_back(delprofile);
+
+    bool ok = false;
+    QString choice = QInputDialog::getItem(this, tr("New Client Instance"), 
+        tr("Select profile"), profilenames, 0, false, &ok);
+
+    if(choice == delprofile)
+    {
+        profilenames.removeAll(newprofile);
+        profilenames.removeAll(delprofile);
+
+        QString choice = QInputDialog::getItem(this, tr("New Client Instance"),
+            tr("Delete profile"), profilenames, 0, false, &ok);
+        if(ok && ttSettings->fileName() != profiles[choice])
+            QFile::remove(profiles[choice]);
+        return;
+    }
+    else if(choice == newprofile)
+    {
+        QString newname = QInputDialog::getText(this,
+            tr("New Profile"), tr("Profile name"), QLineEdit::Normal,
+            QString("Profile %1").arg(freeno), &ok);
+        if(ok && newname.size())
+        {
+            inipath = QString("%1.%2").arg(inipath).arg(freeno);
+            QFile::copy(ttSettings->fileName(), inipath);
+            QSettings settings(inipath, QSettings::IniFormat, this);
+            settings.setValue(SETTINGS_GENERAL_PROFILENAME, newname);
+        }
+        else return;
+    }
+    else 
+    {
+        inipath = profiles[choice];
+    }
+
     QString path = QApplication::applicationFilePath();
+    QStringList args = { "-noconnect" };
+    args.push_back(QString("-cfg"));
+    args.push_back(inipath);
+
 #if defined(_DEBUG)
-    QProcess::startDetached(path, (QStringList() << "-noconnect"));
+    QProcess::startDetached(path, args);
 #else
-    QProcess::startDetached(path, (QStringList() << "-noconnect"),
-                            QApplication::applicationDirPath());
+    QProcess::startDetached(path, args, QApplication::applicationDirPath());
 #endif
 }
 
@@ -3475,16 +3588,22 @@ void MainWindow::slotUsersKickFromChannel(bool /*checked =false */)
         slotUsersKick(u.nUserID, u.nChannelID);
 }
 
+void MainWindow::slotUsersKickBanFromChannel(bool /*checked =false */)
+{
+    foreach(User u, ui.channelsWidget->getSelectedUsers())
+        slotUsersKickBan(u.nUserID, u.nChannelID);
+}
+
 void MainWindow::slotUsersKickFromServer(bool /*checked =false */)
 {
     foreach(User u, ui.channelsWidget->getSelectedUsers())
         slotUsersKick(u.nUserID, 0);
 }
 
-void MainWindow::slotUsersKickBan(bool /*checked =false */)
+void MainWindow::slotUsersKickBanFromServer(bool /*checked =false */)
 {
     foreach(User u, ui.channelsWidget->getSelectedUsers())    
-        slotUsersKickBan(u.nUserID, u.nChannelID);
+        slotUsersKickBan(u.nUserID, 0);
 }
 
 void MainWindow::slotUsersSubscriptionsUserMsg(bool checked /*=false */)
@@ -3852,6 +3971,15 @@ void MainWindow::slotChannelsViewChannelInfo(bool /*checked=false*/)
     }
 }
 
+void MainWindow::slotChannelsListBans(bool /*checked=false*/)
+{
+    //don't display dialog box until we get the result
+    int chanid = ui.channelsWidget->selectedChannel(true);
+    int cmdid = TT_DoListBans(ttInst, chanid, 0, 1000000);
+    if(cmdid>0)
+        m_commands.insert(cmdid, CMD_COMPLETE_LIST_CHANNELBANS);
+}
+
 void MainWindow::slotChannelsStreamMediaFile(bool checked/*=false*/)
 {
     if(!checked)
@@ -3934,10 +4062,30 @@ void MainWindow::slotChannelsDeleteFile(bool /*checked =false */)
    
 void MainWindow::slotServerUserAccounts(bool /*checked =false */)
 {
-    //don't display dialog box until we get the result
-    int cmdid = TT_DoListUserAccounts(ttInst, 0, 1000000);
-    if(cmdid>0)
-        m_commands.insert(cmdid, CMD_COMPLETE_LISTACCOUNTS);
+    if(TT_GetMyUserType(ttInst) & USERTYPE_ADMIN)
+    {
+        //don't display dialog box until we get the result
+        int cmdid = TT_DoListUserAccounts(ttInst, 0, 1000000);
+        if(cmdid>0)
+            m_commands.insert(cmdid, CMD_COMPLETE_LISTACCOUNTS);
+    }
+    else
+    {
+        if(!m_useraccountsdlg)
+        {
+            useraccounts_t useraccounts(1);
+            TT_GetMyUserAccount(ttInst, &useraccounts[0]);
+
+            m_useraccountsdlg = new UserAccountsDlg(useraccounts, UAD_READONLY);
+            connect(m_useraccountsdlg, SIGNAL(finished(int)),
+                SLOT(slotClosedUserAccountsDlg(int)));
+            m_useraccountsdlg->setAttribute(Qt::WA_DeleteOnClose);
+            m_useraccountsdlg->show();
+            m_useraccounts.clear();
+        }
+        else
+            m_useraccountsdlg->activateWindow();
+    }
 }
 
 void MainWindow::slotServerBannedUsers(bool /*checked =false */)
@@ -3945,7 +4093,7 @@ void MainWindow::slotServerBannedUsers(bool /*checked =false */)
     //don't display dialog box until we get the result
     int cmdid = TT_DoListBans(ttInst, 0, 0, 1000000);
     if(cmdid>0)
-        m_commands.insert(cmdid, CMD_COMPLETE_LISTBANS);
+        m_commands.insert(cmdid, CMD_COMPLETE_LIST_SERVERBANS);
 }
 
 void MainWindow::slotServerOnlineUsers(bool /*checked=false*/)
@@ -4156,11 +4304,20 @@ void MainWindow::slotUsersKick(int userid, int chanid)
     TT_DoKickUser(ttInst, userid, chanid);
 }
 
-void MainWindow::slotUsersKickBan(int userid, int /*chanid*/)
+void MainWindow::slotUsersKickBan(int userid, int chanid)
 {
-    //ban first since the user will otherwise have disappeared
-    TT_DoBanUser(ttInst, userid, 0);
-    TT_DoKickUser(ttInst, userid, 0);
+    QStringList items = { tr("IP-address"), tr("Username") };
+    bool ok = false;
+    QString choice = QInputDialog::getItem(this, tr("Ban User From Channel"), tr("Ban user's"), items, 0, false, &ok);
+    if (ok)
+    {
+        //ban first since the user will otherwise have disappeared
+        if (choice == items[0])
+            TT_DoBanUserEx(ttInst, userid, chanid != 0 ? BANTYPE_CHANNEL | BANTYPE_IPADDR : BANTYPE_IPADDR);
+        else
+            TT_DoBanUserEx(ttInst, userid, chanid != 0 ? BANTYPE_CHANNEL | BANTYPE_USERNAME : BANTYPE_USERNAME);
+        TT_DoKickUser(ttInst, userid, chanid);
+    }
 }
 
 void MainWindow::slotTreeSelectionChanged()
@@ -4197,6 +4354,7 @@ void MainWindow::slotUpdateUI()
     int mychannel = TT_GetMyChannelID(ttInst);
     int filescount = ui.filesView->selectedFiles().size();
     ClientFlags statemask = TT_GetFlags(ttInst);
+    UserRights userrights = TT_GetMyUserRights(ttInst);
     bool auth = (statemask & CLIENT_AUTHORIZED);
     bool me_admin = (TT_GetMyUserType(ttInst) & USERTYPE_ADMIN);
     bool me_op = TT_IsChannelOperator(ttInst, TT_GetMyUserID(ttInst), user_chanid);
@@ -4248,8 +4406,8 @@ void MainWindow::slotUpdateUI()
     ui.actionVolume->setEnabled(userid>0);
     ui.actionOp->setEnabled(userid>0);
     ui.actionKickFromChannel->setEnabled(userid>0);
-    ui.actionKickFromServer->setEnabled(userid>0 && (m_myuseraccount.uUserRights & USERRIGHT_KICK_USERS));
-    ui.actionKickBan->setEnabled(userid>0 && (m_myuseraccount.uUserRights & USERRIGHT_BAN_USERS));
+    ui.actionKickFromServer->setEnabled(userid>0 && (userrights & USERRIGHT_KICK_USERS));
+    ui.actionKickBan->setEnabled(userid>0 && (userrights & USERRIGHT_BAN_USERS));
     ui.actionDesktopAccessAllow->setEnabled(userid>0);
 
     ui.actionUserMessages->setEnabled(userid>0);
@@ -4272,8 +4430,8 @@ void MainWindow::slotUpdateUI()
     ui.actionLowerVoiceVolume->setEnabled(userid>0 && user.nVolumeVoice > SOUND_VOLUME_MIN);
     ui.actionIncreaseMediaFileVolume->setEnabled(userid>0 && user.nVolumeMediaFile < SOUND_VOLUME_MAX);
     ui.actionLowerMediaFileVolume->setEnabled(userid>0 && user.nVolumeMediaFile > SOUND_VOLUME_MIN);
-    ui.actionStoreForMove->setEnabled(userid>0 && me_admin);
-    ui.actionMoveUser->setEnabled(m_moveusers.size() && me_admin);
+    ui.actionStoreForMove->setEnabled(userid>0 && (userrights & USERRIGHT_MOVE_USERS));
+    ui.actionMoveUser->setEnabled(m_moveusers.size() && (userrights & USERRIGHT_MOVE_USERS));
 
     //ui.actionMuteAll->setEnabled(statemask & CLIENT_SOUND_READY);
     ui.actionMuteAll->setChecked(statemask & CLIENT_SNDOUTPUT_MUTE);
@@ -4293,6 +4451,7 @@ void MainWindow::slotUpdateUI()
 
     ui.actionJoinChannel->setEnabled(chanid>0);
     ui.actionViewChannelInfo->setEnabled(chanid>0);
+    ui.actionBannedUsersInChannel->setEnabled(chanid>0);
     ui.actionCreateChannel->setEnabled(chanid>0 || mychannel>0);
     ui.actionUpdateChannel->setEnabled(chanid>0);
     ui.actionDeleteChannel->setEnabled(chanid>0);
@@ -4305,19 +4464,19 @@ void MainWindow::slotUpdateUI()
 
     //Users-menu items dependent on Channel
     ui.actionAllowVoiceTransmission->setChecked(userCanVoiceTx(userid, chan));
-    ui.actionAllowVoiceTransmission->setEnabled(userid>0 && (me_op || me_admin));
+    ui.actionAllowVoiceTransmission->setEnabled(userid>0 && (me_op || (userrights & USERRIGHT_MODIFY_CHANNELS)));
     ui.actionAllowVideoTransmission->setChecked(userCanVideoTx(userid, chan));
-    ui.actionAllowVideoTransmission->setEnabled(userid>0 && (me_op || me_admin));
+    ui.actionAllowVideoTransmission->setEnabled(userid>0 && (me_op || (userrights & USERRIGHT_MODIFY_CHANNELS)));
     ui.actionAllowDesktopTransmission->setChecked(userCanDesktopTx(userid, chan));
-    ui.actionAllowDesktopTransmission->setEnabled(userid>0 && (me_op || me_admin));
+    ui.actionAllowDesktopTransmission->setEnabled(userid>0 && (me_op || (userrights & USERRIGHT_MODIFY_CHANNELS)));
     ui.actionAllowMediaFileTransmission->setChecked(userCanMediaFileTx(userid, chan));
-    ui.actionAllowMediaFileTransmission->setEnabled(userid>0 && (me_op || me_admin));
+    ui.actionAllowMediaFileTransmission->setEnabled(userid>0 && (me_op || (userrights & USERRIGHT_MODIFY_CHANNELS)));
 
     //Server-menu items
-    ui.actionUserAccounts->setEnabled(auth && me_admin);
-    ui.actionBannedUsers->setEnabled(auth && me_admin);
+    ui.actionUserAccounts->setEnabled(auth);
+    ui.actionBannedUsers->setEnabled(me_op || (userrights & USERRIGHT_BAN_USERS));
     ui.actionOnlineUsers->setEnabled(auth);
-    ui.actionBroadcastMessage->setEnabled(auth && me_admin);
+    ui.actionBroadcastMessage->setEnabled(auth && (userrights & USERRIGHT_TEXTMESSAGE_BROADCAST));
     ui.actionServerProperties->setEnabled(auth);
     ui.actionSaveConfiguration->setEnabled(auth && me_admin);
     ui.actionServerStatistics->setEnabled(auth && me_admin);
