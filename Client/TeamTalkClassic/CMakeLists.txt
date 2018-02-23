@@ -8,7 +8,7 @@ if (MSVC)
   option (BUILD_TEAMTALK_CLIENT_MFC_EXAMPLE "Build TeamTalk 5 Classic for TeamTalk 5 Standard Edition" OFF)
   option (BUILD_TEAMTALKPRO_CLIENT_MFC_EXAMPLE "Build TeamTalk 5 Classic Pro for TeamTalk 5 Professional Edition" ON)
 
-  option (ENABLE_TOLK "Build TeamTalk 5 Classic with Tolk" ON)
+  option (ENABLE_TOLK "Build TeamTalk 5 Classic with Tolk" OFF)
   
   set(CMAKE_MFC_FLAG 1)
 
