@@ -90,7 +90,7 @@ set (APP_SOURCES
 
 if (MSVC)
   option (BUILD_TEAMTALK_CLIENT_DOTNET_EXAMPLE "Build TeamTalkApp.NET for TeamTalk 5 Standard Edition" ON)
-  option (BUILD_TEAMTALKPRO_CLIENT_DOTNET_EXAMPLE "Build TeamTalkProApp.NET for TeamTalk 5 Professional Edition" ON)
+  option (BUILD_TEAMTALKPRO_CLIENT_DOTNET_EXAMPLE "Build TeamTalkProApp.NET for TeamTalk 5 Professional Edition" OFF)
 
   csharp_set_windows_forms_properties (${APP_FORMS_SOURCES} ${APP_DESIGNER_SOURCES})
   
