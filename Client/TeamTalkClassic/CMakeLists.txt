@@ -5,7 +5,7 @@ include (ttclassic.cmake)
 
 if (MSVC)
 
-  option (BUILD_TEAMTALK_CLIENT_MFC_EXAMPLE "Build TeamTalk 5 Classic for TeamTalk 5 Standard Edition" ON)
+  option (BUILD_TEAMTALK_CLIENT_MFC_EXAMPLE "Build TeamTalk 5 Classic for TeamTalk 5 Standard Edition" OFF)
   option (BUILD_TEAMTALKPRO_CLIENT_MFC_EXAMPLE "Build TeamTalk 5 Classic Pro for TeamTalk 5 Professional Edition" ON)
   
   set(CMAKE_MFC_FLAG 1)
