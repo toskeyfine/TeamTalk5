@@ -4,7 +4,7 @@ project (TeamTalk5Test.NET)
 enable_language (CSharp)
 
 if (MSVC)
-  option (BUILD_TEAMTALK_DOTNET_UNITTEST "Build TeamTalk 5 Unit Test for TeamTalk 5 Standard Edition" ON)
+  option (BUILD_TEAMTALK_DOTNET_UNITTEST "Build TeamTalk 5 Unit Test for TeamTalk 5 Standard Edition" OFF)
   option (BUILD_TEAMTALKPRO_DOTNET_UNITTEST "Build TeamTalk 5 Pro Unit Test for TeamTalk 5 Professional Edition" ON)
 
   if (BUILD_TEAMTALK_DOTNET_UNITTEST)
