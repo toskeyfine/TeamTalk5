@@ -5,7 +5,7 @@ enable_language (CSharp)
 
 if (MSVC)
   option (BUILD_TEAMTALK_CLIENT_LOG_DOTNET_EXAMPLE "Build ttserverlog.NET for TeamTalk 5 Standard Edition" ON)
-  option (BUILD_TEAMTALKPRO_CLIENT_LOG_DOTNET_EXAMPLE "Build ttproserverlog.NET for TeamTalk 5 Professional Edition" ON)
+  option (BUILD_TEAMTALKPRO_CLIENT_LOG_DOTNET_EXAMPLE "Build ttproserverlog.NET for TeamTalk 5 Professional Edition" OFF)
 
   if (BUILD_TEAMTALK_CLIENT_LOG_DOTNET_EXAMPLE)
     add_executable (ttserverlog.NET Program.cs)
