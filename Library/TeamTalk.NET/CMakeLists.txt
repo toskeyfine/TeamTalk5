@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 project (TeamTalk5.NET LANGUAGES CSharp)
 
 if (MSVC)
-  option (BUILD_TEAMTALK_LIBRARY_DOTNET "Build TeamTalk 5 .NET DLL for TeamTalk 5 Standard Edition" ON)
+  option (BUILD_TEAMTALK_LIBRARY_DOTNET "Build TeamTalk 5 .NET DLL for TeamTalk 5 Standard Edition" OFF)
   option (BUILD_TEAMTALKPRO_LIBRARY_DOTNET "Build TeamTalk 5 Pro .NET DLL for TeamTalk 5 Professional Edition" ON)
 
   if (BUILD_TEAMTALK_LIBRARY_DOTNET)
