@@ -5,14 +5,14 @@ include (ttclassic.cmake)
 
 if (MSVC)
 
-  option (BUILD_TEAMTALK_CLIENT_MFC_EXAMPLE "Build TeamTalk 5 Classic for TeamTalk 5 Standard Edition" ON)
+  option (BUILD_TEAMTALK_CLIENT_MFC_EXAMPLE "Build TeamTalk 5 Classic for TeamTalk 5 Standard Edition" OFF)
   option (BUILD_TEAMTALKPRO_CLIENT_MFC_EXAMPLE "Build TeamTalk 5 Classic Pro for TeamTalk 5 Professional Edition" ON)
   
   set(CMAKE_MFC_FLAG 1)
 
   include_directories (./ ../../Library/TeamTalk_DLL tinyxml tolk/src)
 
-  add_definitions (-DUNICODE -D_CRT_SECURE_NO_WARNINGS -D_WINSOCK_DEPRECATED_NO_WARNINGS -D_UNICODE -DENABLE_TOLK -wd4800)
+  add_definitions (-DUNICODE -D_CRT_SECURE_NO_WARNINGS -D_WINSOCK_DEPRECATED_NO_WARNINGS -D_UNICODE -wd4800)
 
   link_directories (../../Library/TeamTalk_DLL tolk/bin/$(PlatformName))
 
