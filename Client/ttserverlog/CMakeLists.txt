@@ -5,7 +5,7 @@ include_directories (../../Library/TeamTalk_DLL)
 link_directories (../../Library/TeamTalk_DLL)
 
 option (BUILD_TEAMTALK_CLIENT_LOG_EXAMPLE "Build ttserverlog for TeamTalk 5 Standard Edition" ON)
-option (BUILD_TEAMTALKPRO_CLIENT_LOG_EXAMPLE "Build ttproserverlog for TeamTalk 5 Professional Edition" ON)
+option (BUILD_TEAMTALKPRO_CLIENT_LOG_EXAMPLE "Build ttproserverlog for TeamTalk 5 Professional Edition" OFF)
 
 if (MSVC)
   add_definitions (-DUNICODE -D_UNICODE)
