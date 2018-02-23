@@ -3,7 +3,7 @@ project (TeamTalk5.NET LANGUAGES CSharp)
 
 if (MSVC)
   option (BUILD_TEAMTALK_LIBRARY_DOTNET "Build TeamTalk 5 .NET DLL for TeamTalk 5 Standard Edition" ON)
-  option (BUILD_TEAMTALKPRO_LIBRARY_DOTNET "Build TeamTalk 5 Pro .NET DLL for TeamTalk 5 Professional Edition" ON)
+  option (BUILD_TEAMTALKPRO_LIBRARY_DOTNET "Build TeamTalk 5 Pro .NET DLL for TeamTalk 5 Professional Edition" OFF)
 
   if (BUILD_TEAMTALK_LIBRARY_DOTNET)
     add_library (TeamTalk5.NET SHARED
