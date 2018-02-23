@@ -11,7 +11,7 @@ endif()
 include_directories (../../Library/TeamTalk_DLL ${JNI_INCLUDE_DIRS})
 link_directories (../../Library/TeamTalk_DLL)
 
-option (BUILD_TEAMTALK_LIBRARY_JNI "Build TeamTalk 5 JNI DLL for TeamTalk 5 Standard Edition" ON)
+option (BUILD_TEAMTALK_LIBRARY_JNI "Build TeamTalk 5 JNI DLL for TeamTalk 5 Standard Edition" OFF)
 option (BUILD_TEAMTALKPRO_LIBRARY_JNI "Build TeamTalk 5 Pro JNI DLL for TeamTalk 5 Professional Edition" ON)
 
 set (JAVA_SOURCES
@@ -114,7 +114,7 @@ endif()
 find_package (Java)
 include (UseJava)
 
-option (BUILD_TEAMTALK_LIBRARY_JAR "Build TeamTalk 5 jar file with Java classes for TeamTalk 5 Standard Edition" ON)
+option (BUILD_TEAMTALK_LIBRARY_JAR "Build TeamTalk 5 jar file with Java classes for TeamTalk 5 Standard Edition" OFF)
 option (BUILD_TEAMTALKPRO_LIBRARY_JAR "Build TeamTalk 5 Pro jar file with Java classes for TeamTalk 5 Professional Edition" ON)
 
 set(CMAKE_JAVA_COMPILE_FLAGS "-source" "1.5" "-target" "1.5")
