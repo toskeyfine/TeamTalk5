@@ -12,7 +12,7 @@ if (MSVC)
 
   include_directories (./ ../../Library/TeamTalk_DLL tinyxml tolk/src)
 
-  add_definitions (-DUNICODE -D_CRT_SECURE_NO_WARNINGS -D_WINSOCK_DEPRECATED_NO_WARNINGS -D_UNICODE -DENABLE_TOLK -wd4800)
+  add_definitions (-DUNICODE -D_CRT_SECURE_NO_WARNINGS -D_WINSOCK_DEPRECATED_NO_WARNINGS -D_UNICODE -wd4800)
 
   link_directories (../../Library/TeamTalk_DLL tolk/bin/$(PlatformName))
 
