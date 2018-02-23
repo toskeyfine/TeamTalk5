@@ -3,7 +3,7 @@ project (TeamTalk5SDK)
 
 option (BUILD_TEAMTALK_LIBRARIES "Build TeamTalk libraries" ON)
 option (BUILD_TEAMTALK_CLIENTS "Build TeamTalk client examples" ON)
-option (BUILD_TEAMTALKPRO_SERVERS "Build TeamTalk server examples" ON)
+option (BUILD_TEAMTALKPRO_SERVERS "Build TeamTalk server examples" OFF)
 
 if (BUILD_TEAMTALK_LIBRARIES)
   add_subdirectory (Library/TeamTalkJNI)
