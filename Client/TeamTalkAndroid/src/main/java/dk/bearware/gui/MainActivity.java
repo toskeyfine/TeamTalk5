@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2017, BearWare.dk
+ * Copyright (c) 2005-2018, BearWare.dk
  * 
  * Contact Information:
  *
@@ -11,11 +11,13 @@
  * Phone: +45 20 20 54 59
  * Web: http://www.bearware.dk
  *
- * This source code is part of the TeamTalk 5 SDK owned by
- * BearWare.dk. All copyright statements may not be removed 
- * or altered from any source distribution. If you use this
- * software in a product, an acknowledgment in the product 
- * documentation is required.
+ * This source code is part of the TeamTalk SDK owned by
+ * BearWare.dk. Use of this file, or its compiled unit, requires a
+ * TeamTalk SDK License Key issued by BearWare.dk.
+ *
+ * The TeamTalk SDK License Agreement along with its Terms and
+ * Conditions are outlined in the file License.txt included with the
+ * TeamTalk SDK distribution.
  *
  */
 
@@ -1161,8 +1163,10 @@ implements TeamTalkConnectionListener,
             PopupMenu userActions = new PopupMenu(this, v);
             userActions.setOnMenuItemClickListener(this);
             userActions.inflate(R.menu.user_actions);
-            userActions.getMenu().findItem(R.id.action_kick).setEnabled(kickRight).setVisible(kickRight);
-            userActions.getMenu().findItem(R.id.action_ban).setEnabled(banRight).setVisible(banRight);
+            userActions.getMenu().findItem(R.id.action_kickchan).setEnabled(kickRight).setVisible(kickRight);
+            userActions.getMenu().findItem(R.id.action_kicksrv).setEnabled(kickRight).setVisible(kickRight);
+            userActions.getMenu().findItem(R.id.action_banchan).setEnabled(banRight).setVisible(banRight);
+            userActions.getMenu().findItem(R.id.action_bansrv).setEnabled(banRight).setVisible(banRight);
             userActions.getMenu().findItem(R.id.action_select).setEnabled(moveRight).setVisible(moveRight);
             userActions.show();
             return true;
@@ -1184,15 +1188,64 @@ implements TeamTalkConnectionListener,
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
         switch (item.getItemId()) {
-        case R.id.action_ban:
-            ttclient.doBanUser(selectedUser.nUserID, 0);
+        case R.id.action_banchan:
+            alert.setMessage(getString(R.string.ban_confirmation, selectedUser.szNickname));
+            alert.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    ttclient.doBanUser(selectedUser.nUserID, selectedUser.nChannelID);
+                    ttclient.doKickUser(selectedUser.nUserID, selectedUser.nChannelID);
+                }
+            });
+
+            alert.setNegativeButton(android.R.string.no, null);
+            alert.show();
+            break;
+        case R.id.action_bansrv:
+            alert.setMessage(getString(R.string.ban_confirmation, selectedUser.szNickname));
+            alert.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    ttclient.doBanUser(selectedUser.nUserID, 0);
+                    ttclient.doKickUser(selectedUser.nUserID, 0);
+                }
+            });
+
+            alert.setNegativeButton(android.R.string.no, null);
+            alert.show();
             break;
         case R.id.action_edit:
             editChannelProperties(selectedChannel);
             break;
-        case R.id.action_kick:
-            ttclient.doKickUser(selectedUser.nUserID, selectedUser.nChannelID);
+        case R.id.action_kickchan:
+            alert.setMessage(getString(R.string.kick_confirmation, selectedUser.szNickname));
+            alert.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    ttclient.doKickUser(selectedUser.nUserID, selectedUser.nChannelID);
+                }
+            });
+
+            alert.setNegativeButton(android.R.string.no, null);
+            alert.show();
+            break;
+        case R.id.action_kicksrv:
+            alert.setMessage(getString(R.string.kick_confirmation, selectedUser.szNickname));
+            alert.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    ttclient.doKickUser(selectedUser.nUserID, 0);
+                }
+            });
+
+            alert.setNegativeButton(android.R.string.no, null);
+            alert.show();
             break;
         case R.id.action_move:
             Iterator<Integer> userIDSIterator = userIDS.iterator(); 
@@ -1205,7 +1258,6 @@ implements TeamTalkConnectionListener,
             userIDS.add(selectedUser.nUserID);
             break;
         case R.id.action_remove: {
-            AlertDialog.Builder alert = new AlertDialog.Builder(this);
             alert.setMessage(getString(R.string.channel_remove_confirmation, selectedChannel.szName));
             alert.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 
@@ -1265,6 +1317,7 @@ implements TeamTalkConnectionListener,
 
     private void adjustTxState(boolean txEnabled) {
         findViewById(R.id.transmit_voice).setBackgroundColor(txEnabled ? Color.GREEN : Color.RED);
+        findViewById(R.id.transmit_voice).setContentDescription(txEnabled ? getString(R.string.tx_on) : getString(R.string.tx_off));
 
         if ((curchannel != null) && (ttclient.getMyChannelID() == curchannel.nChannelID)) {
             accessibilityAssistant.lockEvents();
