@@ -24,10 +24,7 @@
 #if !defined(ACCEPTHANDLER_H)
 #define ACCEPTHANDLER_H
 
-#include <ace/Reactor.h>
-#include <ace/Svc_Handler.h>
 #include <ace/Acceptor.h>
-#include <ace/INET_Addr.h>
 #include <ace/SOCK_Stream.h>
 #include <ace/SOCK_Acceptor.h>
 
@@ -52,6 +49,16 @@ public:
 };
 #endif
 
+/*
+class My_SOCK_Acceptor : public ACE_SOCK_Acceptor
+{
+protected:
+    int shared_open(const ACE_Addr &local_sap,
+        int protocol_family,
+        int backlog);
+};
+*/
+
 template < typename STREAMHANDLER, typename MYACCEPTOR >
 class Acceptor : public ACE_Acceptor< STREAMHANDLER, MYACCEPTOR >
 {
@@ -62,6 +69,11 @@ public:
         : super(r)
         , m_listener(NULL)
     {
+    }
+
+    virtual ~Acceptor()
+    {
+        MYTRACE(ACE_TEXT("~Acceptor()\n"));
     }
 
     void SetListener(typename STREAMHANDLER::StreamListener_t * lsn)
@@ -77,7 +89,6 @@ public:
         //     m_pListener->NewClient(*svc_handler);
 
         return ret;
-
     }
 
     //virtual int accept_svc_handler (SSLStreamHandler* svc_handler);
