@@ -26,7 +26,7 @@
 #endif
 
 #include "Convert.h"
-
+#include <ace/OS.h>
 #include <ace/ACE.h>
 #include <myace/MyACE.h>
 
@@ -974,26 +974,30 @@ bool Convert(const teamtalk::ChannelProp& chanprop, Channel& result)
     result.nDiskQuota = chanprop.diskquota;
     Convert(chanprop.audiocfg, result.audiocfg);
 
-    std::set<int> userids;
+    std::set<int> userids, tmp;
     std::set<int>::iterator ii;
-    userids.insert(chanprop.voiceusers.begin(), chanprop.voiceusers.end());
-    userids.insert(chanprop.videousers.begin(), chanprop.videousers.end());
-    userids.insert(chanprop.desktopusers.begin(), chanprop.desktopusers.end());
-    userids.insert(chanprop.mediafileusers.begin(), chanprop.mediafileusers.end());
+    tmp = chanprop.GetTransmitUsers(teamtalk::STREAMTYPE_VOICE);
+    userids.insert(tmp.begin(), tmp.end());
+    tmp = chanprop.GetTransmitUsers(teamtalk::STREAMTYPE_VIDEOCAPTURE);
+    userids.insert(tmp.begin(), tmp.end());
+    tmp = chanprop.GetTransmitUsers(teamtalk::STREAMTYPE_DESKTOP);
+    userids.insert(tmp.begin(), tmp.end());
+    tmp = chanprop.GetTransmitUsers(teamtalk::STREAMTYPE_MEDIAFILE);
+    userids.insert(tmp.begin(), tmp.end());
     
     ACE_OS::memset(result.transmitUsers, 0, sizeof(result.transmitUsers));
     size_t i=0;
     for(ii=userids.begin();ii!=userids.end() && i < TT_TRANSMITUSERS_MAX;ii++, i++)
     {
-        result.transmitUsers[i][0] = *ii;
-        if(chanprop.voiceusers.find(*ii) != chanprop.voiceusers.end())
-            result.transmitUsers[i][1] |= STREAMTYPE_VOICE;
-        if(chanprop.videousers.find(*ii) != chanprop.videousers.end())
-            result.transmitUsers[i][1] |= STREAMTYPE_VIDEOCAPTURE;
-        if(chanprop.desktopusers.find(*ii) != chanprop.desktopusers.end())
-            result.transmitUsers[i][1] |= STREAMTYPE_DESKTOP;
-        if(chanprop.mediafileusers.find(*ii) != chanprop.mediafileusers.end())
-            result.transmitUsers[i][1] |= STREAMTYPE_MEDIAFILE_AUDIO | STREAMTYPE_MEDIAFILE_VIDEO;
+        result.transmitUsers[i][TT_TRANSMITUSERS_USERID_INDEX] = *ii;
+        if(chanprop.GetTransmitUsers(teamtalk::STREAMTYPE_VOICE).count(*ii))
+            result.transmitUsers[i][TT_TRANSMITUSERS_STREAMTYPE_INDEX] |= STREAMTYPE_VOICE;
+        if(chanprop.GetTransmitUsers(teamtalk::STREAMTYPE_VIDEOCAPTURE).count(*ii))
+            result.transmitUsers[i][TT_TRANSMITUSERS_STREAMTYPE_INDEX] |= STREAMTYPE_VIDEOCAPTURE;
+        if(chanprop.GetTransmitUsers(teamtalk::STREAMTYPE_DESKTOP).count(*ii))
+            result.transmitUsers[i][TT_TRANSMITUSERS_STREAMTYPE_INDEX] |= STREAMTYPE_DESKTOP;
+        if(chanprop.GetTransmitUsers(teamtalk::STREAMTYPE_MEDIAFILE).count(*ii))
+            result.transmitUsers[i][TT_TRANSMITUSERS_STREAMTYPE_INDEX] |= STREAMTYPE_MEDIAFILE;
     }
 
     for(i=0;i<TT_TRANSMITQUEUE_MAX;i++)
@@ -1024,17 +1028,17 @@ bool Convert(const Channel& channel, teamtalk::ChannelProp& chanprop)
     chanprop.topic = channel.szTopic;
     Convert(channel.audiocfg, chanprop.audiocfg);
 
-    for(int i=0;i<TT_TRANSMITUSERS_MAX && channel.transmitUsers[i][0];i++)
+    for(int i=0;i<TT_TRANSMITUSERS_MAX && channel.transmitUsers[i][TT_TRANSMITUSERS_USERID_INDEX];i++)
     {
-        int userid = channel.transmitUsers[i][0];
-        if(channel.transmitUsers[i][1] & STREAMTYPE_VOICE)
-            chanprop.voiceusers.insert(userid);
-        if(channel.transmitUsers[i][1] & STREAMTYPE_VIDEOCAPTURE)
-            chanprop.videousers.insert(userid);
-        if(channel.transmitUsers[i][1] & STREAMTYPE_DESKTOP)
-            chanprop.desktopusers.insert(userid);
-        if(channel.transmitUsers[i][1] & (STREAMTYPE_MEDIAFILE_AUDIO | STREAMTYPE_MEDIAFILE_VIDEO))
-            chanprop.mediafileusers.insert(userid);
+        int userid = channel.transmitUsers[i][TT_TRANSMITUSERS_USERID_INDEX];
+        if(channel.transmitUsers[i][TT_TRANSMITUSERS_STREAMTYPE_INDEX] & STREAMTYPE_VOICE)
+            chanprop.transmitusers[teamtalk::STREAMTYPE_VOICE].insert(userid);
+        if(channel.transmitUsers[i][TT_TRANSMITUSERS_STREAMTYPE_INDEX] & STREAMTYPE_VIDEOCAPTURE)
+            chanprop.transmitusers[teamtalk::STREAMTYPE_VIDEOCAPTURE].insert(userid);
+        if(channel.transmitUsers[i][TT_TRANSMITUSERS_STREAMTYPE_INDEX] & STREAMTYPE_DESKTOP)
+            chanprop.transmitusers[teamtalk::STREAMTYPE_DESKTOP].insert(userid);
+        if(channel.transmitUsers[i][TT_TRANSMITUSERS_STREAMTYPE_INDEX] & (STREAMTYPE_MEDIAFILE))
+            chanprop.transmitusers[teamtalk::STREAMTYPE_MEDIAFILE].insert(userid);
     }
 
     for(int i=0;i<TT_TRANSMITQUEUE_MAX;i++)
@@ -1182,7 +1186,7 @@ void Convert(const UserAccount& useraccount, teamtalk::UserAccount& result)
     result.abuse.cmd_msec = useraccount.abusePrevent.nCommandsIntervalMSec;
 }
 
-void Convert(const teamtalk::ServerProp& srvprop, ServerProperties& result)
+void Convert(const teamtalk::ServerProperties& srvprop, ServerProperties& result)
 {
     result.nMaxUsers = srvprop.maxusers;
     result.nMaxLoginAttempts = srvprop.maxloginattempts;
@@ -1197,8 +1201,6 @@ void Convert(const teamtalk::ServerProp& srvprop, ServerProperties& result)
     result.nMaxTotalTxPerSecond = srvprop.totaltxlimit;
     result.bAutoSave = srvprop.autosave;
     result.nMaxUsers = srvprop.maxusers;
-    result.nTcpPort = srvprop.tcpaddr.get_port_number();
-    result.nUdpPort = srvprop.udpaddr.get_port_number();
     result.nUserTimeout = srvprop.usertimeout;
     ACE_OS::strsncpy(result.szServerVersion, srvprop.version.c_str(), TT_STRLEN);
 }
@@ -1206,12 +1208,31 @@ void Convert(const teamtalk::ServerProp& srvprop, ServerProperties& result)
 void Convert(const teamtalk::ServerInfo& srvprop, ServerProperties& result)
 {
     ZERO_STRUCT(result);
-    Convert(static_cast<const teamtalk::ServerProp&>(srvprop), result);
+    Convert(static_cast<const teamtalk::ServerProperties&>(srvprop), result);
     ACE_OS::strsncpy(result.szMOTDRaw, srvprop.motd_raw.c_str(), TT_STRLEN);
     ACE_OS::strsncpy(result.szServerProtocolVersion, srvprop.protocol.c_str(), TT_STRLEN);
+    if (srvprop.hostaddrs.size())
+    {
+        result.nTcpPort = srvprop.hostaddrs[0].get_port_number();
+        result.nUdpPort = srvprop.udpaddr.get_port_number();
+    }
 }
 
-void Convert(const ServerProperties& srvprop, teamtalk::ServerProp& result)
+#if defined(ENABLE_TEAMTALKPRO)
+void Convert(const teamtalk::ServerSettings& srvprop, ServerProperties& result)
+{
+    ZERO_STRUCT(result);
+    Convert(static_cast<const teamtalk::ServerProperties&>(srvprop), result);
+    ACE_OS::strsncpy(result.szServerProtocolVersion, TEAMTALK_PROTOCOL_VERSION, TT_STRLEN);
+
+    if (srvprop.tcpaddrs.size())
+        result.nTcpPort = srvprop.tcpaddrs[0].get_port_number();
+    if (srvprop.udpaddrs.size())
+        result.nUdpPort = srvprop.udpaddrs[0].get_port_number();
+}
+#endif
+
+void Convert(const ServerProperties& srvprop, teamtalk::ServerProperties& result)
 {
     result.servername = srvprop.szServerName;
     result.motd = srvprop.szMOTD;
@@ -1224,16 +1245,32 @@ void Convert(const ServerProperties& srvprop, teamtalk::ServerProp& result)
     result.desktoptxlimit = srvprop.nMaxDesktopTxPerSecond;
     result.totaltxlimit = srvprop.nMaxTotalTxPerSecond;
     result.autosave = srvprop.bAutoSave;
-    result.tcpaddr.set_port_number(srvprop.nTcpPort);
-    result.udpaddr.set_port_number(srvprop.nUdpPort);
     result.usertimeout = srvprop.nUserTimeout;
 }
 
 void Convert(const ServerProperties& srvprop, teamtalk::ServerInfo& result)
 {
-    Convert(srvprop, static_cast<teamtalk::ServerProp&>(result));
+    Convert(srvprop, static_cast<teamtalk::ServerProperties&>(result));
+
+    if (result.hostaddrs.size())
+    {
+        result.hostaddrs[0].set_port_number(srvprop.nTcpPort);
+        result.udpaddr.set_port_number(srvprop.nUdpPort);
+    }
     result.motd_raw = srvprop.szMOTDRaw;
 }
+
+#if defined(ENABLE_TEAMTALKPRO)
+void Convert(const ServerProperties& srvprop, teamtalk::ServerSettings& result)
+{
+    Convert(srvprop, static_cast<teamtalk::ServerProperties&>(result));
+    
+    for (auto& addr : result.tcpaddrs)
+        addr.set_port_number(srvprop.nTcpPort);
+    for (auto& addr : result.udpaddrs)
+        addr.set_port_number(srvprop.nUdpPort);
+}
+#endif
 
 ClientErrorMsg& Convert(const teamtalk::ErrorMsg& cmderr, ClientErrorMsg& result)
 {

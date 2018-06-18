@@ -599,7 +599,7 @@ ErrorMsg ServerUser::HandleKeepAlive(const mstrings_t& properties)
 
 ErrorMsg ServerUser::HandleJoinChannel(const mstrings_t& properties)
 {
-    const ServerProperties& srvprop = m_servernode.GetServerProperties();
+    const ServerSettings& srvprop = m_servernode.GetServerProperties();
     
     ChannelProp chanprop;
     GetProperty(properties, TT_CHANNELID, chanprop.channelid);
@@ -615,10 +615,10 @@ ErrorMsg ServerUser::HandleJoinChannel(const mstrings_t& properties)
     GetProperty(properties, TT_AUDIOCFG, chanprop.audiocfg);
     GetProperty(properties, TT_CHANNELTYPE, chanprop.chantype);
     GetProperty(properties, TT_USERDATA, chanprop.userdata);
-    GetProperty(properties, TT_VOICEUSERS, chanprop.voiceusers);
-    GetProperty(properties, TT_VIDEOUSERS, chanprop.videousers);
-    GetProperty(properties, TT_DESKTOPUSERS, chanprop.desktopusers);
-    GetProperty(properties, TT_MEDIAFILEUSERS, chanprop.mediafileusers);
+    GetProperty(properties, TT_VOICEUSERS, chanprop.transmitusers[STREAMTYPE_VOICE]);
+    GetProperty(properties, TT_VIDEOUSERS, chanprop.transmitusers[STREAMTYPE_VIDEOCAPTURE]);
+    GetProperty(properties, TT_DESKTOPUSERS, chanprop.transmitusers[STREAMTYPE_DESKTOP]);
+    GetProperty(properties, TT_MEDIAFILEUSERS, chanprop.transmitusers[STREAMTYPE_MEDIAFILE]);
     GetProperty(properties, TT_PASSWORD, chanprop.passwd);
 
     if(chanprop.name.find(CHANNEL_SEPARATOR) != ACE_TString::npos)
@@ -690,10 +690,10 @@ ErrorMsg ServerUser::HandleMakeChannel(const mstrings_t& properties)
     GetProperty(properties, TT_AUDIOCFG, chanprop.audiocfg);
     GetProperty(properties, TT_CHANNELTYPE, chanprop.chantype);
     GetProperty(properties, TT_USERDATA, chanprop.userdata);
-    GetProperty(properties, TT_VOICEUSERS, chanprop.voiceusers);
-    GetProperty(properties, TT_VIDEOUSERS, chanprop.videousers);
-    GetProperty(properties, TT_DESKTOPUSERS, chanprop.desktopusers);
-    GetProperty(properties, TT_MEDIAFILEUSERS, chanprop.mediafileusers);
+    GetProperty(properties, TT_VOICEUSERS, chanprop.transmitusers[STREAMTYPE_VOICE]);
+    GetProperty(properties, TT_VIDEOUSERS, chanprop.transmitusers[STREAMTYPE_VIDEOCAPTURE]);
+    GetProperty(properties, TT_DESKTOPUSERS, chanprop.transmitusers[STREAMTYPE_DESKTOP]);
+    GetProperty(properties, TT_MEDIAFILEUSERS, chanprop.transmitusers[STREAMTYPE_MEDIAFILE]);
 
     if(chanprop.name.find(CHANNEL_SEPARATOR) != ACE_TString::npos)
     {
@@ -722,17 +722,17 @@ ErrorMsg ServerUser::HandleUpdateChannel(const mstrings_t& properties)
     GetProperty(properties, TT_CHANNELTYPE, chanprop.chantype);
     GetProperty(properties, TT_USERDATA, chanprop.userdata);
     if(HasProperty(properties, TT_VOICEUSERS))
-        chanprop.voiceusers.clear();
-    GetProperty(properties, TT_VOICEUSERS, chanprop.voiceusers);
+        chanprop.transmitusers[STREAMTYPE_VOICE].clear();
+    GetProperty(properties, TT_VOICEUSERS, chanprop.transmitusers[STREAMTYPE_VOICE]);
     if(HasProperty(properties, TT_VIDEOUSERS))
-        chanprop.videousers.clear();
-    GetProperty(properties, TT_VIDEOUSERS, chanprop.videousers);
+        chanprop.transmitusers[STREAMTYPE_VIDEOCAPTURE].clear();
+    GetProperty(properties, TT_VIDEOUSERS, chanprop.transmitusers[STREAMTYPE_VIDEOCAPTURE]);
     if(HasProperty(properties, TT_DESKTOPUSERS))
-        chanprop.desktopusers.clear();
-    GetProperty(properties, TT_DESKTOPUSERS, chanprop.desktopusers);
+        chanprop.transmitusers[STREAMTYPE_DESKTOP].clear();
+    GetProperty(properties, TT_DESKTOPUSERS, chanprop.transmitusers[STREAMTYPE_DESKTOP]);
     if(HasProperty(properties, TT_MEDIAFILEUSERS))
-        chanprop.mediafileusers.clear();
-    GetProperty(properties, TT_MEDIAFILEUSERS, chanprop.mediafileusers);
+        chanprop.transmitusers[STREAMTYPE_MEDIAFILE].clear();
+    GetProperty(properties, TT_MEDIAFILEUSERS, chanprop.transmitusers[STREAMTYPE_MEDIAFILE]);
 
     if(GetUserRights() & USERRIGHT_MODIFY_CHANNELS)
     {
@@ -777,7 +777,7 @@ ErrorMsg ServerUser::HandleMoveUser(const mstrings_t& properties)
 ErrorMsg ServerUser::HandleUpdateServer(const mstrings_t& properties)
 {
     //extract properties
-    ServerProperties srvprop = m_servernode.GetServerProperties();
+    ServerSettings srvprop = m_servernode.GetServerProperties();
 
     GetProperty(properties, TT_AUTOSAVE, srvprop.autosave);
     GetProperty(properties, TT_MOTDRAW, srvprop.motd);
@@ -791,12 +791,22 @@ ErrorMsg ServerUser::HandleUpdateServer(const mstrings_t& properties)
     GetProperty(properties, TT_DESKTOPTXLIMIT, srvprop.desktoptxlimit);
     GetProperty(properties, TT_TOTALTXLIMIT, srvprop.totaltxlimit);
 
-    int tcpport = srvprop.tcpaddr.get_port_number();
-    int udpport = srvprop.udpaddr.get_port_number();
+    int tcpport = 0;
+    TTASSERT(srvprop.tcpaddrs.size());
+    if (srvprop.tcpaddrs.size())
+        srvprop.tcpaddrs[0].get_port_number();
+    
+    int udpport = 0;
+    TTASSERT(srvprop.udpaddrs.size());
+    if (srvprop.udpaddrs.size())
+        udpport = srvprop.udpaddrs[0].get_port_number();
+    
     GetProperty(properties, TT_TCPPORT, tcpport);
     GetProperty(properties, TT_UDPPORT, udpport);
-    srvprop.tcpaddr.set_port_number(tcpport);
-    srvprop.udpaddr.set_port_number(udpport);
+    for (auto& a : srvprop.tcpaddrs)
+        a.set_port_number(tcpport);
+    for (auto& a : srvprop.udpaddrs)
+        a.set_port_number(udpport);
 
     GetProperty(properties, TT_USERTIMEOUT, srvprop.usertimeout);
 
@@ -1175,7 +1185,7 @@ void ServerUser::DoError(ErrorMsg cmderr)
     }
 }
 
-void ServerUser::DoWelcome(const ServerProperties& properties)
+void ServerUser::DoWelcome(const ServerSettings& properties)
 {
     ACE_TString command = properties.systemid;
     AppendProperty(TT_USERID, GetUserID(), command);
@@ -1190,7 +1200,7 @@ void ServerUser::DoWelcome(const ServerProperties& properties)
     TransmitCommand(command);
 }
 
-void ServerUser::DoServerUpdate(const ServerProperties& properties)
+void ServerUser::DoServerUpdate(const ServerSettings& properties)
 {
     TTASSERT(IsAuthorized());
 
@@ -1206,8 +1216,10 @@ void ServerUser::DoServerUpdate(const ServerProperties& properties)
         AppendProperty(TT_MOTDRAW, properties.motd, command);
         AppendProperty(TT_MAXLOGINATTEMPTS, properties.maxloginattempts, command);
         AppendProperty(TT_AUTOSAVE, properties.autosave, command);
-        AppendProperty(TT_TCPPORT, properties.tcpaddr.get_port_number(), command);
-        AppendProperty(TT_UDPPORT, properties.udpaddr.get_port_number(), command);
+        if (properties.tcpaddrs.size())
+            AppendProperty(TT_TCPPORT, properties.tcpaddrs[0].get_port_number(), command);
+        if (properties.udpaddrs.size())
+            AppendProperty(TT_UDPPORT, properties.udpaddrs[0].get_port_number(), command);
     }
     AppendProperty(TT_VOICETXLIMIT, properties.voicetxlimit, command);
     AppendProperty(TT_VIDEOTXLIMIT, properties.videotxlimit, command);
@@ -1396,13 +1408,16 @@ void ServerUser::DoAddChannel(const ServerChannel& channel, bool encrypted)
     AppendProperty(TT_USERDATA, channel.GetUserData(), command);    
     AppendProperty(TT_AUDIOCODEC, channel.GetAudioCodec(), command);
     AppendProperty(TT_AUDIOCFG, channel.GetAudioConfig(), command);
-    if(channel.GetChannelType() & CHANNEL_CLASSROOM)
-    {
+    // If class-room channel type then we must forward the channel due 
+    // to compatibility of TeamTalk TCP protocol v5.3
+    if (channel.GetVoiceUsers().size() || (channel.GetChannelType() & CHANNEL_CLASSROOM))
         AppendProperty(TT_VOICEUSERS, channel.GetVoiceUsers(), command);
+    if (channel.GetVideoUsers().size() || (channel.GetChannelType() & CHANNEL_CLASSROOM))
         AppendProperty(TT_VIDEOUSERS, channel.GetVideoUsers(), command);
+    if (channel.GetDesktopUsers().size() || (channel.GetChannelType() & CHANNEL_CLASSROOM))
         AppendProperty(TT_DESKTOPUSERS, channel.GetDesktopUsers(), command);
+    if (channel.GetMediaFileUsers().size() || (channel.GetChannelType() & CHANNEL_CLASSROOM))
         AppendProperty(TT_MEDIAFILEUSERS, channel.GetMediaFileUsers(), command);
-    }
     command += ACE_TString(EOL);
 
     TransmitCommand(command);
@@ -1443,13 +1458,15 @@ void ServerUser::DoUpdateChannel(const ServerChannel& channel, bool encrypted)
     AppendProperty(TT_USERDATA, channel.GetUserData(), command);
     AppendProperty(TT_AUDIOCODEC, channel.GetAudioCodec(), command);
     AppendProperty(TT_AUDIOCFG, channel.GetAudioConfig(), command);
-    if(channel.GetChannelType() & CHANNEL_CLASSROOM)
-    {
+    if (channel.GetVoiceUsers().size() || (channel.GetChannelType() & CHANNEL_CLASSROOM))
         AppendProperty(TT_VOICEUSERS, channel.GetVoiceUsers(), command);
+    if (channel.GetVideoUsers().size() || (channel.GetChannelType() & CHANNEL_CLASSROOM))
         AppendProperty(TT_VIDEOUSERS, channel.GetVideoUsers(), command);
+    if (channel.GetDesktopUsers().size() || (channel.GetChannelType() & CHANNEL_CLASSROOM))
         AppendProperty(TT_DESKTOPUSERS, channel.GetDesktopUsers(), command);
+    if (channel.GetMediaFileUsers().size() || (channel.GetChannelType() & CHANNEL_CLASSROOM))
         AppendProperty(TT_MEDIAFILEUSERS, channel.GetMediaFileUsers(), command);
-    }
+
     if(channel.GetChannelType() & CHANNEL_SOLO_TRANSMIT)
     {
         AppendProperty(TT_TRANSMITQUEUE, channel.GetTransmitQueue(), command);
