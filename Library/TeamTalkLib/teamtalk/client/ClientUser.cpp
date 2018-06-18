@@ -242,7 +242,7 @@ int ClientUser::TimerDesktopDelayedAck()
 
 void ClientUser::AddVoicePacket(const VoicePacket& audpkt,
                                 const struct SoundProperties& sndprop,
-                                VoiceLogger& voice_logger)
+                                VoiceLogger& voice_logger, bool allowrecord)
 {
     ASSERT_REACTOR_THREAD(*m_clientnode->reactor());
 
@@ -270,11 +270,10 @@ void ClientUser::AddVoicePacket(const VoicePacket& audpkt,
     assert(m_voice_player->GetAudioCodec() == chan->GetAudioCodec());
     audiopacket_t reassem_pkt = m_voice_player->QueuePacket(audpkt);
 
-    bool no_record = (chan->GetChannelType() & CHANNEL_NO_RECORDING);
-    m_voice_player->SetNoRecording(no_record);
+    m_voice_player->SetNoRecording(!allowrecord);
 
     //store in voicelog
-    if(GetAudioFolder().length() && !no_record)
+    if(GetAudioFolder().length() && allowrecord)
     {
         if(audpkt.HasFragments())
         {
@@ -705,11 +704,9 @@ void ClientUser::AddPacket(const DesktopCursorPacket& p,
     bool is_set = false;
     uint32_t tm = GetLastTimeStamp(p, &is_set);
 
-    uint8_t session_id;
-    uint16_t dest_userid;
     int16_t x, y;
 
-    if(p.GetSessionCursor(dest_userid, session_id, x, y) &&
+    if(p.GetSessionCursor(0, 0, &x, &y) &&
        (W32_GT(p.GetTime(), tm) || !is_set))
     {
         DesktopInput input;

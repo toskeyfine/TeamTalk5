@@ -215,25 +215,46 @@ namespace teamtalk{
         return "";
     }
 
-    bool ServerXML::SetBindIP(std::string ip)
+    bool ServerXML::SetBindIPs(std::vector<std::string> ips)
     {
         TiXmlElement* parent = GetGeneralElement();
         if(parent)
         {
-            PutString(*parent, "bind-ip", ip);
+            for (auto child = parent->FirstChildElement("bind-ip");
+                 child; child = parent->FirstChildElement("bind-ip"))
+            {
+                parent->RemoveChild(child);
+            }
+            
+            for (auto ip : ips)
+            {
+                TiXmlElement bind("bind-ip");
+                PutElementText(bind, ip);
+                AppendElement(*parent, bind);
+            }
             return true;
         }
         else
             return false;
     }
 
-    std::string ServerXML::GetBindIP()
+    std::vector<std::string> ServerXML::GetBindIPs()
     {
-        string s;
+        string ip;
+        std::vector<std::string> ips;
+        
         TiXmlElement* parent = GetGeneralElement();
         if(parent)
-            GetString(*parent, "bind-ip", s);
-        return s;
+        {
+            for (auto child = parent->FirstChildElement("bind-ip");
+                 child; child = child->NextSiblingElement("bind-ip"))
+            {
+                GetElementText(*child, ip);
+                if (std::find(ips.begin(), ips.end(), ip) == ips.end())
+                    ips.push_back(ip);
+            }
+        }
+        return ips;
     }
 
     bool ServerXML::SetHostTcpPort(int nHostTcpPort)
@@ -680,11 +701,11 @@ namespace teamtalk{
                 //put channel properties
                 PutInteger(xmlChan, "channel-id", chan.channelid);
                 if(chan.parentid != 0)
-                    PutString(xmlChan, "name", UnicodeToLocal(chan.name).c_str());
-                PutString(xmlChan, "password", UnicodeToLocal(chan.passwd).c_str());
-                PutString(xmlChan, "topic", UnicodeToLocal(chan.topic).c_str());
+                    PutString(xmlChan, "name", UnicodeToUtf8(chan.name).c_str());
+                PutString(xmlChan, "password", UnicodeToUtf8(chan.passwd).c_str());
+                PutString(xmlChan, "topic", UnicodeToUtf8(chan.topic).c_str());
                 PutInteger(xmlChan, "diskquota", (_INT64)chan.diskquota);
-                PutString(xmlChan, "op-password", UnicodeToLocal(chan.oppasswd).c_str());
+                PutString(xmlChan, "op-password", UnicodeToUtf8(chan.oppasswd).c_str());
                 PutInteger(xmlChan, "max-users", chan.maxusers);
                 PutInteger(xmlChan, "channel-type", (int)chan.chantype);
                 PutInteger(xmlChan, "userdata", chan.userdata);
@@ -734,13 +755,13 @@ namespace teamtalk{
 
                 TiXmlElement txusersElement("transmit-users");
                 PutBoolean(txusersElement, "voice-tx-all",
-                           chan.voiceusers.find(CLASSROOM_FREEFORALL) != chan.voiceusers.end());
+                           chan.transmitusers[STREAMTYPE_VOICE].find(TRANSMITUSERS_FREEFORALL) != chan.transmitusers[STREAMTYPE_VOICE].end());
                 PutBoolean(txusersElement, "videocapture-tx-all",
-                           chan.videousers.find(CLASSROOM_FREEFORALL) != chan.videousers.end());
+                           chan.transmitusers[STREAMTYPE_VIDEOCAPTURE].find(TRANSMITUSERS_FREEFORALL) != chan.transmitusers[STREAMTYPE_VIDEOCAPTURE].end());
                 PutBoolean(txusersElement, "mediafile-tx-all",
-                           chan.mediafileusers.find(CLASSROOM_FREEFORALL) != chan.mediafileusers.end());
+                           chan.transmitusers[STREAMTYPE_MEDIAFILE].find(TRANSMITUSERS_FREEFORALL) != chan.transmitusers[STREAMTYPE_MEDIAFILE].end());
                 PutBoolean(txusersElement, "desktopshare-tx-all",
-                           chan.desktopusers.find(CLASSROOM_FREEFORALL) != chan.desktopusers.end());
+                           chan.transmitusers[STREAMTYPE_DESKTOP].find(TRANSMITUSERS_FREEFORALL) != chan.transmitusers[STREAMTYPE_DESKTOP].end());
                 ReplaceElement(xmlChan, txusersElement);
 
                 //save channel files
@@ -750,10 +771,10 @@ namespace teamtalk{
                     for(size_t i=0;i<chan.files.size();i++)
                     {
                         TiXmlElement fileElement("file");
-                        fileElement.SetAttribute("name", UnicodeToLocal(chan.files[i].filename).c_str());
-                        PutString(fileElement, "internalname", UnicodeToLocal(chan.files[i].internalname).c_str());
+                        fileElement.SetAttribute("name", UnicodeToUtf8(chan.files[i].filename).c_str());
+                        PutString(fileElement, "internalname", UnicodeToUtf8(chan.files[i].internalname).c_str());
                         PutInteger(fileElement, "filesize", (_INT64)chan.files[i].filesize);
-                        PutString(fileElement, "username", UnicodeToLocal(chan.files[i].username).c_str());
+                        PutString(fileElement, "username", UnicodeToUtf8(chan.files[i].username).c_str());
                         ReplaceElement(filesElement, fileElement);
                     }
                 }
@@ -903,13 +924,13 @@ namespace teamtalk{
                 if(txusersElement)
                 {
                     if(GetBoolean(*txusersElement, "voice-tx-all", b) && b)
-                        newchan.voiceusers.insert(CLASSROOM_FREEFORALL);
+                        newchan.transmitusers[STREAMTYPE_VOICE].insert(TRANSMITUSERS_FREEFORALL);
                     if(GetBoolean(*txusersElement, "videocapture-tx-all", b) && b)
-                        newchan.videousers.insert(CLASSROOM_FREEFORALL);
+                        newchan.transmitusers[STREAMTYPE_VIDEOCAPTURE].insert(TRANSMITUSERS_FREEFORALL);
                     if(GetBoolean(*txusersElement, "mediafile-tx-all", b) && b)
-                        newchan.mediafileusers.insert(CLASSROOM_FREEFORALL);
+                        newchan.transmitusers[STREAMTYPE_MEDIAFILE].insert(TRANSMITUSERS_FREEFORALL);
                     if(GetBoolean(*txusersElement, "desktopshare-tx-all", b) && b)
-                        newchan.desktopusers.insert(CLASSROOM_FREEFORALL);
+                        newchan.transmitusers[STREAMTYPE_DESKTOP].insert(TRANSMITUSERS_FREEFORALL);
                 }
 
                 //get files
@@ -984,6 +1005,9 @@ namespace teamtalk{
     /********** <serverbans> ************/
     void ServerXML::AddUserBan(const BannedUser& ban)
     {
+        // prevent duplicates
+        while(RemoveUserBan(ban));
+
         TiXmlElement* parent = GetServerBansElement();
 
         TiXmlElement element("serverban");
@@ -996,7 +1020,7 @@ namespace teamtalk{
     {
         int i = 0, c = GetUserBanCount();
         BannedUser tmp;
-        while(GetUserBan(i, tmp) && !tmp.Match(ban)) i++;
+        while(GetUserBan(i, tmp) && !tmp.Same(ban)) i++;
 
         TiXmlElement* item = GetServerBansElement();
         if(i < c && item)
@@ -1131,13 +1155,13 @@ namespace teamtalk{
             return;
 
         TiXmlElement userElement("user");
-        PutString(userElement, "username", UnicodeToLocal(user.username).c_str());
-        PutString(userElement, "password", UnicodeToLocal(user.passwd).c_str());
+        PutString(userElement, "username", UnicodeToUtf8(user.username).c_str());
+        PutString(userElement, "password", UnicodeToUtf8(user.passwd).c_str());
         PutInteger(userElement, "user-type", (int)user.usertype);
         PutInteger(userElement, "user-rights", (int)user.userrights);
-        PutString(userElement, "note", UnicodeToLocal(user.note).c_str());
+        PutString(userElement, "note", UnicodeToUtf8(user.note).c_str());
         PutInteger(userElement, "userdata", user.userdata);
-        PutString(userElement, "init-channel", UnicodeToLocal(user.init_channel).c_str());
+        PutString(userElement, "init-channel", UnicodeToUtf8(user.init_channel).c_str());
         TiXmlElement opchanElement("channel-operator");
         for(intset_t::const_iterator i=user.auto_op_channels.begin();
             i!=user.auto_op_channels.end();i++)
@@ -1246,7 +1270,7 @@ namespace teamtalk{
     {
         int i = 0;
         UserAccount int_user;
-        TiXmlElement* userElement = GetUser(UnicodeToLocal(user.username).c_str());
+        TiXmlElement* userElement = GetUser(UnicodeToUtf8(user.username).c_str());
         if(!userElement)
             return false;
         if(!GetUser(*userElement, int_user))
@@ -1360,7 +1384,7 @@ namespace teamtalk{
                 break;
             }
 
-            names.insert(names.begin(), UnicodeToLocal(ite->second.name).c_str());
+            names.insert(names.begin(), UnicodeToUtf8(ite->second.name).c_str());
             nCurChanID = ite->second.parentid;
         }
 
