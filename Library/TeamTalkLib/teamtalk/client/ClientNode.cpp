@@ -1619,7 +1619,8 @@ bool ClientNode::CancelFileTransfer(int transferid)
     return false;
 }
 
-void ClientNode::ReceivedPacket(const char* packet_data, int packet_size, 
+void ClientNode::ReceivedPacket(PacketHandler* ph,
+                                const char* packet_data, int packet_size, 
                                 const ACE_INET_Addr& addr)
 {
     ASSERT_REACTOR_THREAD(m_reactor);
@@ -1696,8 +1697,10 @@ void ClientNode::ReceivedPacket(const char* packet_data, int packet_size,
                      ACE_TEXT("Received crypt voice packet from unknown user #%d\n"),
                      packet.GetSrcUserID());
         m_clientstats.voicebytes_recv += packet_size;
+        bool no_record = (chan->GetChannelType() & CHANNEL_NO_RECORDING) &&
+            (GetMyUserAccount().userrights & USERRIGHT_RECORD_VOICE) == USERRIGHT_NONE;
         if(!user.null())
-            user->AddVoicePacket(*decrypt_pkt, m_soundprop, voicelogger());
+            user->AddVoicePacket(*decrypt_pkt, m_soundprop, voicelogger(), !no_record);
     }
     break;
 #endif
@@ -1708,8 +1711,10 @@ void ClientNode::ReceivedPacket(const char* packet_data, int packet_size,
                      ACE_TEXT("Received voice packet from unknown user #%d\n"),
                      packet.GetSrcUserID());
         m_clientstats.voicebytes_recv += packet_size;
+        bool no_record = (chan->GetChannelType() & CHANNEL_NO_RECORDING) &&
+            (GetMyUserAccount().userrights & USERRIGHT_RECORD_VOICE) == USERRIGHT_NONE;
         if(!user.null())
-            user->AddVoicePacket(audio_pkt, m_soundprop, voicelogger());
+            user->AddVoicePacket(audio_pkt, m_soundprop, voicelogger(), !no_record);
         break;
     }
 #ifdef ENABLE_ENCRYPTION
@@ -2039,10 +2044,9 @@ void ClientNode::ReceivedDesktopPacket(ClientUser& user,
 
 void ClientNode::ReceivedDesktopAckPacket(const DesktopAckPacket& ack_pkt)
 {
-    uint16_t owner_userid;
     uint8_t session_id;
     uint32_t time_ack;
-    if(!ack_pkt.GetSessionInfo(owner_userid, session_id, time_ack))
+    if(!ack_pkt.GetSessionInfo(0, &session_id, &time_ack))
         return;
 
     if(!m_desktop_tx.null() &&
@@ -2137,8 +2141,7 @@ void ClientNode::ReceivedDesktopCursorPacket(const DesktopCursorPacket& csr_pkt)
     clientchannel_t chan = GetChannel(csr_pkt.GetChannel());
     uint16_t dest_userid;
     uint8_t session_id;
-    int16_t x, y;
-    if(!chan.null() && csr_pkt.GetSessionCursor(dest_userid, session_id, x, y))
+    if(!chan.null() && csr_pkt.GetSessionCursor(&dest_userid, &session_id, 0, 0))
     {
         if(dest_userid == 0)
         {
@@ -2197,7 +2200,7 @@ void ClientNode::ReceivedDesktopInputAckPacket(const DesktopInputAckPacket& ack_
 
     uint8_t session_id;
     uint8_t packetno;
-    if(!ack_pkt.GetSessionInfo(session_id, packetno))
+    if(!ack_pkt.GetSessionInfo(&session_id, &packetno))
         return;
 
     MYTRACE(ACE_TEXT("Received desktop input ACK for user #%d, session %d, pkt %u. Remain: %u\n"),
@@ -2300,7 +2303,8 @@ void ClientNode::SendPackets()
                 audpkt->SetChannel(m_mychannel->GetChannelID());
             }
 
-            bool no_record = (m_mychannel->GetChannelType() & CHANNEL_NO_RECORDING);
+            bool no_record = (m_mychannel->GetChannelType() & CHANNEL_NO_RECORDING) &&
+                (GetMyUserAccount().userrights & USERRIGHT_RECORD_VOICE) == USERRIGHT_NONE;
             //store in voicelog
             if(m_local_voicelog->GetAudioFolder().length() && !no_record)
                 voicelogger().AddVoicePacket(*m_local_voicelog, *m_mychannel, *audpkt);
@@ -3630,119 +3634,79 @@ bool ClientNode::Connect(bool encrypted, const ACE_TString& hostaddr,
     if(m_flags & CLIENT_CONNECTION)
         return false;
 
-    //Detect if remote host is IPv4 or IPv6. Check IPv4 first since
-    //IPv6 seems to hang on Windows 7 for a long time before trying IPv4
-    int address_family = AF_INET;
-    m_serverinfo.tcpaddr = ACE_INET_Addr(tcpport, 
-                                         hostaddr.c_str(),
-                                         address_family);
-
-    if(m_serverinfo.tcpaddr.is_any())
+    if (localaddr.length() || local_tcpport || local_udpport)
     {
-        address_family = AF_INET6;
-        m_serverinfo.tcpaddr = ACE_INET_Addr(tcpport, 
-                                             hostaddr.c_str(),
-                                             address_family);
+        m_localTcpAddr = ACE_INET_Addr(local_tcpport, localaddr.c_str());
+        m_localUdpAddr = ACE_INET_Addr(local_udpport, localaddr.c_str());
     }
-
-    m_serverinfo.udpaddr = ACE_INET_Addr(udpport,
-                                         hostaddr.c_str(),
-                                         address_family);
-
-    if( m_serverinfo.tcpaddr.is_any() || 
-        m_serverinfo.udpaddr.is_any() )
-    {
-        m_serverinfo.tcpaddr = ACE_INET_Addr();
-        m_serverinfo.udpaddr = ACE_INET_Addr();
-        return false;
-    }
-
-    //Setup local IP and port. If remote server is IPv6 we also run IPv6.
-    ACE_INET_Addr localTcpAddr;
-    if(localaddr.length()) //whether to bind to IP
-    {
-        localTcpAddr = ACE_INET_Addr(local_tcpport, localaddr.c_str(), 
-                                     address_family);
-        m_localUdpAddr = ACE_INET_Addr(local_udpport, localaddr.c_str(), 
-                                       address_family);
-    }
-    else
-    {
-        //bind to ADDR_ANY (or :: for IPv6)
-        if(address_family == AF_INET6)
-        {
-            localTcpAddr = ACE_INET_Addr(local_tcpport, ACE_TEXT("::"), 
-                                         address_family);
-            m_localUdpAddr = ACE_INET_Addr(local_udpport, ACE_TEXT("::"), 
-                                           address_family);
-        }
-        else
-        {
-            //defaults to IPv4
-            localTcpAddr = ACE_INET_Addr(local_tcpport);
-            m_localUdpAddr = ACE_INET_Addr(local_udpport);
-        }
-    }
-
+    
     //welcome message to look for
     m_serverinfo.systemid = sysid;
+    
+    m_serverinfo.hostaddrs = DetermineHostAddress(hostaddr, tcpport);
+    if (m_serverinfo.hostaddrs.size())
+    {
+        m_serverinfo.udpaddr = m_serverinfo.hostaddrs[0];
+        m_serverinfo.udpaddr.set_port_number(udpport);
+    }
+    MYTRACE(ACE_TEXT("Resolved %d IP-addresses\n"), int(m_serverinfo.hostaddrs.size()));
+    
+    if (m_serverinfo.hostaddrs.size() &&
+        Connect(encrypted, m_serverinfo.hostaddrs[0], m_localTcpAddr != ACE_INET_Addr() ? &m_localTcpAddr : NULL))
+    {
+        StartTimer(TIMER_ONE_SECOND_ID, 0, ACE_Time_Value(1), ACE_Time_Value(1));
 
-    m_clientstats = ClientStats();
+        m_flags |= CLIENT_CONNECTING;
+        return true;
+    }
 
+    Disconnect(); //clean up
+
+    return false;
+}
+
+bool ClientNode::Connect(bool encrypted, const ACE_INET_Addr& hosttcpaddr,
+                         const ACE_INET_Addr* localtcpaddr)
+{
+    int ret;
+
+#if !defined(UNICODE)
+    MYTRACE(ACE_TEXT("Trying remote TCP: %s:%d, Local TCP: %s:%d, UDP: %s:%d\n"),
+            hosttcpaddr.get_host_addr(), hosttcpaddr.get_port_number(),
+            m_localTcpAddr.get_host_addr(), m_localTcpAddr.get_port_number(),
+            m_localUdpAddr.get_host_addr(), m_localUdpAddr.get_port_number());
+#endif            
+    
 #if defined(ENABLE_ENCRYPTION)
     if(encrypted)
     {
         ACE_NEW_RETURN(m_crypt_stream, CryptStreamHandler(&m_reactor), false);
         m_crypt_stream->SetListener(this);
+        //ACE_Synch_Options options = ACE_Synch_Options::defaults;
+        //ACE only supports OpenSSL on blocking sockets
+        ACE_Synch_Options options(ACE_Synch_Options::USE_TIMEOUT, ACE_Time_Value(10));
+        if (localtcpaddr)
+            ret = m_crypt_connector.connect(m_crypt_stream, hosttcpaddr, 
+                                            options, *localtcpaddr);
+        else
+            ret = m_crypt_connector.connect(m_crypt_stream, hosttcpaddr, 
+                                            options);
     }
     else
 #endif
     {
         ACE_NEW_RETURN(m_def_stream, DefaultStreamHandler(&m_reactor), false);
         m_def_stream->SetListener(this);
-    }
-
-    m_flags |= CLIENT_CONNECTING;
-
-    int ret;
-#if defined(ENABLE_ENCRYPTION)
-    if(encrypted)
-    {
-        //ACE_Synch_Options options = ACE_Synch_Options::defaults;
-        //ACE only supports OpenSSL on blocking sockets
-        ACE_Synch_Options options(ACE_Synch_Options::USE_TIMEOUT, ACE_Time_Value(10));
-        ret = m_crypt_connector.connect(m_crypt_stream, m_serverinfo.tcpaddr, 
-                                        options, localTcpAddr);
-    }
-    else
-#endif
-    {
         ACE_Synch_Options options(ACE_Synch_Options::USE_REACTOR, ACE_Time_Value(0,0));
-        ret = m_connector.connect(m_def_stream, m_serverinfo.tcpaddr, options,
-                                  localTcpAddr);
+        if (localtcpaddr)
+            ret = m_connector.connect(m_def_stream, hosttcpaddr, options, *localtcpaddr);
+        else
+            ret = m_connector.connect(m_def_stream, hosttcpaddr, options);
     }
 
     int err = ACE_OS::last_error();
     MYTRACE( ACE_TEXT("Last error: %d. Would block is %d\n"), err, EWOULDBLOCK);
-    if(ret != -1 || (ret == -1 && err == EWOULDBLOCK))
-    {
-        bool bUdpPort = m_packethandler.open(m_localUdpAddr,
-                                             UDP_SOCKET_RECV_BUF_SIZE, 
-                                             UDP_SOCKET_SEND_BUF_SIZE);
-        TTASSERT(bUdpPort);
-        if(bUdpPort)
-        {
-            m_packethandler.AddListener(this);
-
-            StartTimer(TIMER_ONE_SECOND_ID, 0, ACE_Time_Value(1),
-                       ACE_Time_Value(1));
-            return true;
-        }
-    }
-
-    Disconnect(); //clean up
-
-    return false;
+    return ret == 0 || (ret == -1 && err == EWOULDBLOCK);
 }
 
 void ClientNode::Disconnect()
@@ -3756,9 +3720,6 @@ void ClientNode::Disconnect()
         m_reactor.cancel_timer(m_timers.begin()->second, 0);
         m_timers.erase(m_timers.begin());
     }
-
-    //set latest keepalives to 0
-    m_clientstats.tcp_silence_sec = m_clientstats.udp_silence_sec = 0;
 
     ACE_HANDLE h = ACE_INVALID_HANDLE;
 #if defined(ENABLE_ENCRYPTION)
@@ -3809,8 +3770,10 @@ void ClientNode::Disconnect()
     LoggedOut();
 
     m_flags &= ~(CLIENT_CONNECTING | CLIENT_CONNECTED);
+
     m_serverinfo = ServerInfo();
-    m_localUdpAddr = ACE_INET_Addr();
+    m_clientstats = ClientStats();
+    m_localTcpAddr = m_localUdpAddr = ACE_INET_Addr();
 }
 
 void ClientNode::JoinChannel(clientchannel_t& chan)
@@ -4044,10 +4007,10 @@ int ClientNode::DoJoinChannel(const ChannelProp& chanprop)
         AppendProperty(TT_AUDIOCFG, chanprop.audiocfg, command);
         AppendProperty(TT_CHANNELTYPE, chanprop.chantype, command);
         AppendProperty(TT_USERDATA, chanprop.userdata, command);
-        AppendProperty(TT_VOICEUSERS, chanprop.voiceusers, command);
-        AppendProperty(TT_VIDEOUSERS, chanprop.videousers, command);
-        AppendProperty(TT_DESKTOPUSERS, chanprop.desktopusers, command);
-        AppendProperty(TT_MEDIAFILEUSERS, chanprop.mediafileusers, command);
+        AppendProperty(TT_VOICEUSERS, chanprop.GetTransmitUsers(STREAMTYPE_VOICE), command);
+        AppendProperty(TT_VIDEOUSERS, chanprop.GetTransmitUsers(STREAMTYPE_VIDEOCAPTURE), command);
+        AppendProperty(TT_DESKTOPUSERS, chanprop.GetTransmitUsers(STREAMTYPE_DESKTOP), command);
+        AppendProperty(TT_MEDIAFILEUSERS, chanprop.GetTransmitUsers(STREAMTYPE_MEDIAFILE), command);
     }
     else //already exists
     {
@@ -4246,10 +4209,10 @@ int ClientNode::DoMakeChannel(const ChannelProp& chanprop)
     AppendProperty(TT_AUDIOCFG, chanprop.audiocfg, command);
     AppendProperty(TT_CHANNELTYPE, chanprop.chantype, command);
     AppendProperty(TT_USERDATA, chanprop.userdata, command);
-    AppendProperty(TT_VOICEUSERS, chanprop.voiceusers, command);
-    AppendProperty(TT_VIDEOUSERS, chanprop.videousers, command);
-    AppendProperty(TT_DESKTOPUSERS, chanprop.desktopusers, command);
-    AppendProperty(TT_MEDIAFILEUSERS, chanprop.mediafileusers, command);
+    AppendProperty(TT_VOICEUSERS, chanprop.GetTransmitUsers(STREAMTYPE_VOICE), command);
+    AppendProperty(TT_VIDEOUSERS, chanprop.GetTransmitUsers(STREAMTYPE_VIDEOCAPTURE), command);
+    AppendProperty(TT_DESKTOPUSERS, chanprop.GetTransmitUsers(STREAMTYPE_DESKTOP), command);
+    AppendProperty(TT_MEDIAFILEUSERS, chanprop.GetTransmitUsers(STREAMTYPE_MEDIAFILE), command);
     AppendProperty(TT_CMDID, GEN_NEXT_ID(m_cmdid_counter), command);
     command += EOL;
 
@@ -4273,10 +4236,10 @@ int ClientNode::DoUpdateChannel(const ChannelProp& chanprop)
     AppendProperty(TT_AUDIOCFG, chanprop.audiocfg, command);
     AppendProperty(TT_CHANNELTYPE, chanprop.chantype, command);
     AppendProperty(TT_USERDATA, chanprop.userdata, command);
-    AppendProperty(TT_VOICEUSERS, chanprop.voiceusers, command);
-    AppendProperty(TT_VIDEOUSERS, chanprop.videousers, command);
-    AppendProperty(TT_DESKTOPUSERS, chanprop.desktopusers, command);
-    AppendProperty(TT_MEDIAFILEUSERS, chanprop.mediafileusers, command);
+    AppendProperty(TT_VOICEUSERS, chanprop.GetTransmitUsers(STREAMTYPE_VOICE), command);
+    AppendProperty(TT_VIDEOUSERS, chanprop.GetTransmitUsers(STREAMTYPE_VIDEOCAPTURE), command);
+    AppendProperty(TT_DESKTOPUSERS, chanprop.GetTransmitUsers(STREAMTYPE_DESKTOP), command);
+    AppendProperty(TT_MEDIAFILEUSERS, chanprop.GetTransmitUsers(STREAMTYPE_MEDIAFILE), command);
     AppendProperty(TT_CMDID, GEN_NEXT_ID(m_cmdid_counter), command);
     command += EOL;
 
@@ -4322,8 +4285,11 @@ int ClientNode::DoUpdateServer(const ServerInfo& serverprop)
     AppendProperty(TT_MAXLOGINATTEMPTS, serverprop.maxloginattempts, command);
     AppendProperty(TT_MAXLOGINSPERIP, serverprop.max_logins_per_ipaddr, command);
     AppendProperty(TT_AUTOSAVE, serverprop.autosave, command);
-    AppendProperty(TT_TCPPORT, serverprop.tcpaddr.get_port_number(), command);
-    AppendProperty(TT_UDPPORT, serverprop.udpaddr.get_port_number(), command);
+    if (serverprop.hostaddrs.size())
+    {
+        AppendProperty(TT_TCPPORT, serverprop.hostaddrs[0].get_port_number(), command);
+        AppendProperty(TT_UDPPORT, serverprop.udpaddr.get_port_number(), command);
+    }
     AppendProperty(TT_USERTIMEOUT, serverprop.usertimeout, command);
     AppendProperty(TT_VOICETXLIMIT, serverprop.voicetxlimit, command);
     AppendProperty(TT_VIDEOTXLIMIT, serverprop.videotxlimit, command);
@@ -4487,6 +4453,48 @@ int ClientNode::TransmitCommand(const ACE_TString& command, int cmdid)
 void ClientNode::OnOpened()
 {
     MYTRACE( ACE_TEXT("Connected successfully on TCP\n") );
+
+    ACE_INET_Addr localaddr;
+    if (m_localUdpAddr == ACE_INET_Addr())
+    {
+#if defined(ENABLE_ENCRYPTION)
+        if (m_crypt_stream)
+        {
+            int ret = m_crypt_stream->peer().peer().get_local_addr(localaddr);
+            TTASSERT(ret == 0);
+            localaddr.set_port_number(0);
+        }
+#endif
+        if (m_def_stream)
+        {
+            int ret = m_def_stream->peer().get_local_addr(localaddr);
+            TTASSERT(ret == 0);
+            localaddr.set_port_number(0);
+        }
+    }
+    else
+        localaddr = m_localUdpAddr;
+    
+    MYTRACE(ACE_TEXT("UDP bind: %s. %d\n"), InetAddrToString(localaddr).c_str(), localaddr.get_type());
+
+    if (m_packethandler.open(localaddr, UDP_SOCKET_RECV_BUF_SIZE,
+                             UDP_SOCKET_SEND_BUF_SIZE))
+    {
+        m_packethandler.AddListener(this);
+    }
+    else
+    {
+#if defined(ENABLE_ENCRYPTION)
+        if (m_crypt_stream)
+        {
+            m_crypt_stream->close();
+        }
+#endif
+        if (m_def_stream)
+        {
+            m_def_stream->close();
+        }
+    }
 }
 
 #if defined(ENABLE_ENCRYPTION)
@@ -4505,10 +4513,24 @@ void ClientNode::OnClosed()
 {
     GUARD_REACTOR(this);
 
+    bool encrypted = m_def_stream == NULL;
+    
 #if defined(ENABLE_ENCRYPTION)
     m_crypt_stream = NULL;
 #endif
     m_def_stream = NULL;
+    
+
+    if (m_serverinfo.hostaddrs.size() > 1)
+    {
+        m_serverinfo.hostaddrs.erase(m_serverinfo.hostaddrs.begin());
+        u_short udpport = m_serverinfo.udpaddr.get_port_number();
+        m_serverinfo.udpaddr = m_serverinfo.hostaddrs[0];
+        m_serverinfo.udpaddr.set_port_number(udpport);
+        if (Connect(encrypted, m_serverinfo.hostaddrs[0],
+                    m_localTcpAddr != ACE_INET_Addr() ? &m_localTcpAddr : NULL))
+            return;
+    }
 
     if(m_flags & CLIENT_CONNECTED)
     {
@@ -4523,10 +4545,6 @@ void ClientNode::OnClosed()
         //Disconnect and clean up clientnode
         if(m_listener)
             m_listener->OnConnectFailed();
-    }
-    else
-    {
-        MYTRACE(ACE_TEXT("Error: Closed connection in non-connected state\n"));
     }
 }
 
@@ -4669,8 +4687,6 @@ void ClientNode::HandleWelcome(const mstrings_t& properties)
 {
     ASSERT_REACTOR_LOCKED(this);
 
-    int nError = TT_CMDERR_SUCCESS;
-    TTASSERT(m_flags & CLIENT_CONNECTING);
     TTASSERT(GetRootChannel().null());//root channel will be created by add channel command
 
     if(!GetRootChannel().null())
@@ -4765,12 +4781,10 @@ void ClientNode::HandleServerUpdate(const mstrings_t& properties)
     GetProperty(properties, TT_DESKTOPTXLIMIT, m_serverinfo.desktoptxlimit);
     GetProperty(properties, TT_TOTALTXLIMIT, m_serverinfo.totaltxlimit);
 
-    int tcpport = m_serverinfo.tcpaddr.get_port_number();
-    int udpport = m_serverinfo.udpaddr.get_port_number();
-    GetProperty(properties, TT_TCPPORT, tcpport);
-    GetProperty(properties, TT_UDPPORT, udpport);
-    m_serverinfo.tcpaddr.set_port_number(tcpport);
-    m_serverinfo.udpaddr.set_port_number(udpport);
+    // int tcpport = m_serverinfo.tcpaddr.get_port_number();
+    // int udpport = m_serverinfo.udpaddr.get_port_number();
+    // GetProperty(properties, TT_TCPPORT, tcpport);
+    // GetProperty(properties, TT_UDPPORT, udpport);
     GetProperty(properties, TT_MOTD, m_serverinfo.motd);
     GetProperty(properties, TT_MOTDRAW, m_serverinfo.motd_raw);
     GetProperty(properties, TT_VERSION, m_serverinfo.version);
@@ -5060,14 +5074,15 @@ void ClientNode::HandleAddChannel(const mstrings_t& properties)
         newchan->SetChannelType(chanprop.chantype);
     if(GetProperty(properties, TT_USERDATA, chanprop.userdata))
         newchan->SetUserData(chanprop.userdata);
-    if(GetProperty(properties, TT_VOICEUSERS, chanprop.voiceusers))
-        newchan->SetVoiceUsers(chanprop.voiceusers);
-    if(GetProperty(properties, TT_VIDEOUSERS, chanprop.videousers))
-        newchan->SetVideoUsers(chanprop.videousers);
-    if(GetProperty(properties, TT_DESKTOPUSERS, chanprop.desktopusers))
-        newchan->SetDesktopUsers(chanprop.desktopusers);
-    if(GetProperty(properties, TT_MEDIAFILEUSERS, chanprop.mediafileusers))
-        newchan->SetMediaFileUsers(chanprop.mediafileusers);
+
+    GetProperty(properties, TT_VOICEUSERS, chanprop.transmitusers[STREAMTYPE_VOICE]);
+    newchan->SetVoiceUsers(chanprop.transmitusers[STREAMTYPE_VOICE]);
+    GetProperty(properties, TT_VIDEOUSERS, chanprop.transmitusers[STREAMTYPE_VIDEOCAPTURE]);
+    newchan->SetVideoUsers(chanprop.transmitusers[STREAMTYPE_VIDEOCAPTURE]);
+    GetProperty(properties, TT_DESKTOPUSERS, chanprop.transmitusers[STREAMTYPE_DESKTOP]);
+    newchan->SetDesktopUsers(chanprop.transmitusers[STREAMTYPE_DESKTOP]);
+    GetProperty(properties, TT_MEDIAFILEUSERS, chanprop.transmitusers[STREAMTYPE_MEDIAFILE]);
+    newchan->SetMediaFileUsers(chanprop.transmitusers[STREAMTYPE_MEDIAFILE]);
 
 #if defined(ENABLE_ENCRYPTION)
     ACE_TString crypt_key;
@@ -5122,16 +5137,19 @@ void ClientNode::HandleUpdateChannel(const mstrings_t& properties)
         chan->SetAudioCodec(chanprop.audiocodec);
     if(GetProperty(properties, TT_AUDIOCFG, chanprop.audiocfg))
         chan->SetAudioConfig(chanprop.audiocfg);
-    if(GetProperty(properties, TT_VOICEUSERS, chanprop.voiceusers))
-        chan->SetVoiceUsers(chanprop.voiceusers);
-    if(GetProperty(properties, TT_VIDEOUSERS, chanprop.videousers))
-        chan->SetVideoUsers(chanprop.videousers);
-    if(GetProperty(properties, TT_DESKTOPUSERS, chanprop.desktopusers))
-        chan->SetDesktopUsers(chanprop.desktopusers);
-    if(GetProperty(properties, TT_MEDIAFILEUSERS, chanprop.mediafileusers))
-        chan->SetMediaFileUsers(chanprop.mediafileusers);
     if(GetProperty(properties, TT_TRANSMITQUEUE, chanprop.transmitqueue))
         chan->SetTransmitQueue(chanprop.transmitqueue);
+
+    // as of protocol v5.4 the server only forwards transmit users if
+    // it's not empty
+    GetProperty(properties, TT_VOICEUSERS, chanprop.transmitusers[STREAMTYPE_VOICE]);
+    chan->SetVoiceUsers(chanprop.transmitusers[STREAMTYPE_VOICE]);
+    GetProperty(properties, TT_VIDEOUSERS, chanprop.transmitusers[STREAMTYPE_VIDEOCAPTURE]);
+    chan->SetVideoUsers(chanprop.transmitusers[STREAMTYPE_VIDEOCAPTURE]);
+    GetProperty(properties, TT_DESKTOPUSERS, chanprop.transmitusers[STREAMTYPE_DESKTOP]);
+    chan->SetDesktopUsers(chanprop.transmitusers[STREAMTYPE_DESKTOP]);
+    GetProperty(properties, TT_MEDIAFILEUSERS, chanprop.transmitusers[STREAMTYPE_MEDIAFILE]);
+    chan->SetMediaFileUsers(chanprop.transmitusers[STREAMTYPE_MEDIAFILE]);
 
 #if defined(ENABLE_ENCRYPTION)
     ACE_TString crypt_key;
@@ -5359,13 +5377,14 @@ void ClientNode::HandleFileAccepted(const mstrings_t& properties)
 
         FileNode* f_ptr;
 #if defined(ENABLE_ENCRYPTION)
-        if(m_crypt_stream)
-            ACE_NEW(f_ptr, FileNode(m_reactor, true, m_serverinfo.tcpaddr, 
+        if(m_crypt_stream && m_serverinfo.hostaddrs.size())
+            ACE_NEW(f_ptr, FileNode(m_reactor, true, m_serverinfo.hostaddrs[0],
                                     m_serverinfo, transfer, this));
         else
 #endif
-            ACE_NEW(f_ptr, FileNode(m_reactor, false, m_serverinfo.tcpaddr,
-                                    m_serverinfo, transfer, this));
+            if (m_serverinfo.hostaddrs.size())
+                ACE_NEW(f_ptr, FileNode(m_reactor, false, m_serverinfo.hostaddrs[0],
+                                        m_serverinfo, transfer, this));
 
         filenode_t ptr(f_ptr);
         m_filetransfers[transferid] = ptr;
