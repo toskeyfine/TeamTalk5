@@ -71,6 +71,10 @@ public class TeamTalkTestCaseBase extends TestCase {
         if(prop != null && !prop.isEmpty())
             this.ENCRYPTED = Integer.parseInt(prop) != 0;
 
+        prop = System.getProperty("dk.bearware.serverip");
+        if(prop != null && !prop.isEmpty())
+            this.IPADDR = prop;
+
         prop = System.getProperty("dk.bearware.videodevid");
         if(prop != null && !prop.isEmpty())
             this.VIDEODEVICEID = prop;
@@ -167,13 +171,16 @@ public class TeamTalkTestCaseBase extends TestCase {
         connect(ttclient, systemID, nop);
     }
 
-    protected static void connect(TeamTalkBase ttclient, String systemID, ServerInterleave server)
+    protected static void connect(TeamTalkBase ttclient, String systemID, ServerInterleave server) {
+        connect(ttclient, systemID, IPADDR, TCPPORT, UDPPORT, server);
+    }
+    
+    protected static void connect(TeamTalkBase ttclient, String systemID,
+                                  String hostaddr, int tcpport, int udpport, ServerInterleave server)
     {
-        assertTrue("connect call", ttclient.connectSysID(IPADDR, TCPPORT, UDPPORT, 0, 0, ENCRYPTED, systemID));
+        assertTrue("connect call", ttclient.connectSysID(hostaddr, tcpport, udpport, 0, 0, ENCRYPTED, systemID));
 
-        server.interleave();
-
-        assertTrue("wait connect", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_CON_SUCCESS, DEF_WAIT));
+        assertTrue("wait connect", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_CON_SUCCESS, DEF_WAIT, server));
     }
 
     protected static void login(TeamTalkBase ttclient, String nick, String username, String passwd) {
@@ -190,10 +197,8 @@ public class TeamTalkTestCaseBase extends TestCase {
         int cmdid = ttclient.doLoginEx(nick, username, passwd, clientname);
         assertTrue("do login", cmdid > 0);
 
-        server.interleave();
-
         TTMessage msg = new TTMessage();
-        assertTrue("wait login", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_CMD_MYSELF_LOGGEDIN, DEF_WAIT, msg));
+        assertTrue("wait login", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_CMD_MYSELF_LOGGEDIN, DEF_WAIT, msg, server));
 
         UserAccount account = msg.useraccount;
         assertEquals("username set", username, account.szUsername);
@@ -230,9 +235,7 @@ public class TeamTalkTestCaseBase extends TestCase {
         
         assertTrue("do join root", cmdid > 0);
         
-        server.interleave();
-
-        assertTrue("Wait join complete", waitCmdComplete(ttclient, cmdid, 1000));
+        assertTrue("Wait join complete", waitCmdComplete(ttclient, cmdid, 1000, server));
         
         assertEquals("In root channel", ttclient.getMyChannelID(), ttclient.getRootChannelID());
     }
@@ -242,6 +245,11 @@ public class TeamTalkTestCaseBase extends TestCase {
         return waitForEvent(ttclient, nClientEvent, waittimeout, msg, nop);
     }
 
+    protected static boolean waitForEvent(TeamTalkBase ttclient, int nClientEvent, 
+                                          int waittimeout, ServerInterleave interleave) {
+        return waitForEvent(ttclient, nClientEvent, waittimeout, new TTMessage(), interleave);
+    }
+    
     protected static boolean waitForEvent(TeamTalkBase ttclient, int nClientEvent, 
                                           int waittimeout, TTMessage msg, ServerInterleave interleave) {
         long start = System.currentTimeMillis();
@@ -310,17 +318,19 @@ public class TeamTalkTestCaseBase extends TestCase {
     }
     
 
-    protected static boolean waitForEvent(TeamTalkBase ttclient, int nClientEvent, int waittimeout)
-    {
+    protected static boolean waitForEvent(TeamTalkBase ttclient, int nClientEvent, int waittimeout)  {
         TTMessage msg = new TTMessage();
         return waitForEvent(ttclient, nClientEvent, waittimeout, msg);
     }
 
-    protected static boolean waitCmdComplete(TeamTalkBase ttclient, int cmdid, int waittimeout)
-    {
+    protected static boolean waitCmdComplete(TeamTalkBase ttclient, int cmdid, int waittimeout) {
+        return waitCmdComplete(ttclient, cmdid, waittimeout, nop);
+    }
+    
+    protected static boolean waitCmdComplete(TeamTalkBase ttclient, int cmdid, int waittimeout, ServerInterleave interleave) {
         TTMessage msg = new TTMessage();
 
-        while (waitForEvent(ttclient, ClientEvent.CLIENTEVENT_CMD_PROCESSING, waittimeout, msg))
+        while (waitForEvent(ttclient, ClientEvent.CLIENTEVENT_CMD_PROCESSING, waittimeout, msg, interleave))
         {
             if (msg.nSource == cmdid && msg.bActive == false)
                 return true;
@@ -346,8 +356,15 @@ public class TeamTalkTestCaseBase extends TestCase {
     }
 
     protected static boolean waitCmdError(TeamTalkBase ttclient, int cmdid, int waittimeout, TTMessage msg) {
+        return waitCmdError(ttclient, cmdid, waittimeout, msg, nop);
+    }
+    
+    protected static boolean waitCmdError(TeamTalkBase ttclient, int cmdid, int waittimeout, ServerInterleave interleave) {
+        return waitCmdError(ttclient, cmdid, waittimeout, new TTMessage(), interleave);
+    }
+    protected static boolean waitCmdError(TeamTalkBase ttclient, int cmdid, int waittimeout, TTMessage msg, ServerInterleave interleave) {
 
-        while (waitForEvent(ttclient, ClientEvent.CLIENTEVENT_CMD_ERROR, waittimeout, msg))
+        while (waitForEvent(ttclient, ClientEvent.CLIENTEVENT_CMD_ERROR, waittimeout, msg, interleave))
         {
             if (msg.nSource == cmdid)
                 return true;
