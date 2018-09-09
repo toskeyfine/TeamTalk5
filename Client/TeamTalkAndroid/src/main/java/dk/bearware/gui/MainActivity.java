@@ -190,7 +190,9 @@ implements TeamTalkConnectionListener,
               SOUND_VOXON = 8,
               SOUND_VOXOFF = 9,
               SOUND_TXREADY = 10,
-              SOUND_TXSTOP = 11;
+              SOUND_TXSTOP = 11,
+              SOUND_USERJOIN = 12,
+              SOUND_USERLEFT = 13;
     
     SparseIntArray sounds = new SparseIntArray();
 
@@ -271,6 +273,7 @@ implements TeamTalkConnectionListener,
         menu.findItem(R.id.action_edit).setEnabled(isEditable).setVisible(isEditable);
         menu.findItem(R.id.action_join).setEnabled(isJoinable).setVisible(isJoinable);
         menu.findItem(R.id.action_upload).setEnabled(isMyChannel).setVisible(isMyChannel);
+        menu.findItem(R.id.action_stream).setEnabled(isMyChannel).setVisible(isMyChannel);
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -285,6 +288,16 @@ implements TeamTalkConnectionListener,
             case R.id.action_upload : {
                 if (Permissions.setupPermission(getBaseContext(), this, Permissions.MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE)) {
                     startActivityForResult(new Intent(this, FilePickerActivity.class), REQUEST_SELECT_FILE);
+                }
+            }
+            break;
+            case R.id.action_stream : {
+                int flags = ttclient.getFlags();
+                if ((flags & ClientFlag.CLIENT_STREAM_AUDIO) == ClientFlag.CLIENT_STREAM_AUDIO || (flags & ClientFlag.CLIENT_STREAM_VIDEO) == ClientFlag.CLIENT_STREAM_VIDEO) {
+                    ttclient.stopStreamingMediaFileToChannel();
+                } else {
+                    Intent intent = new Intent(MainActivity.this, StreamMediaActivity.class);
+                    startActivity(intent);
                 }
             }
             break;
@@ -427,6 +440,12 @@ implements TeamTalkConnectionListener,
         if (prefs.getBoolean("transmitready_icon", true)) {
             sounds.put(SOUND_TXREADY, audioIcons.load(getApplicationContext(), R.raw.txqueue_start, 1));
             sounds.put(SOUND_TXSTOP, audioIcons.load(getApplicationContext(), R.raw.txqueue_stop, 1));
+        }
+        if (prefs.getBoolean("userjoin_icon", true)) {
+            sounds.put(SOUND_USERJOIN, audioIcons.load(getApplicationContext(), R.raw.user_join, 1));
+        }
+        if (prefs.getBoolean("userleft_icon", true)) {
+            sounds.put(SOUND_USERLEFT, audioIcons.load(getApplicationContext(), R.raw.user_left, 1));
         }
 
         getTextMessagesAdapter().showLogMessages(prefs.getBoolean("show_log_messages", true));
@@ -1757,6 +1776,8 @@ implements TeamTalkConnectionListener,
                 textmsgAdapter.notifyDataSetChanged();
                 channelsAdapter.notifyDataSetChanged();
                 if (ttclient.getMyChannelID() == user.nChannelID) {
+                    if (sounds.get(SOUND_USERJOIN) != 0)
+                        audioIcons.play(sounds.get(SOUND_USERJOIN), 1.0f, 1.0f, 0, 0, 1.0f);
                     if (ttsWrapper != null && PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getBoolean("channel_join_checkbox", false)) {
                         String name = Utils.getDisplayName(getBaseContext(), user);
                         ttsWrapper.speak(name + " " + getResources().getString(R.string.text_tts_joined_chan));
@@ -1802,6 +1823,8 @@ implements TeamTalkConnectionListener,
             accessibilityAssistant.lockEvents();
             channelsAdapter.notifyDataSetChanged();
             if (ttclient.getMyChannelID() == channelid) {
+                    if (sounds.get(SOUND_USERLEFT) != 0)
+                        audioIcons.play(sounds.get(SOUND_USERLEFT), 1.0f, 1.0f, 0, 0, 1.0f);
                 if (ttsWrapper != null && PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getBoolean("channel_leave_checkbox", false)) {
                     String name = Utils.getDisplayName(getBaseContext(), user);
                     ttsWrapper.speak(name + " " + getResources().getString(R.string.text_tts_left_chan));
@@ -1850,6 +1873,10 @@ implements TeamTalkConnectionListener,
             Notification.Builder notification = new Notification.Builder(this);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 NotificationChannel mChannel = new NotificationChannel("TT_PM", "Teamtalk incoming message", NotificationManager.IMPORTANCE_HIGH);
+                mChannel.enableVibration(false);
+                mChannel.setVibrationPattern(null);
+                mChannel.enableLights(false);
+                mChannel.setSound(null, null);
                 notificationManager.createNotificationChannel(mChannel);
             }
             notification.setSmallIcon(R.drawable.message)
