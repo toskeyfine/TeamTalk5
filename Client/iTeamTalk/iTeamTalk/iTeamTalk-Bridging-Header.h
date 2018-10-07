@@ -29,13 +29,6 @@
  *
  * https://github.com/BearWare/TeamTalk5
  *
- * Once downloaded copy TeamTalk.h from the downloaded 
- * TeamTalk 5 SDK folder "Library/C-API/TeamTalk_DLL" 
- * to the folder "../../TeamTalk_DLL"
- *
- * Also copy libTeamTalk5.a or libTeamTalk5Pro.a from the 
- * downloaded TeamTalk 5 SDK folder "Library" to the
- * folder ../../TeamTalk_DLL/lib/ios
  */
 
 #import "../../../Library/TeamTalk_DLL/TeamTalk.h"
@@ -60,3 +53,40 @@ typedef struct StringWrap {
 
 void convertTuple(const char* str, StringWrap* wrap);
 TTCHAR* fromStringWrap(StringWrap* wrap);
+
+typedef enum {
+    NICKNAME,
+    USERNAME,
+    STATUSMSG,
+    IPADDR
+} UExt;
+
+typedef enum {
+    NAME,
+    PASSWORD,
+    TOPIC,
+    OPPASSWORD
+} CExt;
+
+typedef enum {
+    MESSAGE
+} MExt;
+
+typedef enum {
+    SERVERNAME
+} SExt;
+
+typedef enum {
+    ERRMESSAGE
+} CEExt;
+
+typedef enum {
+    INITCHANNEL
+} UAExt;
+
+const TTCHAR* getUserString(UExt e, const User* u);
+const TTCHAR* getChannelString(CExt e, const Channel* c);
+const TTCHAR* getTextMessageString(MExt e, const TextMessage* m);
+const TTCHAR* getServerPropertiesString(SExt e, const ServerProperties* s);
+const TTCHAR* getClientErrorMsgString(CEExt e, const ClientErrorMsg* m);
+const TTCHAR* getUserAccountString(UAExt e, const UserAccount* u);

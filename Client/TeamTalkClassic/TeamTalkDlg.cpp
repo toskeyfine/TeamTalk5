@@ -1667,6 +1667,7 @@ void CTeamTalkDlg::OnFileAdd(const TTMessage& msg)
 {
     ASSERT(msg.ttType == __REMOTEFILE);
     const RemoteFile& remotefile = msg.remotefile;
+    User user;
     m_tabFiles.AddFile(remotefile.nChannelID, remotefile.nFileID);
 
     if(remotefile.nChannelID == TT_GetMyChannelID(ttInst) &&
@@ -1674,6 +1675,12 @@ void CTeamTalkDlg::OnFileAdd(const TTMessage& msg)
        m_commands[m_nCurrentCmdID] != CMD_COMPLETE_JOIN)
     {
         PlaySoundEvent(SOUNDEVENT_FILES_UPDATED);
+        TT_GetUserByUsername(ttInst, remotefile.szUsername, &user);
+        CString szMsg;
+        szMsg.Format(LoadText(IDS_FILEADDED), GetDisplayName(user), remotefile.szFileName);
+        AddStatusText(szMsg);
+        if (m_xmlSettings.GetEventTTSEvents() & TTS_FILE_ADD)
+            AddVoiceMessage(szMsg);
     }
 }
 
@@ -1685,6 +1692,11 @@ void CTeamTalkDlg::OnFileRemove(const TTMessage& msg)
     if(remotefile.nChannelID == TT_GetMyChannelID(ttInst))
     {
         PlaySoundEvent(SOUNDEVENT_FILES_UPDATED);
+        CString szMsg;
+        szMsg.Format(LoadText(IDS_FILEREMOVED), remotefile.szFileName);
+        AddStatusText(szMsg);
+        if (m_xmlSettings.GetEventTTSEvents() & TTS_FILE_REMOVE)
+            AddVoiceMessage(szMsg);
     }
 }
 
