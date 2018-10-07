@@ -253,9 +253,9 @@ class ChannelListViewController :
             
             let cellIdentifier = "UserTableCell"
             let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! UserTableCell
-            let user = displayUsers[user_index]
+            var user = displayUsers[user_index]
             let name = getDisplayName(user)
-            let statusmsg = String(cString: UnsafeRawPointer([user.szStatusMsg]).assumingMemoryBound(to: CChar.self))
+            let statusmsg = String(cString: getUserString(STATUSMSG, &user))
             
             cell.nicknameLabel.text = name
             cell.statusmsgLabel.text = statusmsg
@@ -331,8 +331,8 @@ class ChannelListViewController :
             
             channel = displayChans[chan_index]
             
-            title = String(cString: UnsafeRawPointer([srvprop.szServerName]).assumingMemoryBound(to: CChar.self))
-            subtitle = String(cString: UnsafeRawPointer([channel.szTopic]).assumingMemoryBound(to: CChar.self))
+            title = String(cString: getServerPropertiesString(SERVERNAME, &srvprop))
+            subtitle = String(cString: getChannelString(TOPIC, &channel))
             
             if channel.bPassword != 0 {
                 cell.chanimage.image = UIImage(named: "channel_pink.png")
@@ -351,10 +351,10 @@ class ChannelListViewController :
             
             title = NSLocalizedString("Parent channel", comment: "channel list")
             if channel.nParentID == 0 {
-                subtitle = String(cString: UnsafeRawPointer([srvprop.szServerName]).assumingMemoryBound(to: CChar.self))
+                subtitle = String(cString: getServerPropertiesString(SERVERNAME, &srvprop))
             }
             else {
-                subtitle = String(cString: UnsafeRawPointer([channel.szName]).assumingMemoryBound(to: CChar.self))
+                subtitle = String(cString: getChannelString(NAME, &channel))
             }
             
             textcolor = UIColor.gray
@@ -375,8 +375,8 @@ class ChannelListViewController :
             channel = displayChans[chan_index]
             
             let user_count = getUsersCount(channel.nChannelID)
-            title = String(cString: UnsafeRawPointer([channel.szName]).assumingMemoryBound(to: CChar.self)) + " (\(user_count))"
-            subtitle = String(cString: UnsafeRawPointer([channel.szTopic]).assumingMemoryBound(to: CChar.self))
+            title = String(cString: getChannelString(NAME, &channel)) + " (\(user_count))"
+            subtitle = String(cString: getChannelString(TOPIC, &channel))
             
             if channel.bPassword != 0 {
                 cell.chanimage.image = UIImage(named: "channel_pink.png")
@@ -444,10 +444,10 @@ class ChannelListViewController :
     func updateTitle() {
         var title = ""
         if curchannel.nParentID == 0 {
-            title = fromTTString(srvprop.szServerName)
+            title = String(cString: getServerPropertiesString(SERVERNAME, &srvprop))
         }
         else {
-            title = fromTTString(curchannel.szName)
+            title = String(cString: getChannelString(NAME, &curchannel))
         }
         
         self.tabBarController?.navigationItem.title = title
@@ -551,23 +551,24 @@ class ChannelListViewController :
             
         case .loginCmd :
             let flags = TT_GetFlags(ttInst)
-            
+
             if (flags & CLIENT_AUTHORIZED.rawValue) != 0 {
                 
                 if rejoinchannel.nChannelID > 0 {
                     // if we were previously in a channel then rejoin
-                    let passwd = chanpasswds[rejoinchannel.nChannelID] != nil ? chanpasswds[rejoinchannel.nChannelID] : fromTTString(rejoinchannel.szPassword)
+                    let passwd = chanpasswds[rejoinchannel.nChannelID] != nil ? chanpasswds[rejoinchannel.nChannelID] :
+                        String(cString: getChannelString(PASSWORD, &rejoinchannel))
                     if chanpasswds[rejoinchannel.nChannelID] == nil {
                         // if channel password is from initial login (Server-struct) then we need to store it
-                       chanpasswds[rejoinchannel.nChannelID] = fromTTString(rejoinchannel.szPassword)
+                       chanpasswds[rejoinchannel.nChannelID] = String(cString: getChannelString(PASSWORD, &rejoinchannel))
                     }
                     toTTString(passwd!, dst: &rejoinchannel.szPassword)
                     cmdid = TT_DoJoinChannel(ttInst, &rejoinchannel)
                     activeCommands[cmdid] = .joinCmd
                 }
-                else if fromTTString(rejoinchannel.szName).isEmpty == false {
+                else if String(cString: getChannelString(NAME, &rejoinchannel)).isEmpty == false {
                     // join from initial login
-                    let passwd = fromTTString(rejoinchannel.szPassword)
+                    let passwd = String(cString: getChannelString(PASSWORD, &rejoinchannel))
                     toTTString(passwd, dst: &rejoinchannel.szPassword)
                     cmdid = TT_DoJoinChannel(ttInst, &rejoinchannel)
                     activeCommands[cmdid] = .joinCmd
@@ -631,15 +632,16 @@ class ChannelListViewController :
                 // Fallback on earlier versions
             }
 
-            let channel = channels[chanid]
-            
-            let chanDetail = segue.destination as! ChannelDetailViewController
-
-            chanDetail.channel = channel!
-            
-            if fromTTString((channel?.szPassword)!).isEmpty {
-                if let passwd = self.chanpasswds[chanid] {
-                    toTTString(passwd, dst: &chanDetail.channel.szPassword)
+            if var channel = channels[chanid] {
+                
+                let chanDetail = segue.destination as! ChannelDetailViewController
+                
+                chanDetail.channel = channel
+                
+                if String(cString: getChannelString(PASSWORD, &channel)).isEmpty {
+                    if let passwd = self.chanpasswds[chanid] {
+                        toTTString(passwd, dst: &chanDetail.channel.szPassword)
+                    }
                 }
             }
         }
@@ -807,8 +809,8 @@ class ChannelListViewController :
             }
         case CLIENTEVENT_CMD_ERROR :
             if activeCommands[m.nSource] != nil {
-                let errmsg = getClientErrorMsg(&m).pointee
-                let s = fromTTString(errmsg.szErrorMsg)
+                var errmsg = getClientErrorMsg(&m).pointee
+                let s = String(cString: getClientErrorMsgString(ERRMESSAGE, &errmsg))
                 if #available(iOS 8.0, *) {
                     let alert = UIAlertController(title: NSLocalizedString("Error", comment: "Dialog"), message: s, preferredStyle: UIAlertControllerStyle.alert)
                     alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Dialog"), style: UIAlertActionStyle.default, handler: nil))
@@ -877,16 +879,36 @@ class ChannelListViewController :
             let user = getUser(&m).pointee
             users[user.nUserID] = user
             
-            if currentCmdId == 0 && user.nChannelID == curchannel.nChannelID {
-                self.tableView.reloadData()
+            if currentCmdId == 0 {
+                if user.nChannelID == curchannel.nChannelID {
+                    self.tableView.reloadData()
+                }
+                if TT_GetMyUserID(ttInst) != user.nUserID {
+                    let defaults = UserDefaults.standard
+                    
+                    if defaults.object(forKey: PREF_TTSEVENT_USERLOGIN) != nil && defaults.bool(forKey: PREF_TTSEVENT_USERLOGIN) {
+                        let name = getDisplayName(user)
+                        newUtterance(name + " " + NSLocalizedString("has logged on", comment: "TTS EVENT"))
+                    }
+                }
             }
             
         case CLIENTEVENT_CMD_USER_LOGGEDOUT :
             let user = getUser(&m).pointee
             users.removeValue(forKey: user.nUserID)
 
-            if currentCmdId == 0 && user.nChannelID == curchannel.nChannelID {
-                self.tableView.reloadData()
+            if currentCmdId == 0 {
+                if user.nChannelID == curchannel.nChannelID {
+                    self.tableView.reloadData()
+                }
+                if TT_GetMyUserID(ttInst) != user.nUserID {
+                    let defaults = UserDefaults.standard
+                    
+                    if defaults.object(forKey: PREF_TTSEVENT_USERLOGOUT) != nil && defaults.bool(forKey: PREF_TTSEVENT_USERLOGOUT) {
+                        let name = getDisplayName(user)
+                        newUtterance(name + " " + NSLocalizedString("has logged out", comment: "TTS EVENT"))
+                    }
+                }
             }
             
         case CLIENTEVENT_CMD_USER_JOINED :
@@ -900,7 +922,7 @@ class ChannelListViewController :
                 
                 //store password if it's from initial login (Server-struct)
                 if rejoinchannel.nChannelID == 0 && chanpasswds[user.nChannelID] == nil {
-                   chanpasswds[user.nChannelID] = fromTTString(rejoinchannel.szPassword)
+                   chanpasswds[user.nChannelID] = String(cString: getChannelString(PASSWORD, &rejoinchannel))
                 }
                 rejoinchannel = channels[user.nChannelID]! //join this on connection lost
 
@@ -1000,8 +1022,8 @@ class ChannelListViewController :
             
         case CLIENTEVENT_CMD_ERROR :
             if m.nSource == cmdid {
-                let errmsg = getClientErrorMsg(&m).pointee
-                let s = fromTTString(errmsg.szErrorMsg)
+                var errmsg = getClientErrorMsg(&m).pointee
+                let s = String(cString: getClientErrorMsgString(ERRMESSAGE, &errmsg))
                 if #available(iOS 8.0, *) {
                     let alert = UIAlertController(title: NSLocalizedString("Error", comment: "Dialog message"), message: s, preferredStyle: UIAlertControllerStyle.alert)
                     alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Dialog message"), style: UIAlertActionStyle.default, handler: nil))
