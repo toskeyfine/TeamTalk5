@@ -88,4 +88,61 @@ TTCHAR* fromStringWrap(StringWrap* wrap) {
     return &wrap->buf[0];
 }
 
+const TTCHAR* getUserString(UExt e, const User* u) {
+    switch (e) {
+        case NICKNAME :
+            return u->szNickname;
+        case USERNAME :
+            return u->szUsername;
+        case STATUSMSG :
+            return u->szStatusMsg;
+        case IPADDR :
+            return u->szIPAddress;
+    }
+    return "";
+}
 
+const TTCHAR* getChannelString(CExt e, const Channel* c) {
+    switch (e) {
+        case NAME :
+            return c->szName;
+        case PASSWORD :
+            return c->szPassword;
+        case OPPASSWORD :
+            return c->szOpPassword;
+        case TOPIC :
+            return c->szTopic;
+    }
+    return "";
+}
+
+const TTCHAR* getTextMessageString(MExt e, const TextMessage* m) {
+    switch (e) {
+        case MESSAGE :
+            return m->szMessage;
+    }
+    return "";
+}
+
+const TTCHAR* getServerPropertiesString(SExt e, const ServerProperties* s) {
+    switch (e) {
+        case SERVERNAME :
+            return s->szServerName;
+    }
+    return "";
+}
+
+const TTCHAR* getClientErrorMsgString(CEExt e, const ClientErrorMsg* m) {
+    switch (e) {
+        case ERRMESSAGE :
+            return m->szErrorMsg;
+    }
+    return "";
+}
+
+const TTCHAR* getUserAccountString(UAExt e, const UserAccount* u) {
+    switch (e) {
+        case INITCHANNEL : return u->szInitChannel;
+    }
+    return "";
+}
