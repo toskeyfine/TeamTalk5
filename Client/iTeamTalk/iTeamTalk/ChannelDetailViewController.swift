@@ -24,8 +24,7 @@
 import UIKit
 
 class ChannelDetailViewController :
-    UIViewController, UITableViewDataSource,
-    UITableViewDelegate, TeamTalkEvent,
+    UITableViewController, TeamTalkEvent,
     UITextFieldDelegate, UIAlertViewDelegate {
 
     var channel = Channel()
@@ -44,8 +43,6 @@ class ChannelDetailViewController :
     var novoiceactivationswitch: UISwitch?
     var noaudiorecordingswitch: UISwitch?
     
-    @IBOutlet weak var tableView: UITableView!
-    
     var chan_items = [UITableViewCell]()
     var cmd_items = [UITableViewCell]()
     
@@ -57,12 +54,12 @@ class ChannelDetailViewController :
         }
         
         let namecell = UITableViewCell(style: .default, reuseIdentifier: nil)
-        namefield = newTableCellTextField(namecell, label: NSLocalizedString("Name", comment: "create channel"), initial: fromTTString(channel.szName))
+        namefield = newTableCellTextField(namecell, label: NSLocalizedString("Name", comment: "create channel"), initial: String(cString: getChannelString(NAME, &channel)))
         namefield?.delegate = self
         chan_items.append(namecell)
         
         let passwdcell = UITableViewCell(style: .default, reuseIdentifier: nil)
-        passwdfield = newTableCellTextField(passwdcell, label: NSLocalizedString("Password", comment: "create channel"), initial: fromTTString(channel.szPassword))
+        passwdfield = newTableCellTextField(passwdcell, label: NSLocalizedString("Password", comment: "create channel"), initial: String (cString: getChannelString(PASSWORD, &channel)))
         passwdfield?.delegate = self
         passwdfield?.autocorrectionType = .no
         passwdfield?.spellCheckingType = .no
@@ -70,7 +67,7 @@ class ChannelDetailViewController :
         chan_items.append(passwdcell)
         
         let topiccell = UITableViewCell(style: .default, reuseIdentifier: nil)
-        topicfield = newTableCellTextField(topiccell, label: NSLocalizedString("Topic", comment: "create channel"), initial: fromTTString(channel.szTopic))
+        topicfield = newTableCellTextField(topiccell, label: NSLocalizedString("Topic", comment: "create channel"), initial: String(cString: getChannelString(TOPIC, &channel)))
         topicfield?.delegate = self
         chan_items.append(topiccell)
         
@@ -215,8 +212,8 @@ class ChannelDetailViewController :
             }
         case CLIENTEVENT_CMD_ERROR :
             if m.nSource == cmdid {
-                let errmsg = getClientErrorMsg(&m).pointee
-                let s = fromTTString(errmsg.szErrorMsg)
+                var errmsg = getClientErrorMsg(&m).pointee
+                let s = String(cString: getClientErrorMsgString(ERRMESSAGE, &errmsg))
                 if #available(iOS 8.0, *) {
                     let alert = UIAlertController(title: NSLocalizedString("Error", comment: "Dialog message"), message: s, preferredStyle: UIAlertControllerStyle.alert)
                     alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Dialog message"), style: UIAlertActionStyle.default, handler: nil))
@@ -330,7 +327,7 @@ class ChannelDetailViewController :
         
     }
     
-    func numberOfSections(in tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         if cmd_items.count > 0 {
             return 2
         }
@@ -339,7 +336,7 @@ class ChannelDetailViewController :
         }
     }
     
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch section {
         case 0 :
             return NSLocalizedString("Channel Properties", comment: "create channel")
@@ -350,7 +347,7 @@ class ChannelDetailViewController :
         }
     }
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
         case 0 :
             return chan_items.count
@@ -361,7 +358,7 @@ class ChannelDetailViewController :
         }
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch indexPath.section {
         case 0 :
             return chan_items[indexPath.row]
