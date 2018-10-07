@@ -23,8 +23,7 @@
 
 import UIKit
 
-class UserDetailViewController : UIViewController,
-    UITableViewDataSource, UITableViewDelegate, TeamTalkEvent {
+class UserDetailViewController : UITableViewController, TeamTalkEvent {
     
     @IBOutlet weak var navtitle: UINavigationItem!
     var usernamefield: UITextField?
@@ -50,7 +49,6 @@ class UserDetailViewController : UIViewController,
         SECTION_ACTIONS = 3,
         SECTION_COUNT = 4
     
-    @IBOutlet weak var tableView: UITableView!
     var general_items = [UITableViewCell]()
     var action_items = [UITableViewCell]()
     var volume_items = [UITableViewCell]()
@@ -68,7 +66,7 @@ class UserDetailViewController : UIViewController,
         
         // general items
         let usernamecell = UITableViewCell(style: .default, reuseIdentifier: nil)
-        usernamefield = newTableCellTextField(usernamecell, label: NSLocalizedString("Username", comment: "user detail"), initial: fromTTString(user.szUsername))
+        usernamefield = newTableCellTextField(usernamecell, label: NSLocalizedString("Username", comment: "user detail"), initial: String(cString: getUserString(USERNAME, &user)))
         general_items.append(usernamecell)
         
         // volume items
@@ -203,11 +201,11 @@ class UserDetailViewController : UIViewController,
         kick_cmdid = TT_DoKickUser(ttInst, userid, user.nChannelID)
     }
     
-    func numberOfSections(in tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         return SECTION_COUNT
     }
     
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch section {
         case SECTION_GENERAL :
             return NSLocalizedString("General", comment: "user detail")
@@ -222,7 +220,7 @@ class UserDetailViewController : UIViewController,
         }
     }
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
         case SECTION_GENERAL :
             return general_items.count
@@ -236,7 +234,7 @@ class UserDetailViewController : UIViewController,
         }
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         switch indexPath.section {
         case SECTION_GENERAL :
             return general_items[indexPath.row]
@@ -264,8 +262,8 @@ class UserDetailViewController : UIViewController,
         case CLIENTEVENT_CMD_ERROR :
             
             if m.nSource == kick_cmdid || m.nSource == kickban_cmdid {
-                let errmsg = getClientErrorMsg(&m).pointee
-                let s = fromTTString(errmsg.szErrorMsg)
+                var errmsg = getClientErrorMsg(&m).pointee
+                let s = String(cString: getClientErrorMsgString(ERRMESSAGE, &errmsg))
                 if #available(iOS 8.0, *) {
                     let alert = UIAlertController(title: NSLocalizedString("Error", comment: "user detail"), message: s, preferredStyle: UIAlertControllerStyle.alert)
                     alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "user detail"), style: UIAlertActionStyle.default, handler: nil))
