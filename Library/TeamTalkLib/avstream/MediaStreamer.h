@@ -29,7 +29,7 @@
 #include <ace/Bound_Ptr.h>
 
 #include <myace/MyACE.h>
-#include "MediaUtil.h"
+#include <codec/MediaUtil.h>
 
 struct MediaFileProp
 {
@@ -52,6 +52,10 @@ struct MediaFileProp
     : audio_channels(0), audio_samplerate(0)
     , video_width(0), video_height(0), video_fps_numerator(0)
     , video_fps_denominator(0), duration_ms(0), filename(fname) { }
+
+    bool IsValid() const { return HasAudio() || HasVideo(); }
+    bool HasAudio() const { return audio_channels > 0 && audio_samplerate > 0; }
+    bool HasVideo() const { return video_width > 0 && video_height > 0 && video_fps_numerator > 0 && video_fps_denominator > 0; }
 };
 
 struct MediaStreamOutput
@@ -64,11 +68,17 @@ struct MediaStreamOutput
     int audio_samples;
 
     MediaStreamOutput()
-    : audio(false)
-    , video(false)
-    , audio_channels(0)
-    , audio_samplerate(0)
-    , audio_samples(0) {}
+    : MediaStreamOutput(false, false, 0, 0, 0) {}
+
+    MediaStreamOutput(bool audio_output, bool video_output,
+                      int audio_channels_output,
+                      int audio_samplerate_output,
+                      int audio_samples_output)
+        : audio(audio_output)
+        , video(video_output)
+        , audio_channels(audio_channels_output)
+        , audio_samplerate(audio_samplerate_output)
+        , audio_samples(audio_samples_output) {}
 };
 
 bool GetMediaFileProp(const ACE_TString& filename, MediaFileProp& fileprop);
@@ -85,6 +95,7 @@ class MediaStreamer;
 class MediaStreamListener
 {
 public:
+    virtual ~MediaStreamListener() {}
     virtual bool MediaStreamVideoCallback(MediaStreamer* streamer,
                                           media::VideoFrame& video_frame,
                                           ACE_Message_Block* mb_video) = 0;
@@ -115,6 +126,9 @@ public:
 
 protected:
     void Reset();
+    void InitBuffers();
+    ACE_UINT32 GetMinimumFrameDurationMSec() const;
+    int GetQueuedAudioDataSize();
 
     MediaFileProp m_media_in;
     MediaStreamOutput m_media_out;
@@ -122,15 +136,14 @@ protected:
     bool m_stop;
     
     //return 'true' if it should be called again
-    bool ProcessAVQueues(ACE_UINT32 starttime, 
-                         int wait_ms, bool flush);
+    bool ProcessAVQueues(ACE_UINT32 starttime, bool flush);
 
     msg_queue_t m_audio_frames;
     msg_queue_t m_video_frames;
 
 private:
-    ACE_UINT32 ProcessAudioFrame(ACE_UINT32 starttime, bool flush);
-    ACE_UINT32 ProcessVideoFrame(ACE_UINT32 starttime);
+    bool ProcessAudioFrame(ACE_UINT32 starttime, bool flush);
+    bool ProcessVideoFrame(ACE_UINT32 starttime);
 };
 
 typedef ACE_Strong_Bound_Ptr< MediaStreamer, ACE_Null_Mutex > media_streamer_t;
