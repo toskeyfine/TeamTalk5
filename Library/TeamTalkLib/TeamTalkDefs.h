@@ -24,10 +24,10 @@
 #if !defined(TEAMTALKDEFS_H)
 #define TEAMTALKDEFS_H
 
-#define TEAMTALK_VERSION            "5.3.5.4947"
-#define TEAMTALK_RC_VERSION         5,3,5,4947
-#define TEAMTALK_RC_FILEVERSION     "5, 3, 5, 4947"
-#define TEAMTALK_VERSION_POSTFIX    ""
+#define TEAMTALK_VERSION            "5.3.5.4949"
+#define TEAMTALK_RC_VERSION         5,3,5,4949
+#define TEAMTALK_RC_FILEVERSION     "5, 3, 5, 4949"
+#define TEAMTALK_VERSION_POSTFIX    " - Unreleased"
 
 #if defined(ENABLE_TEAMTALKPRO)
 #define TEAMTALK_LIB_NAME "TeamTalk5Pro"
@@ -44,6 +44,6 @@
 
 #define WEBLOGIN_FACEBOOK_USERNAME  "facebook"
 #define WEBLOGIN_FACEBOOK_POSTFIX   "@facebook.com"
-#define WEBLOGIN_URL                "http://www.bearware.dk/teamtalk/weblogin.php?"
+#define WEBLOGIN_URL                "https://www.bearware.dk/teamtalk/weblogin.php?"
 
 #endif
