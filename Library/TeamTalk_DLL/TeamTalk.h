@@ -16,7 +16,7 @@
  * client's version can be seen in the @a szVersion member of the
  * #User-struct. */
 
-#define TEAMTALK_VERSION "5.3.5.4947"
+#define TEAMTALK_VERSION "5.3.5.4949"
 
 
 #if defined(WIN32)
@@ -4505,7 +4505,7 @@ extern "C" {
      * connection. Encryption is only available in the TeamTalk
      * Professional SDK.
      * @param szSystemID The identification of the conferencing system.
-     * The default value is "teamtalk". See TT_StartServerSysID()
+     * The default value is "teamtalk". See TTS_StartServerSysID()
      * @return Returns TRUE if connection process was initiated. */
     TEAMTALKDLL_API TTBOOL TT_ConnectSysID(IN TTInstance* lpTTInstance,
                                            IN const TTCHAR* szHostAddress, 
