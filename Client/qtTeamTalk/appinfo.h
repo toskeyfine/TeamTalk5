@@ -25,7 +25,7 @@
 #define APPINFO_H
 
 #define COMPANYNAME         "BearWare.dk"
-#define APPVERSION_SHORT    "5.3.5"
+#define APPVERSION_SHORT    "5.4.0"
 #define APPVERSION          TEAMTALK_VERSION " - Unreleased"
 
 #define APPICON             QString::fromUtf8(":/images/images/teamtalk.png")
@@ -59,10 +59,6 @@
 #else
 #define APPMANUAL           (QApplication::applicationDirPath() + "/help/index.html")
 #define TRANSLATE_FOLDER    (QApplication::applicationDirPath() + "/" "languages")
-#endif
-
-#if defined(Q_OS_WIN32)
-#define MP3ENCDLL_FILENAME "lame_enc.dll" 
 #endif
 
 #if defined(Q_OS_WIN32)
