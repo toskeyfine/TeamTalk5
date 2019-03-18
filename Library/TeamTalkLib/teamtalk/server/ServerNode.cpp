@@ -79,6 +79,7 @@ ServerNode::ServerNode(const ACE_TString& version,
 ServerNode::~ServerNode()
 {
     StopServer(true);
+    MYTRACE(ACE_TEXT("~ServerNode()\n"));
 }
 
 ACE_Lock& ServerNode::lock()
@@ -435,7 +436,7 @@ ErrorMsg ServerNode::UserEndFileTransfer(int transferid)
 
     ACE_TString internalpath = m_properties.filesroot + ACE_DIRECTORY_SEPARATOR_STR;
 
-    ACE_TCHAR newfilename[MAX_STRING_LENGTH+1] = {0};
+    ACE_TCHAR newfilename[MAX_STRING_LENGTH+1] = {};
     ACE_UINT32 dat_id = m_file_id_counter;
     ACE_TString local_filename;
     do
@@ -566,6 +567,15 @@ int ServerNode::TimerEvent(ACE_UINT32 timer_event_id, long userdata)
 
         UpdateSoloTransmitChannels();
 
+        // erase login delays
+        ACE_Time_Value now = ACE_OS::gettimeofday();
+        for (auto it = m_logindelay.begin();it != m_logindelay.end();)
+        {
+            if (now > it->second + ToTimeValue(m_properties.logindelay * 2))
+                m_logindelay.erase(it++);
+            else
+                ++it;
+        }
         break;
     }
     case TIMER_DESKTOPACKPACKET_ID :
@@ -688,11 +698,12 @@ bool ServerNode::SendDesktopAckPacket(int userid)
         {
             time_ack = (*ii)->GetTime();
             session_id = (*ii)->GetSessionID();
+            
+            if(!GetAckedDesktopPackets(session_id, time_ack, session_q, 
+                                       recv_packets))
+                return false;
         }
-
-        if(!GetAckedDesktopPackets(session_id, time_ack, session_q, 
-                                   recv_packets))
-            return false;
+        else return false;
     }
     else
     {
@@ -932,26 +943,25 @@ bool ServerNode::StartServer(bool encrypted, const ACE_TString& sysid)
 #if defined(ENABLE_ENCRYPTION)
         if (encrypted)
         {
-            CryptAcceptor* ca = new CryptAcceptor(m_tcp_reactor);
-            tcpport &= ca->open(a, ca->reactor(), ACE_NONBLOCK) != -1;
-            ca->SetListener(this);
+            cryptacceptor_t ca(new CryptAcceptor(a, m_tcp_reactor, ACE_NONBLOCK, this));
+            tcpport &= ca->acceptor().get_handle() != ACE_INVALID_HANDLE;
             m_crypt_acceptors.push_back(ca);
         }
         else
 #endif
         {
-            DefaultAcceptor* da = new DefaultAcceptor(m_tcp_reactor);
-            tcpport &= da->open(a, da->reactor(), ACE_NONBLOCK) != -1;
-            da->SetListener(this);
+            defaultacceptor_t da(new DefaultAcceptor(a, m_tcp_reactor, ACE_NONBLOCK, this));
+            tcpport &= da->acceptor().get_handle() != ACE_INVALID_HANDLE;
             m_def_acceptors.push_back(da);
         }
     }
 
     for (auto a : m_properties.udpaddrs)
     {
-        PacketHandler* ph = new PacketHandler(m_udp_reactor);
+        packethandler_t ph(new PacketHandler(m_udp_reactor));
         udpport &= ph->open(a, UDP_SOCKET_RECV_BUF_SIZE, UDP_SOCKET_SEND_BUF_SIZE);
-        ph->AddListener(this);
+        if (udpport)
+            ph->AddListener(this);
         m_packethandlers.push_back(ph);
     }
 
@@ -1003,34 +1013,18 @@ void ServerNode::StopServer(bool docallback)
     }
 
     TTASSERT(m_admins.empty());
-    m_mLoginAttempts.clear();
+    m_failedlogins.clear();
+    m_logindelay.clear();
     m_filetransfers.clear();
     m_updUserIPs.clear();
 
-    for (auto ph : m_packethandlers)
-    {
-        ph->RemoveListener(this);
-        ph->reactor()->remove_handler(ph, PacketHandler::ALL_EVENTS_MASK);
-        delete ph;
-    }
     m_packethandlers.clear();
 
 #if defined(ENABLE_ENCRYPTION)
-    for (auto ca : m_crypt_acceptors)
-    {
-        ca->SetListener(NULL);
-        ca->reactor()->remove_handler(ca, CryptAcceptor::ALL_EVENTS_MASK);
-        delete ca;
-    }
     m_crypt_acceptors.clear();
 #endif
-    for (auto da : m_def_acceptors)
-    {
-        da->SetListener(NULL);
-        da->reactor()->remove_handler(da, DefaultAcceptor::ALL_EVENTS_MASK);
-        delete da;
-    }
     m_def_acceptors.clear();
+
 
     if (docallback)
         m_srvguard->OnShutdown(m_stats);
@@ -1241,27 +1235,43 @@ void ServerNode::IncLoginAttempt(const ServerUser& user)
     ASSERT_REACTOR_LOCKED(this);
 
     //ban user's IP if logged in to many times
-    mapiptime_t::iterator ite = m_mLoginAttempts.find(user.GetIpAddress());
-    if(ite == m_mLoginAttempts.end())
+    m_failedlogins[user.GetIpAddress()].push_back(ACE_OS::gettimeofday());
+
+    if (m_properties.maxloginattempts > 0 && 
+        m_failedlogins[user.GetIpAddress()].size() >= (size_t)m_properties.maxloginattempts)
     {
-        vector<ACE_Time_Value> attempts;
-        attempts.push_back(ACE_OS::gettimeofday());
-        m_mLoginAttempts[user.GetIpAddress()] = attempts;
+        BannedUser ban;
+        ban.bantype = BANTYPE_DEFAULT;
+        ban.ipaddr = user.GetIpAddress();
+        m_srvguard->AddUserBan(user, ban);
+        if(IsAutoSaving())
+            m_srvguard->OnSaveConfiguration(*this, &user);
     }
-    else
+}
+
+bool ServerNode::LoginsExceeded(const ServerUser& user)
+{
+    ASSERT_REACTOR_LOCKED(this);
+
+    if (m_properties.logindelay == 0)
+        return false;
+
+    ACE_Time_Value now = ACE_OS::gettimeofday();
+    if (m_logindelay.find(user.GetIpAddress()) == m_logindelay.end())
     {
-        ite->second.push_back(ACE_OS::gettimeofday());
-        if( m_properties.maxloginattempts > 0 && 
-            ite->second.size() >= (size_t)m_properties.maxloginattempts)
-        {
-            BannedUser ban;
-            ban.bantype = BANTYPE_DEFAULT;
-            ban.ipaddr = user.GetIpAddress();
-            m_srvguard->AddUserBan(user, ban);
-            if(IsAutoSaving())
-                m_srvguard->OnSaveConfiguration(*this, &user);
-        }
+        m_logindelay[user.GetIpAddress()] = now;
+        return false;
     }
+
+    ACE_Time_Value delay = ToTimeValue(m_properties.logindelay);
+    if (m_logindelay[user.GetIpAddress()] + delay > now)
+    {
+        m_logindelay[user.GetIpAddress()] = now;
+        return true;
+    }
+    m_logindelay[user.GetIpAddress()] = now;
+    
+    return false;
 }
 
 int ServerNode::SendPacket(const FieldPacket& packet,
@@ -1857,18 +1867,17 @@ void ServerNode::ReceivedVoicePacket(ServerUser& user,
 #if defined(ENABLE_ENCRYPTION)
     case PACKET_KIND_VOICE_CRYPT :
     {
-        AudioPacket* p = CryptVoicePacket(packet).Decrypt(chan.GetEncryptKey());
-        packet_ptr_t ptr(p);
+        auto p = CryptVoicePacket(packet).Decrypt(chan.GetEncryptKey());
         if (p)
             streamid = p->GetStreamID();
         break;
     }
 #endif
     case PACKET_KIND_VOICE :
-        streamid = packet.GetStreamID();
+        streamid = VoicePacket(packet).GetStreamID();
         break;
     default :
-        assert(0);
+        assert(packet.GetKind() == PACKET_KIND_VOICE);
         break;
     }
 
@@ -1910,15 +1919,14 @@ void ServerNode::ReceivedAudioFilePacket(ServerUser& user,
 #if defined(ENABLE_ENCRYPTION)
     case PACKET_KIND_MEDIAFILE_AUDIO_CRYPT :
     {
-        AudioFilePacket* p = CryptAudioFilePacket(packet).Decrypt(chan.GetEncryptKey());
-        packet_ptr_t ptr(p);
+        auto p = CryptAudioFilePacket(packet).Decrypt(chan.GetEncryptKey());
         if (p)
             streamid = p->GetStreamID();
         break;
     }
 #endif
     case PACKET_KIND_MEDIAFILE_AUDIO :
-        streamid = packet.GetStreamID();
+        streamid = AudioFilePacket(packet).GetStreamID();
         break;
     default :
         assert(packet.GetKind() == PACKET_KIND_MEDIAFILE_AUDIO);
@@ -1962,16 +1970,17 @@ void ServerNode::ReceivedVideoCapturePacket(ServerUser& user,
 #if defined(ENABLE_ENCRYPTION)
     case PACKET_KIND_VIDEO_CRYPT :
     {
-        VideoCapturePacket* p = CryptVideoCapturePacket(packet).Decrypt(chan.GetEncryptKey());
-        packet_ptr_t ptr(p);
+        auto p = CryptVideoCapturePacket(packet).Decrypt(chan.GetEncryptKey());
         if (p)
             streamid = p->GetStreamID();
         break;
     }
 #endif
     case PACKET_KIND_VIDEO :
-        streamid = packet.GetStreamID();
+        streamid = VideoCapturePacket(packet).GetStreamID();
         break;
+    default :
+        assert(packet.GetKind() == PACKET_KIND_VIDEO_CRYPT);
     }
 
     if(!chan.CanTransmit(user.GetUserID(), STREAMTYPE_VIDEOCAPTURE, streamid))
@@ -2006,15 +2015,17 @@ void ServerNode::ReceivedVideoFilePacket(ServerUser& user,
 #if defined(ENABLE_ENCRYPTION)
     case PACKET_KIND_MEDIAFILE_VIDEO_CRYPT :
     {
-        VideoFilePacket* p = CryptVideoFilePacket(packet).Decrypt(chan.GetEncryptKey());
-        packet_ptr_t ptr(p);
+        auto p = CryptVideoFilePacket(packet).Decrypt(chan.GetEncryptKey());
         if (p)
             streamid = p->GetStreamID();
         break;
     }
 #endif
     case PACKET_KIND_MEDIAFILE_VIDEO :
-        streamid = packet.GetStreamID();
+        streamid = VideoFilePacket(packet).GetStreamID();
+        break;
+    default :
+        assert(packet.GetKind() == PACKET_KIND_MEDIAFILE_VIDEO);
         break;
     }
     
@@ -2048,13 +2059,11 @@ void ServerNode::ReceivedDesktopPacket(ServerUser& user,
 
     ServerChannel& chan = *tmp_chan;
 
-    DesktopPacket* tmp_pkt = crypt_pkt.Decrypt(chan.GetEncryptKey());
-    if(!tmp_pkt)
+    auto decrypt_pkt = crypt_pkt.Decrypt(chan.GetEncryptKey());
+    if(!decrypt_pkt)
         return;
-    DesktopPacket& packet = *tmp_pkt;
-    packet_ptr_t ptr(tmp_pkt);
-
-    ReceivedDesktopPacket(user, packet, remoteaddr, localaddr);
+    
+    ReceivedDesktopPacket(user, *decrypt_pkt, remoteaddr, localaddr);
 }
 #endif
 
@@ -2071,7 +2080,7 @@ void ServerNode::ReceivedDesktopPacket(ServerUser& user,
 
     ServerChannel& chan = *tmp_chan;
 
-    if(!chan.CanTransmit(user.GetUserID(), STREAMTYPE_DESKTOP, packet.GetStreamID()))
+    if(!chan.CanTransmit(user.GetUserID(), STREAMTYPE_DESKTOP, packet.GetSessionID()))
        return;
 
     uint8_t prev_session_id = 0;
@@ -2176,13 +2185,11 @@ void ServerNode::ReceivedDesktopAckPacket(ServerUser& user,
 
     ServerChannel& chan = *tmp_chan;
 
-    DesktopAckPacket* tmp_pkt = crypt_pkt.Decrypt(chan.GetEncryptKey());
-    if(!tmp_pkt)
+    auto decrypt_pkt = crypt_pkt.Decrypt(chan.GetEncryptKey());
+    if(!decrypt_pkt)
         return;
-    DesktopAckPacket& packet = *tmp_pkt;
-    packet_ptr_t ptr(tmp_pkt);
 
-    ReceivedDesktopAckPacket(user, packet, remoteaddr, localaddr);
+    ReceivedDesktopAckPacket(user, *decrypt_pkt, remoteaddr, localaddr);
 }
 #endif
 
@@ -2311,13 +2318,11 @@ void ServerNode::ReceivedDesktopNakPacket(ServerUser& user,
 
     ServerChannel& chan = *tmp_chan;
 
-    DesktopNakPacket* tmp_pkt = crypt_pkt.Decrypt(chan.GetEncryptKey());
-    if(!tmp_pkt)
+    auto decrypt_pkt = crypt_pkt.Decrypt(chan.GetEncryptKey());
+    if(!decrypt_pkt)
         return;
-    DesktopNakPacket& packet = *tmp_pkt;
-    packet_ptr_t ptr(tmp_pkt);
 
-    ReceivedDesktopNakPacket(user, packet, remoteaddr, localaddr);
+    ReceivedDesktopNakPacket(user, *decrypt_pkt, remoteaddr, localaddr);
 }
 #endif
 
@@ -2375,13 +2380,11 @@ void ServerNode::ReceivedDesktopCursorPacket(ServerUser& user,
 
     ServerChannel& chan = *tmp_chan;
 
-    DesktopCursorPacket* tmp_pkt = crypt_pkt.Decrypt(chan.GetEncryptKey());
-    if(!tmp_pkt)
+    auto decrypt_pkt = crypt_pkt.Decrypt(chan.GetEncryptKey());
+    if(!decrypt_pkt)
         return;
-    DesktopCursorPacket& packet = *tmp_pkt;
-    packet_ptr_t ptr(tmp_pkt);
 
-    ReceivedDesktopCursorPacket(user, packet, remoteaddr, localaddr);
+    ReceivedDesktopCursorPacket(user, *decrypt_pkt, remoteaddr, localaddr);
 }
 #endif
 
@@ -2396,7 +2399,7 @@ void ServerNode::ReceivedDesktopCursorPacket(ServerUser& user,
 
     ServerChannel& chan = *tmp_chan;
 
-    if(!chan.CanTransmit(user.GetUserID(), STREAMTYPE_DESKTOP, packet.GetStreamID()))
+    if(!chan.CanTransmit(user.GetUserID(), STREAMTYPE_DESKTOP, packet.GetSessionID()))
        return;
     
 #ifdef _DEBUG
@@ -2451,13 +2454,11 @@ void ServerNode::ReceivedDesktopInputPacket(ServerUser& user,
 
     ServerChannel& chan = *tmp_chan;
 
-    DesktopInputPacket* tmp_pkt = crypt_pkt.Decrypt(chan.GetEncryptKey());
-    if(!tmp_pkt)
+    auto decrypt_pkt = crypt_pkt.Decrypt(chan.GetEncryptKey());
+    if(!decrypt_pkt)
         return;
-    DesktopInputPacket& packet = *tmp_pkt;
-    packet_ptr_t ptr(tmp_pkt);
 
-    ReceivedDesktopInputPacket(user, packet, remoteaddr, localaddr);
+    ReceivedDesktopInputPacket(user, *decrypt_pkt, remoteaddr, localaddr);
 }
 #endif
 
@@ -2514,13 +2515,11 @@ void ServerNode::ReceivedDesktopInputAckPacket(ServerUser& user,
 
     ServerChannel& chan = *tmp_chan;
 
-    DesktopInputAckPacket* tmp_pkt = crypt_pkt.Decrypt(chan.GetEncryptKey());
-    if(!tmp_pkt)
+    auto decrypt_pkt = crypt_pkt.Decrypt(chan.GetEncryptKey());
+    if(!decrypt_pkt)
         return;
-    DesktopInputAckPacket& packet = *tmp_pkt;
-    packet_ptr_t ptr(tmp_pkt);
 
-    ReceivedDesktopInputAckPacket(user, packet, remoteaddr, localaddr);
+    ReceivedDesktopInputAckPacket(user, *decrypt_pkt, remoteaddr, localaddr);
 }
 #endif
 
@@ -2604,7 +2603,11 @@ ErrorMsg ServerNode::UserLogin(int userid, const ACE_TString& username,
     switch(err.errorno)
     {
     case TT_CMDERR_SUCCESS :
+    {
+        if (LoginsExceeded(*user))
+            return TT_CMDERR_COMMAND_FLOOD;
         break;
+    }
     case TT_CMDERR_SERVER_BANNED :
         m_srvguard->OnUserLoginBanned(*user);
         return err; //banned from server
@@ -2663,7 +2666,7 @@ ErrorMsg ServerNode::UserLogin(int userid, const ACE_TString& username,
         m_admins.push_back(user);
 
     //clear any wrong logins
-    m_mLoginAttempts.erase(user->GetIpAddress());
+    m_failedlogins.erase(user->GetIpAddress());
 
     //do connect accepted
     user->DoAccepted(useraccount);
@@ -3196,7 +3199,8 @@ ErrorMsg ServerNode::UserBan(int userid, int ban_userid, BannedUser ban)
         if(!banchan.null() && err.success())
             AddBannedUserToChannel(ban);
         
-        m_srvguard->OnUserBanned(*ban_user, *banner);
+        if (err.success())
+            m_srvguard->OnUserBanned(*ban_user, *banner);
     }
     else
     {
@@ -3225,6 +3229,9 @@ ErrorMsg ServerNode::UserBan(int userid, int ban_userid, BannedUser ban)
 
         if(!banchan.null() && err.success())
             AddBannedUserToChannel(ban);
+
+        if (err.success())
+            m_srvguard->OnUserBanned(*banner, ban);
     }
 
     if(err.success() && IsAutoSaving())
