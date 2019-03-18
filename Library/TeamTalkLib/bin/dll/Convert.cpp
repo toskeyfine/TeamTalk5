@@ -1221,6 +1221,7 @@ void Convert(const teamtalk::ServerProperties& srvprop, ServerProperties& result
     result.bAutoSave = srvprop.autosave;
     result.nMaxUsers = srvprop.maxusers;
     result.nUserTimeout = srvprop.usertimeout;
+    result.nLoginDelayMSec = srvprop.logindelay;
     ACE_OS::strsncpy(result.szServerVersion, srvprop.version.c_str(), TT_STRLEN);
 }
 
@@ -1265,6 +1266,7 @@ void Convert(const ServerProperties& srvprop, teamtalk::ServerProperties& result
     result.totaltxlimit = srvprop.nMaxTotalTxPerSecond;
     result.autosave = srvprop.bAutoSave;
     result.usertimeout = srvprop.nUserTimeout;
+    result.logindelay = srvprop.nLoginDelayMSec;
 }
 
 void Convert(const ServerProperties& srvprop, teamtalk::ServerInfo& result)
@@ -1411,22 +1413,22 @@ void Convert(const MediaFileProp& mediaprop, MediaFileInfo& result)
 {
     ZERO_STRUCT(result);
 
-    if(mediaprop.audio_channels)
+    if(mediaprop.audio.IsValid())
     {
         result.audioFmt.nAudioFmt = AFF_WAVE_FORMAT;
-        result.audioFmt.nChannels = mediaprop.audio_channels;
-        result.audioFmt.nSampleRate = mediaprop.audio_samplerate;
+        result.audioFmt.nChannels = mediaprop.audio.channels;
+        result.audioFmt.nSampleRate = mediaprop.audio.samplerate;
     }
     else
         result.audioFmt.nAudioFmt = AFF_NONE;
 
-    if(mediaprop.video_width)
+    if(mediaprop.video.IsValid())
     {
         result.videoFmt.picFourCC = FOURCC_RGB32;
-        result.videoFmt.nWidth = mediaprop.video_width;
-        result.videoFmt.nHeight = mediaprop.video_height;
-        result.videoFmt.nFPS_Numerator = mediaprop.video_fps_numerator;
-        result.videoFmt.nFPS_Denominator = mediaprop.video_fps_denominator;
+        result.videoFmt.nWidth = mediaprop.video.width;
+        result.videoFmt.nHeight = mediaprop.video.height;
+        result.videoFmt.nFPS_Numerator = mediaprop.video.fps_numerator;
+        result.videoFmt.nFPS_Denominator = mediaprop.video.fps_denominator;
     }
     else
         result.videoFmt.picFourCC = FOURCC_NONE;
