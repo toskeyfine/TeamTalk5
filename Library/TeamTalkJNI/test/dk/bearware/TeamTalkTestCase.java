@@ -1237,11 +1237,6 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
     
     public void test_MessageQueue() throws InterruptedException {
 
-        if (ENCRYPTED) {
-            System.err.println("This test is currently failing in encrypted mode.");
-            return;
-        }
-
         String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - "
             + getCurrentMethod();
         int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL
@@ -1722,29 +1717,28 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         TTMessage msg = new TTMessage();
         this.INPUTDEVICEID = this.OUTPUTDEVICEID = SoundDeviceConstants.TT_SOUNDDEVICE_ID_TEAMTALK_VIRTUAL;
 
-        TeamTalkBase ttclient = newClientInstance();
+        TeamTalkBase ttclient1 = newClientInstance();
 
-        connect(ttclient);
-        initSound(ttclient);
-        login(ttclient, NICKNAME, USERNAME, PASSWORD);
+        connect(ttclient1);
+        initSound(ttclient1);
+        login(ttclient1, NICKNAME, USERNAME, PASSWORD);
 
-        Channel chan = buildDefaultChannel(ttclient, "Opus");
+        Channel chan = buildDefaultChannel(ttclient1, "Opus");
         assertEquals("opus default", chan.audiocodec.nCodec, Codec.OPUS_CODEC);
         chan.uChannelType |= ChannelType.CHANNEL_SOLO_TRANSMIT;
 
-        assertTrue("join", waitCmdSuccess(ttclient, ttclient.doJoinChannel(chan), DEF_WAIT));
+        assertTrue("join", waitCmdSuccess(ttclient1, ttclient1.doJoinChannel(chan), DEF_WAIT));
 
-        assertTrue("Channel id set", ttclient.getChannel(ttclient.getMyChannelID(), chan));
+        assertTrue("Channel id set", ttclient1.getChannel(ttclient1.getMyChannelID(), chan));
 
         for(int u : chan.transmitUsersQueue)
             assertEquals("no users in queue", 0, u);
 
-        assertTrue("subscribe", waitCmdSuccess(ttclient, ttclient.doSubscribe(ttclient.getMyUserID(), Subscription.SUBSCRIBE_VOICE), DEF_WAIT));
-
+        assertTrue("subscribe", waitCmdSuccess(ttclient1, ttclient1.doSubscribe(ttclient1.getMyUserID(), Subscription.SUBSCRIBE_VOICE), DEF_WAIT));
 
         for(int i=0;i<2;i++) {
 
-            ttclient = newClientInstance();
+            TeamTalkBase ttclient = newClientInstance();
 
             connect(ttclient);
             initSound(ttclient);
@@ -1771,12 +1765,13 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
             assertTrue("Wait for talking event stopped", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_STATECHANGE, DEF_WAIT, msg));
             assertEquals("User state to no voice", UserState.USERSTATE_NONE, msg.user.uUserState & UserState.USERSTATE_VOICE);
             assertEquals("myself stopped talking", ttclient.getMyUserID(), msg.user.nUserID);
+
+            assertTrue("ttclient1, wait for tx queue start", waitForEvent(ttclient1, ClientEvent.CLIENTEVENT_CMD_CHANNEL_UPDATE, DEF_WAIT));
+            assertTrue("ttclient1, wait for tx queue stop", waitForEvent(ttclient1, ClientEvent.CLIENTEVENT_CMD_CHANNEL_UPDATE, DEF_WAIT));
         }
 
-        // user 0 is make user account, so get user 1
-        TeamTalkBase ttclient1 = ttclients.get(1);
-
-        assertTrue("drain ttclient1", waitCmdComplete(ttclient1, ttclient1.doPing(), DEF_WAIT));
+        // wait for "reset" state
+        assertTrue("ttclient1, drain client 1", waitCmdComplete(ttclient1, ttclient1.doPing(), DEF_WAIT));
 
         assertTrue("ttclient1, Enable voice transmission", ttclient1.enableVoiceTransmission(true));
 
@@ -1784,12 +1779,16 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         assertTrue("ttclient1, Channel tx queue set", ttclient1.getChannel(ttclient1.getMyChannelID(), chan));
 
-        assertEquals("ttclient1, myself in queue ", ttclient1.getMyUserID(), chan.transmitUsersQueue[0]);
+        assertEquals("ttclient1, myself is head in queue", ttclient1.getMyUserID(), chan.transmitUsersQueue[0]);
 
-        assertTrue("ttclient1, Wait for talking event", waitForEvent(ttclient1, ClientEvent.CLIENTEVENT_USER_STATECHANGE, DEF_WAIT, msg));
-        assertEquals("ttclient1, User state to voice", UserState.USERSTATE_VOICE, msg.user.uUserState & UserState.USERSTATE_VOICE);
+        // don't know if 'ClientEvent.CLIENTEVENT_USER_STATECHANGE' or
+        // 'ClientEvent.CLIENTEVENT_CMD_CHANNEL_UPDATE' came first, so
+        // don't assertTrue()
+        waitForEvent(ttclient1, ClientEvent.CLIENTEVENT_USER_STATECHANGE, 1000, msg);
+        User user = new User();
+        assertTrue("get ttclient1 state", ttclient1.getUser(ttclient1.getMyUserID(), user));
+        assertEquals("ttclient1, User state to voice", UserState.USERSTATE_VOICE, user.uUserState & UserState.USERSTATE_VOICE);
         assertEquals("ttclient1, myself talking", ttclient1.getMyUserID(), msg.user.nUserID);
-
 
         // ensure ttclient2 doesn't take over transmit queue from ttclient1
         TeamTalkBase ttclient2 = ttclients.get(2);
@@ -1804,7 +1803,8 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         assertEquals("ttclient2, myself in queue", ttclient2.getMyUserID(), chan.transmitUsersQueue[1]);
 
-        assertFalse("ttclient2,Wait for talking event", waitForEvent(ttclient2, ClientEvent.CLIENTEVENT_USER_STATECHANGE, DEF_WAIT, msg));
+        waitForEvent(ttclient2, ClientEvent.CLIENTEVENT_NONE, 1000);
+        assertTrue("ttclient2 is not talking", ttclient2.getUser(ttclient2.getMyUserID(), user) && (user.uUserState & UserState.USERSTATE_VOICE) == 0);
 
 
         // ensure ttclient2 takes over transmit queue when ttclient1 stops transmitting
@@ -1838,7 +1838,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         assertTrue("ttclient1, Channel tx queue set", ttclient1.getChannel(ttclient1.getMyChannelID(), chan));
 
-        assertEquals("ttclient1, myself in queue ", ttclient1.getMyUserID(), chan.transmitUsersQueue[0]);
+        assertEquals("ttclient1, myself is head again in queue ", ttclient1.getMyUserID(), chan.transmitUsersQueue[0]);
     }
 
     public void testAbusePrevention() {
@@ -1886,6 +1886,45 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue("do text message after cmd-timeout", waitCmdSuccess(ttclient, ttclient.doTextMessage(txtmsg), DEF_WAIT));
     }
 
+    public void testLoginDelay() throws InterruptedException {
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL | UserRight.USERRIGHT_MULTI_LOGIN;
+
+        TTMessage msg = new TTMessage();
+
+        TeamTalkBase ttadmin = newClientInstance();
+        connect(ttadmin);
+        login(ttadmin, ADMIN_NICKNAME, ADMIN_USERNAME, ADMIN_PASSWORD);
+
+        ServerProperties srvprop = new ServerProperties();
+        assertTrue(ttadmin.getServerProperties(srvprop));
+        srvprop.nLoginDelayMSec = 1000;
+        assertTrue(waitCmdSuccess(ttadmin, ttadmin.doUpdateServer(srvprop), DEF_WAIT));
+        
+        UserAccount account = new UserAccount();
+        account.szUsername = USERNAME;
+        account.szPassword = PASSWORD;
+        account.uUserType = UserType.USERTYPE_DEFAULT;
+        account.uUserRights = USERRIGHTS;
+        
+        assertTrue("create account", waitCmdSuccess(ttadmin, ttadmin.doNewUserAccount(account), DEF_WAIT));
+
+        TeamTalkBase ttclient1 = newClientInstance();
+        TeamTalkBase ttclient2 = newClientInstance();
+        
+        connect(ttclient1);
+        login(ttclient1, NICKNAME, USERNAME, PASSWORD);
+        connect(ttclient2);
+        
+        assertTrue("login failure", waitCmdError(ttclient2, ttclient2.doLogin(NICKNAME, USERNAME, PASSWORD), DEF_WAIT));
+
+        Thread.sleep(2000);
+        login(ttclient2, NICKNAME, USERNAME, PASSWORD);
+
+        srvprop.nLoginDelayMSec = 0;
+        assertTrue(waitCmdSuccess(ttadmin, ttadmin.doUpdateServer(srvprop), DEF_WAIT));
+    }
+    
     public void testLoginAttempts() {
 
         TeamTalkBase ttadmin = newClientInstance();
