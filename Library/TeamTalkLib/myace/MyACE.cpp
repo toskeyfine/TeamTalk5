@@ -36,6 +36,7 @@
 #include <ace/INet/HTTPS_SessionFactory.h>
 #endif
 
+#include <string>
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
@@ -123,36 +124,32 @@ void replace_all(ACE_TString& target, const ACE_TString& to_find, const ACE_TStr
     target = tmp;
 }
 
-ACE_TString i2string(int i)
-{
-    ACE_TCHAR buf[20] = {0};
-    ACE_OS::sprintf(buf, ACE_TEXT("%d"), i);
-    return ACE_TString(buf);
-}
-
-int string2i(const ACE_TString& int_str)
-{
-    try
-    {
-        return std::stoi(int_str.c_str());
-    }
-    catch(...)
-    {
-        return 0;
-    }
-}
-
 ACE_TString i2string(ACE_INT64 i)
 {
+#if defined(__ANDROID_API__)
+    std::ostringstream os ;
+    os << i;
+    return os.str().c_str();
+#else
+    
 #if defined(UNICODE)
     return std::to_wstring(i).c_str();
 #else
     return std::to_string(i).c_str();
+#endif /* UNICODE */
+    
 #endif
 }
 
-ACE_INT64 string2i64(const ACE_TString& int_str, int base)
+ACE_INT64 string2i(const ACE_TString& int_str, int base)
 {
+#if defined(__ANDROID_API__)
+    ACE_INT64 ret = 0;
+    istringstream is(int_str.c_str());
+    is >> std::setbase(base);
+    is >> ret;
+    return ret;
+#else
     try
     {
         return std::stoll(int_str.c_str(), 0, base);
@@ -161,6 +158,7 @@ ACE_INT64 string2i64(const ACE_TString& int_str, int base)
     {
         return 0;
     }
+#endif
 }
 
 bool stringcmpnocase(const ACE_TString& str1, const ACE_TString& str2)
@@ -199,7 +197,7 @@ void MYTRACE(const ACE_TCHAR* trace_str, ...)
     next = GETTIMESTAMP();
     ACE_TCHAR str_buf[512] = ACE_TEXT(""), tmp_str[512] = ACE_TEXT("");
 
-#if defined(MYTRACE_TIMESTAMP)
+#if (MYTRACE_TIMESTAMP)
     ACE_OS::snprintf(tmp_str, 512, ACE_TEXT("%08u: %s"), next - begin, trace_str);
     int nBuf = ACE_OS::vsnprintf(str_buf, 512, tmp_str, args);
 #else
@@ -300,6 +298,11 @@ ACE_TString UptimeHours(const ACE_Time_Value& value)
     ACE_TCHAR buf[512];
     ACE_OS::snprintf(buf, 512, ACE_TEXT("%d:%.2d:%.2d"), (int)nHour, (int)nMinutes, (int)nSec);
     return buf;
+}
+
+ACE_Time_Value ToTimeValue(int msec)
+{
+    return ACE_Time_Value(msec / 1000, (msec % 1000) * 1000);
 }
 
 strings_t tokenize(const ACE_TString& source, const ACE_TString& delimeters) 
@@ -553,7 +556,7 @@ uint32_t GETTIMESTAMP()
 {
 #if defined(ACE_HAS_IPHONE)
     if (!orwl_timestart) {
-        mach_timebase_info_data_t tb = { 0 };
+        mach_timebase_info_data_t tb = {};
         mach_timebase_info(&tb);
         orwl_timebase = tb.numer;
         orwl_timebase /= tb.denom;
