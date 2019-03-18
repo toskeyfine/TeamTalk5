@@ -24,7 +24,7 @@
 #pragma once
 
 #define COMPANYNAME             _T("BearWare.dk")
-#define APPVERSION_SHORT        _T("5.3.5")
+#define APPVERSION_SHORT        _T("5.4.0")
 #define APPVERSION              _T( TEAMTALK_VERSION ) _T(" - Unreleased")
 
 #ifdef ENABLE_TEAMTALKPRO
@@ -47,8 +47,6 @@
 #define TTURL                   _T("tt://")
 #define TT_XML_ROOTNAME         "teamtalk"
 #define TTFILE_EXT              ".tt"
-
-#define MP3ENCDLL_FILENAME      _T("lame_enc.dll")
 
 #define URL_PUBLICSERVER        _T("http://www.bearware.dk/teamtalk/tt5servers.php?client=") APPTITLE_SHORT _T("&version=") APPVERSION_SHORT _T("&dllversion=") _T( TEAMTALK_VERSION ) _T("&os=Windows")
 #define URL_APPUPDATE           _T("http://www.bearware.dk/teamtalk/tt5update.php?client=")  APPTITLE_SHORT _T("&version=") APPVERSION_SHORT _T("&dllversion=") _T( TEAMTALK_VERSION ) _T("&os=Windows")
