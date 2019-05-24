@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <language version="1.0">
     <item id="102">Průvodce nastavením programu TeamTalk</item>
     <item id="104">Od&amp;pojit\tF2</item>
@@ -170,6 +170,12 @@
     <item id="306">Název profilu</item>
     <item id="307">Vzestupně</item>
     <item id="308">Počet uživatelů</item>
+    <item id="309">Všichni</item>
+    <item id="310">%s přidává soubor %s</item>
+    <item id="311">soubor %s smazán</item>
+    <item id="312">Události souborů</item>
+    <item id="313">Soubor přidán</item>
+    <item id="314">Soubor smazán</item>
     <item id="1009">Po připojení ihned vstoupit na hlavní kanál</item>
     <item id="1011">Vlastnosti serveru</item>
     <item id="1012">TCP port</item>
@@ -471,6 +477,9 @@
     <item id="1547">Ochrana před záplavou zpráv</item>
     <item id="1548">Zabraňte uživateli např. v posílání nevyžádaných správ omezením počtu příkazů, které může poslat během určitého časového úseku.</item>
     <item id="1550">Omezit poslané příkazy</item>
+    <item id="1553">Profil</item>
+    <item id="1554">Uživatel může měnit přezdívku</item>
+    <item id="1558">Uživatel může nahrávat zvuk na všech kanálech</item>
     <item id="32791">Jaká je moje &amp;IP adresa?</item>
     <item id="32798">Udělit právo &amp;operátora\tCTRL+O</item>
     <item id="32801">Zobrazovat &amp;upozornění a zprávy na kanálu\tF10</item>
