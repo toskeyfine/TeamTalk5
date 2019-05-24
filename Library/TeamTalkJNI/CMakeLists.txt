@@ -86,10 +86,11 @@ set (JAVA_SOURCES
   src/dk/bearware/WindowsHelper.java)
 
 if (MSVC)
-  add_definitions (-DUNICODE -D_UNICODE)
-  
-  function(set_output_dir target dir)
-    set_target_properties (${target} PROPERTIES
+  add_definitions (-DUNICODE -D_UNICODE -D_CRT_SECURE_NO_WARNINGS)
+endif()
+
+function(set_output_dir target dir)
+  set_target_properties (${target} PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${dir}
     LIBRARY_OUTPUT_DIRECTORY_DEBUG ${dir}
     LIBRARY_OUTPUT_DIRECTORY_RELEASE ${dir}
@@ -99,8 +100,7 @@ if (MSVC)
     ARCHIVE_OUTPUT_DIRECTORY ${dir}
     ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${dir}
     ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${dir})
-  endfunction()
-endif()
+endfunction()
 
 if (BUILD_TEAMTALK_LIBRARY_JNI)
   add_library (TeamTalk5-jni SHARED

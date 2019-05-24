@@ -293,7 +293,7 @@ ClientNode* GET_CLIENTNODE(TTInstance* pInstance)
 
 
 
-TEAMTALKDLL_API const TTCHAR* TT_GetVersion()
+TEAMTALKDLL_API const TTCHAR* TT_GetVersion(void)
 {
     return ACE_TEXT( TEAMTALK_VERSION );
 }
@@ -349,7 +349,7 @@ TEAMTALKDLL_API TTBOOL TT_SwapTeamTalkHWND(IN TTInstance* lpTTInstance,
 }
 #endif
 
-TEAMTALKDLL_API TTInstance* TT_InitTeamTalkPoll()
+TEAMTALKDLL_API TTInstance* TT_InitTeamTalkPoll(void)
 {
 #if defined(USE_MINIDUMP)
     static MiniDumper mdump(ACE_TEXT("TeamTalk5.dll"));
@@ -511,7 +511,7 @@ TEAMTALKDLL_API TTBOOL TT_GetSoundDevices(IN OUT SoundDevice* pSoundDevices,
     return TRUE;
 }
 
-TEAMTALKDLL_API TTBOOL TT_RestartSoundSystem()
+TEAMTALKDLL_API TTBOOL TT_RestartSoundSystem(void)
 {
     return SOUNDSYSTEM->RestartSoundSystem();
 }
@@ -1105,15 +1105,9 @@ TEAMTALKDLL_API TTBOOL TT_ConnectSysID(IN TTInstance* lpTTInstance,
     if(!szHostAddress)
         return FALSE;
 
-#if defined(ENABLE_TEAMTALKPRO)
     return pClientNode->Connect(bEncrypted, szHostAddress, nTcpPort, nUdpPort, 
                                 szSystemID, ACE_TEXT(""), nLocalTcpPort, 
                                 nLocalUdpPort);
-#else
-    return pClientNode->Connect(false, szHostAddress, nTcpPort, nUdpPort, 
-                                szSystemID, ACE_TEXT(""), nLocalTcpPort, 
-                                nLocalUdpPort);
-#endif
 }
 
 TEAMTALKDLL_API TTBOOL TT_ConnectEx(IN TTInstance* lpTTInstance,
@@ -1131,15 +1125,9 @@ TEAMTALKDLL_API TTBOOL TT_ConnectEx(IN TTInstance* lpTTInstance,
     if(!szHostAddress || !szBindIPAddr)
         return FALSE;
 
-#if defined(ENABLE_TEAMTALKPRO)
     return pClientNode->Connect(bEncrypted, szHostAddress, nTcpPort, nUdpPort, 
                                 SERVER_WELCOME, szBindIPAddr, nLocalTcpPort, 
                                 nLocalUdpPort);
-#else
-    return pClientNode->Connect(false, szHostAddress, nTcpPort, nUdpPort, 
-                                SERVER_WELCOME, szBindIPAddr, nLocalTcpPort, 
-                                nLocalUdpPort);
-#endif
 }
 
 TEAMTALKDLL_API TTBOOL TT_Disconnect(IN TTInstance* lpTTInstance)
@@ -2293,13 +2281,13 @@ TEAMTALKDLL_API unsigned char* TT_Palette_GetColorTable(IN BitmapFormat nBmpPale
 
 #ifdef WIN32
 
-TEAMTALKDLL_API HWND TT_Windows_GetDesktopActiveHWND()
+TEAMTALKDLL_API HWND TT_Windows_GetDesktopActiveHWND(void)
 {
     HWND hWnd = GetForegroundWindow();
     return hWnd;
 }
 
-TEAMTALKDLL_API HWND TT_Windows_GetDesktopHWND()
+TEAMTALKDLL_API HWND TT_Windows_GetDesktopHWND(void)
 {
     return GetDesktopWindow();
 }
@@ -3006,18 +2994,12 @@ TEAMTALKDLL_API TTBOOL TT_HotKey_GetKeyString(IN TTInstance* lpTTInstance,
                                               IN INT32 nVKCode,
                                               OUT TTCHAR szKeyName[TT_STRLEN])
 {
-#ifndef UNDER_CE
-
 #ifndef MAPVK_VK_TO_VSC
 #define MAPVK_VK_TO_VSC 0
 #endif
 
     UINT scancode = MapVirtualKey(nVKCode, MAPVK_VK_TO_VSC);
     return ::GetKeyNameText( scancode << 16 , szKeyName, TT_STRLEN)>0;
-
-#else
-    return FALSE;
-#endif
 }
 
 #endif /* WIN32 hotkeys */
@@ -3619,7 +3601,7 @@ TEAMTALKDLL_API INT32 TT_DesktopInput_Execute(IN const DesktopInput* lpDesktopIn
 
 #if defined(WIN32)
 
-TEAMTALKDLL_API INT32 TT_Mixer_GetMixerCount()
+TEAMTALKDLL_API INT32 TT_Mixer_GetMixerCount(void)
 {
     return mixerGetCount();
 }
@@ -3889,7 +3871,7 @@ TEAMTALKDLL_API TTBOOL TT_Mixer_GetWaveInControlSelected(IN INT32 nWaveDeviceID,
     return val.value;
 }
 
-TEAMTALKDLL_API TTBOOL TT_Firewall_IsEnabled()
+TEAMTALKDLL_API TTBOOL TT_Firewall_IsEnabled(void)
 {
     return WinFirewall(false).IsFirewallOn();
 }
