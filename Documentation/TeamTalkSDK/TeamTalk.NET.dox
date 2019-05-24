@@ -38,7 +38,7 @@ PROJECT_NAME           = "TeamTalk 5 .NET DLL"
 # could be handy for archiving the generated documentation or if some version
 # control system is used.
 
-PROJECT_NUMBER = "Version 5.4.0.4958 - Unreleased"
+PROJECT_NUMBER = "Version 5.4.0.4962 - Unreleased"
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description
 # for a project that appears at the top of each page and should give viewer a
@@ -791,9 +791,9 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  = modules-net.txt \
-                         ../Library/TeamTalk.NET/TeamTalk.cs \
-                         ../Library/TeamTalk.NET/TeamTalkSrv.cs \
-                         ../Library/TeamTalk.NET/TeamTalkSrvBase.cs \
+                         ../../Library/TeamTalk.NET/TeamTalk.cs \
+                         ../../Library/TeamTalk.NET/TeamTalkSrv.cs \
+                         ../../Library/TeamTalk.NET/TeamTalkSrvBase.cs \
                          keytranslate.txt \
                          mainpage.txt \
                          sdkcontent-net.txt \
