@@ -603,7 +603,7 @@ bool isComputerIdle(int idle_secs)
     return (int)os_idle_secs > idle_secs;
 }
 #else
-bool isComputerIdle(int idle_secs)
+bool isComputerIdle(int /*idle_secs*/)
 {
     return false;
 }
@@ -826,11 +826,7 @@ bool getLatestHost(int index, HostEntry& host)
     host.ipaddr = ttSettings->value(QString(SETTINGS_LATESTHOST_HOSTADDR).arg(index)).toString();
     host.tcpport = ttSettings->value(QString(SETTINGS_LATESTHOST_TCPPORT).arg(index)).toInt();
     host.udpport = ttSettings->value(QString(SETTINGS_LATESTHOST_UDPPORT).arg(index)).toInt();
-#ifdef ENABLE_TEAMTALKPRO
-    host.encrypted = ttSettings->value(QString(SETTINGS_LATESTHOST_ENCRYPTED).arg(index), true).toBool();
-#else
     host.encrypted = ttSettings->value(QString(SETTINGS_LATESTHOST_ENCRYPTED).arg(index), false).toBool();
-#endif
     host.username = ttSettings->value(QString(SETTINGS_LATESTHOST_USERNAME).arg(index)).toString();
     host.password = ttSettings->value(QString(SETTINGS_LATESTHOST_PASSWORD).arg(index)).toString();
     host.channel = ttSettings->value(QString(SETTINGS_LATESTHOST_CHANNEL).arg(index)).toString();
@@ -874,11 +870,7 @@ bool getServerEntry(int index, HostEntry& host)
     host.ipaddr = ttSettings->value(QString(SETTINGS_SERVERENTRIES_HOSTADDR).arg(index)).toString();
     host.tcpport = ttSettings->value(QString(SETTINGS_SERVERENTRIES_TCPPORT).arg(index)).toInt();
     host.udpport = ttSettings->value(QString(SETTINGS_SERVERENTRIES_UDPPORT).arg(index)).toInt();
-#ifdef ENABLE_TEAMTALKPRO
-    host.encrypted = ttSettings->value(QString(SETTINGS_SERVERENTRIES_ENCRYPTED).arg(index), true).toBool();
-#else
     host.encrypted = ttSettings->value(QString(SETTINGS_SERVERENTRIES_ENCRYPTED).arg(index), false).toBool();
-#endif
     host.username = ttSettings->value(QString(SETTINGS_SERVERENTRIES_USERNAME).arg(index)).toString();
     host.password = ttSettings->value(QString(SETTINGS_SERVERENTRIES_PASSWORD).arg(index)).toString();
     host.channel = ttSettings->value(QString(SETTINGS_SERVERENTRIES_CHANNEL).arg(index)).toString();
@@ -1141,14 +1133,43 @@ void deleteDesktopAccessEntries()
     }
 }
 
+QString parseXML(const QDomDocument& doc, QString elements)
+{
+    QDomElement element(doc.documentElement());
+    QStringList tokens = elements.split("/");
+    while (tokens.size())
+    {
+        if (element.isNull() || element.nodeName() != tokens[0])
+            return QString();
+
+        tokens.removeFirst();
+        if (tokens.isEmpty())
+            return element.text();
+
+        element = element.firstChildElement(tokens[0]);
+    }
+    return QString();
+}
 
 QString newVersionAvailable(const QDomDocument& updateDoc)
 {
-	QDomElement rootElement(updateDoc.documentElement());
-	QDomElement element = rootElement.firstChildElement();
-    if(!element.isNull())
-        return element.text();
-    return QString();
+    return parseXML(updateDoc, "teamtalk/update/name");
+    //if (element.nodeName() == "teamtalk")
+    //{
+    //    element = element.firstChildElement("update");
+    //    if(!element.isNull())
+    //    {
+    //        element = element.firstChildElement("name");
+    //        if (!element.isNull())
+    //            return element.text();
+    //    }
+    //}
+    //return QString();
+}
+
+QString getBearWareRegistrationUrl(const QDomDocument& doc)
+{
+    return parseXML(doc, "teamtalk/bearware/register-url");
 }
 
 QByteArray generateTTFile(const HostEntry& entry)
