@@ -27,10 +27,8 @@
 #include <avstream/SpeexResampler.h>
 #endif
 
-#if defined(ACE_WIN32)
+#if defined(ENABLE_DMORESAMPLER)
 #include "DMOResampler.h"
-#elif defined(ENABLE_FFMPEG1)
-#include "FFMpeg1Resampler.h"
 #elif defined(ENABLE_FFMPEG3)
 #include "FFMpeg3Resampler.h"
 #endif
@@ -41,7 +39,6 @@ int CalcSamples(int src_samplerate, int src_samples, int dest_samplerate)
 {
     double samples = ((double)dest_samplerate / (double)src_samplerate) * (double)src_samples;
     samples += .5;
-    //samples = ceil(samples);
     return (int)samples;
 }
 
@@ -79,48 +76,38 @@ audio_resampler_t MakeAudioResampler(int input_channels, int input_samplerate,
 {
     audio_resampler_t resampler;
     bool ret = false;
-#if defined(ACE_WIN32) && defined(ENABLE_DMORESAMPLER)
-    if(IsWindows6OrLater())
-    {
-        DMOResampler* tmp_resample;
-        ACE_NEW_RETURN(tmp_resample, DMOResampler(), audio_resampler_t());
-        resampler = audio_resampler_t(tmp_resample);
+#if defined(ENABLE_DMORESAMPLER)
+    DMOResampler* tmp_resample;
+    ACE_NEW_RETURN(tmp_resample, DMOResampler(), audio_resampler_t());
+    resampler = audio_resampler_t(tmp_resample);
 
-        ret  = tmp_resample->Init(SAMPLEFORMAT_INT16, 
-                                  input_channels, 
-                                  input_samplerate,
-                                  SAMPLEFORMAT_INT16, 
-                                  output_channels,
-                                  output_samplerate);
-        MYTRACE(ACE_TEXT("Launched DMOResampler\n"));
-    }
-#elif defined(ENABLE_FFMPEG1) || defined(ENABLE_FFMPEG3)
-    {
-        FFMPEGResampler* tmp_resample;
-        ACE_NEW_RETURN(tmp_resample, FFMPEGResampler(), audio_resampler_t());
-        resampler = audio_resampler_t(tmp_resample);
+    ret = tmp_resample->Init(SAMPLEFORMAT_INT16,
+                             input_channels,
+                             input_samplerate,
+                             SAMPLEFORMAT_INT16,
+                             output_channels,
+                             output_samplerate);
+    MYTRACE(ACE_TEXT("Launched DMOResampler\n"));
+#elif defined(ENABLE_FFMPEG3)
+    FFMPEGResampler* tmp_resample;
+    ACE_NEW_RETURN(tmp_resample, FFMPEGResampler(), audio_resampler_t());
+    resampler = audio_resampler_t(tmp_resample);
 
-        ret = tmp_resample->Init(input_samplerate,
-                                 input_channels,
-                                 output_samplerate,
-                                 output_channels);
-        MYTRACE(ACE_TEXT("Launched FFMPEGResampler\n"));
-    }
+    ret = tmp_resample->Init(input_samplerate,
+                             input_channels,
+                             output_samplerate,
+                             output_channels);
+    MYTRACE(ACE_TEXT("Launched FFMPEGResampler\n"));
 #elif defined(ENABLE_SPEEXDSP)
-#if defined(ACE_WIN32) && defined(ENABLE_DMORESAMPLER)
-    else
-#endif
-    {
-        SpeexResampler* tmp_resample;
-        ACE_NEW_RETURN(tmp_resample, SpeexResampler(), audio_resampler_t());
-        resampler = audio_resampler_t(tmp_resample);
+    SpeexResampler* tmp_resample;
+    ACE_NEW_RETURN(tmp_resample, SpeexResampler(), audio_resampler_t());
+    resampler = audio_resampler_t(tmp_resample);
 
-        ret = tmp_resample->Init(5, input_samplerate,
-                                 input_channels,
-                                 output_samplerate,
-                                 output_channels);
-        MYTRACE(ACE_TEXT("Launched SpeexResampler\n"));
-    }
+    ret = tmp_resample->Init(5, input_samplerate,
+                             input_channels,
+                             output_samplerate,
+                             output_channels);
+    MYTRACE(ACE_TEXT("Launched SpeexResampler\n"));
 #else
 #pragma message("No resampler available")
 #endif

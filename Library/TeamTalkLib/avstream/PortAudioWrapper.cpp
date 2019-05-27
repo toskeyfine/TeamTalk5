@@ -27,11 +27,8 @@
 #include <math.h>
 #include <assert.h>
 
-#if defined(WIN32) && !defined(UNDER_CE)
-#include <px_win_ds.h>    //the directx mixer
-#endif
-
 #if defined(ACE_WIN32)
+#include <px_win_ds.h>    //the directx mixer
 #include <Objbase.h>
 #endif
 
@@ -144,16 +141,9 @@ bool PortAudio::GetDefaultDevices(int& inputdeviceid, int& outputdeviceid)
 {
     inputdeviceid = Pa_GetDefaultInputDevice();
     outputdeviceid = Pa_GetDefaultOutputDevice();
-#if !defined(UNDER_CE) && defined(WIN32)
+#if defined(WIN32)
     PaHostApiIndex hostApi;
-    if(IsWindows6OrLater())
-        hostApi = Pa_HostApiTypeIdToHostApiIndex(paWASAPI);
-    else
-    {
-        //DSound should be default on Win2K/XP
-        hostApi = Pa_HostApiTypeIdToHostApiIndex(paDirectSound);
-    }
-
+    hostApi = Pa_HostApiTypeIdToHostApiIndex(paWASAPI);
     if(hostApi != paHostApiNotFound)
     {
         const PaHostApiInfo* hostapi = Pa_GetHostApiInfo(hostApi);
@@ -234,7 +224,7 @@ void PortAudio::FillDevices(sounddevices_t& sounddevs)
         device.max_output_channels = devinfo->maxOutputChannels;
         device.default_samplerate = (int)devinfo->defaultSampleRate;
 
-        PaStreamParameters streamParameters = {0};
+        PaStreamParameters streamParameters = {};
         streamParameters.device = i;
         streamParameters.sampleFormat = paInt16;
         streamParameters.suggestedLatency = 0;
@@ -418,7 +408,7 @@ outputstreamer_t PortAudio::NewStream(StreamPlayer* player, int outputdeviceid,
                                       int sndgrpid, int samplerate, int channels,
                                       int framesize)
 {
-    PaStreamParameters outputParameters = {0};
+    PaStreamParameters outputParameters = {};
     outputParameters.device = outputdeviceid;
     outputParameters.channelCount = channels;
     outputParameters.hostApiSpecificStreamInfo = NULL;
