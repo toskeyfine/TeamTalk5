@@ -50,6 +50,7 @@ set (JAVA_SOURCES
   src/dk/bearware/MediaFileStatus.java
   src/dk/bearware/OpusCodec.java
   src/dk/bearware/OpusConstants.java
+  src/dk/bearware/PlatformHelper.java
   src/dk/bearware/RemoteFile.java
   src/dk/bearware/ServerCallback.java
   src/dk/bearware/ServerLogger.java
@@ -81,11 +82,25 @@ set (JAVA_SOURCES
   src/dk/bearware/VideoCodec.java
   src/dk/bearware/VideoFormat.java
   src/dk/bearware/VideoFrame.java
-  src/dk/bearware/WebMVP8Codec.java)
+  src/dk/bearware/WebMVP8Codec.java
+  src/dk/bearware/WindowsHelper.java)
 
 if (MSVC)
-  add_definitions (-DUNICODE -D_UNICODE)
+  add_definitions (-DUNICODE -D_UNICODE -D_CRT_SECURE_NO_WARNINGS)
 endif()
+
+function(set_output_dir target dir)
+  set_target_properties (${target} PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY ${dir}
+    LIBRARY_OUTPUT_DIRECTORY_DEBUG ${dir}
+    LIBRARY_OUTPUT_DIRECTORY_RELEASE ${dir}
+    RUNTIME_OUTPUT_DIRECTORY ${dir}
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${dir}
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${dir}
+    ARCHIVE_OUTPUT_DIRECTORY ${dir}
+    ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${dir}
+    ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${dir})
+endfunction()
 
 if (BUILD_TEAMTALK_LIBRARY_JNI)
   add_library (TeamTalk5-jni SHARED
@@ -94,8 +109,7 @@ if (BUILD_TEAMTALK_LIBRARY_JNI)
     jni/ttconvert-jni.h)
   target_link_libraries (TeamTalk5-jni TeamTalk5 ${JNI_LIBRARIES})
 
-  set_target_properties (TeamTalk5-jni PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY libs)
+  set_output_dir(TeamTalk5-jni "${CMAKE_CURRENT_SOURCE_DIR}/libs")
   
 endif()
 
@@ -107,8 +121,7 @@ if (BUILD_TEAMTALKPRO_LIBRARY_JNI)
     jni/ttconvert-jni.h)
   target_link_libraries (TeamTalk5Pro-jni TeamTalk5Pro ${JNI_LIBRARIES})
 
-  set_target_properties (TeamTalk5Pro-jni PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY libs)
+  set_output_dir(TeamTalk5Pro-jni "${CMAKE_CURRENT_SOURCE_DIR}/libs")
 
 endif()
 
