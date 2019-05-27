@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.2'
+        classpath 'com.android.tools.build:gradle:3.3.0'
     }
 }
 
@@ -16,7 +16,6 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 27 // Facebook needs minimum 25
-    buildToolsVersion '27.0.3'
 
     defaultConfig {
         applicationId "dk.bearware.gui"
@@ -58,6 +57,8 @@ dependencies {
     implementation 'com.facebook.android:facebook-android-sdk:4.26.0'
 
     // Required -- JUnit 4 framework
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    implementation 'com.android.support:design:27.1.1'
     testImplementation 'junit:junit:4.12'
     testImplementation files('libs/TeamTalk5Test.jar')
 
@@ -72,4 +73,3 @@ dependencies {
     //androidTestImplementation 'com.android.support.test.uiautomator:uiautomator-v18:2.1.1'
     androidTestImplementation files('libs/TeamTalk5Test.jar')
 }
-
