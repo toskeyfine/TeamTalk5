@@ -34,6 +34,8 @@
 #define SETTINGS_GENERAL_NICKNAME_DEFAULT           "NoName"
 #define SETTINGS_GENERAL_GENDER                     "general_/gender"
 #define SETTINGS_GENERAL_GENDER_DEFAULT             true
+#define SETTINGS_GENERAL_BEARWARE_USERNAME          "general_/bearwareid"
+#define SETTINGS_GENERAL_BEARWARE_TOKEN             "general_/bearwaretoken"
 #define SETTINGS_GENERAL_AUTOAWAY                   "general_/auto-away"
 #define SETTINGS_GENERAL_PUSHTOTALK                 "general_/push-to-talk"
 #define SETTINGS_GENERAL_PUSHTOTALK_KEY             "general_/ptt-key"
@@ -165,10 +167,7 @@
 #define SETTINGS_MEDIASTORAGE_CHANLOGFOLDER         "media-storage/channellog-folder"
 #define SETTINGS_MEDIASTORAGE_USERLOGFOLDER         "media-storage/userlog-folder"
 
-#define SETTINGS_STREAMAUDIO_FILENAME               "stream-audio/stream-audio-file"
-#define SETTINGS_STREAMAUDIO_LOOP                   "stream-audio/stream-audio-file-loop"
-
-#define SETTINGS_STREAMMEDIA_FILENAME               "stream-media/stream-media-filename"
+#define SETTINGS_STREAMMEDIA_FILENAME               "stream-media/%1_stream-media-filename"
 #define SETTINGS_STREAMMEDIA_LOOP                   "stream-media/stream-media-file-loop"
 #define SETTINGS_STREAMMEDIA_CODEC                  "stream-media/codec"
 #define SETTINGS_STREAMMEDIA_WEBMVP8_BITRATE        "stream-media/codec/webmvp8-bitrate"
