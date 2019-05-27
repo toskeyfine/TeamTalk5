@@ -452,6 +452,26 @@ namespace teamtalk{
         return nValue;
     }
 
+    bool ServerXML::SetLoginDelay(int delaymsec)
+    {
+        TiXmlElement* parent = GetGeneralElement();
+        if(parent)
+        {
+            PutInteger(*parent, "login-delay-msec", delaymsec);
+            return true;
+        }
+        else
+            return false;
+    }
+
+    int ServerXML::GetLoginDelay()
+    {
+        int nValue = 0;
+        TiXmlElement* parent = GetGeneralElement();
+        if(parent)
+            GetInteger(*parent, "login-delay-msec", nValue);
+        return nValue;
+    }
 
     bool ServerXML::SetUserTimeout(int nTimeoutSec)
     {
@@ -1404,7 +1424,7 @@ namespace teamtalk{
 
     time_t StringToDate(std::string date)
     {
-        tm t = {0};
+        tm t = {};
         stdstrings_t tokens = stdtokenize(date, "/ :");
         if(tokens.size() == 5)
         {
