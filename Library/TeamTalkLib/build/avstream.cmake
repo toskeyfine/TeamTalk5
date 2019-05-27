@@ -16,7 +16,7 @@ if (SPEEXDSP)
   list (APPEND AVSTREAM_HEADERS ${TEAMTALKLIB_ROOT}/avstream/SpeexResampler.h)
   list (APPEND AVSTREAM_COMPILE_FLAGS -DENABLE_SPEEXDSP)
   list (APPEND AVSTREAM_INCLUDE_DIR ${SPEEXDSP_INCLUDE_DIR})
-  list (APPEND AVSTREAM_LINK_FLAGS ${SPEEXDSP_STATIC_LIB})
+  list (APPEND AVSTREAM_LINK_FLAGS ${SPEEXDSP_LINK_FLAGS})
 endif()
 
 if (MSVC)
@@ -32,7 +32,6 @@ if (FFMPEG)
   list (APPEND AVSTREAM_HEADERS ${TEAMTALKLIB_ROOT}/avstream/FFMpeg3Resampler.h)
   list (APPEND AVSTREAM_COMPILE_FLAGS -DENABLE_FFMPEG3 ${FFMPEG_COMPILE_FLAGS})
   list (APPEND AVSTREAM_INCLUDE_DIR ${FFMPEG_INCLUDE_DIR})
-  list (APPEND AVSTREAM_LINK_FLAGS ${FFMPEG_STATIC_LIB})
   list (APPEND AVSTREAM_LINK_FLAGS ${FFMPEG_LINK_FLAGS})
 
   if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -83,7 +82,7 @@ if (MSVC)
     list (APPEND AVSTREAM_LINK_FLAGS Msdmo strmiids)
   endif()
 
-  option (DSHOW "Build Microsoft DirectShow Streaming classes" ON)
+  option (DSHOW "Build Microsoft DirectShow Streaming classes" OFF)
 
   if (DSHOW)
     list (APPEND AVSTREAM_INCLUDE_DIR ${DSHOW_INCLUDE_DIR})
@@ -95,7 +94,7 @@ if (MSVC)
     list (APPEND AVSTREAM_LINK_FLAGS ${DSHOW_STATIC_LIB})
   endif()
 
-  option (VIDCAP "Build DirectShow Video Capture classes" ON)
+  option (VIDCAP "Build DirectShow Video Capture classes" OFF)
 
   if (VIDCAP)
     list (APPEND AVSTREAM_INCLUDE_DIR ${VIDCAP_INCLUDE_DIR})
@@ -107,7 +106,7 @@ if (MSVC)
     list (APPEND AVSTREAM_COMPILE_FLAGS -DENABLE_LIBVIDCAP )
   endif()
   
-  option (MEDIAFOUNDATION "Build Media Foundation Streaming classes" OFF)
+  option (MEDIAFOUNDATION "Build Media Foundation Streaming classes" ON)
 
   if (MEDIAFOUNDATION)
     list (APPEND AVSTREAM_HEADERS ${TEAMTALKLIB_ROOT}/avstream/MediaStreamer.h)

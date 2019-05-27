@@ -26,6 +26,7 @@
 #include <ace/OS.h>
 #include <ace/UTF16_Encoding_Converter.h>
 #include <ace/OS_NS_ctype.h>
+#include <ace/Version.h>
 
 #include <ace/INet/HTTP_URL.h>
 #include <ace/INet/HTTP_ClientRequestHandler.h>
@@ -35,6 +36,7 @@
 #include <ace/INet/HTTPS_SessionFactory.h>
 #endif
 
+#include <string>
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
@@ -122,40 +124,41 @@ void replace_all(ACE_TString& target, const ACE_TString& to_find, const ACE_TStr
     target = tmp;
 }
 
-ACE_TString i2string(int i)
-{
-    ACE_TCHAR buf[20] = {0};
-    ACE_OS::sprintf(buf, ACE_TEXT("%d"), i);
-    return ACE_TString(buf);
-}
-
-int string2i(const ACE_TString& int_str)
-{
-    return ACE_OS::atoi(int_str.c_str());
-}
-
 ACE_TString i2string(ACE_INT64 i)
 {
-#if defined(UNICODE)
-    wostringstream is;
+#if defined(__ANDROID_API__)
+    std::ostringstream os ;
+    os << i;
+    return os.str().c_str();
 #else
-    ostringstream is;
+    
+#if defined(UNICODE)
+    return std::to_wstring(i).c_str();
+#else
+    return std::to_string(i).c_str();
+#endif /* UNICODE */
+    
 #endif
-    is << i;
-    return is.str().c_str();
 }
 
-ACE_INT64 string2i64(const ACE_TString& int_str, int base)
+ACE_INT64 string2i(const ACE_TString& int_str, int base)
 {
+#if defined(__ANDROID_API__)
     ACE_INT64 ret = 0;
-#if defined(UNICODE)
-    wistringstream is(int_str.c_str());
-#else
     istringstream is(int_str.c_str());
-#endif
     is >> std::setbase(base);
     is >> ret;
     return ret;
+#else
+    try
+    {
+        return std::stoll(int_str.c_str(), 0, base);
+    }
+    catch(...)
+    {
+        return 0;
+    }
+#endif
 }
 
 bool stringcmpnocase(const ACE_TString& str1, const ACE_TString& str2)
@@ -194,7 +197,7 @@ void MYTRACE(const ACE_TCHAR* trace_str, ...)
     next = GETTIMESTAMP();
     ACE_TCHAR str_buf[512] = ACE_TEXT(""), tmp_str[512] = ACE_TEXT("");
 
-#if defined(MYTRACE_TIMESTAMP)
+#if (MYTRACE_TIMESTAMP)
     ACE_OS::snprintf(tmp_str, 512, ACE_TEXT("%08u: %s"), next - begin, trace_str);
     int nBuf = ACE_OS::vsnprintf(str_buf, 512, tmp_str, args);
 #else
@@ -295,6 +298,11 @@ ACE_TString UptimeHours(const ACE_Time_Value& value)
     ACE_TCHAR buf[512];
     ACE_OS::snprintf(buf, 512, ACE_TEXT("%d:%.2d:%.2d"), (int)nHour, (int)nMinutes, (int)nSec);
     return buf;
+}
+
+ACE_Time_Value ToTimeValue(int msec)
+{
+    return ACE_Time_Value(msec / 1000, (msec % 1000) * 1000);
 }
 
 strings_t tokenize(const ACE_TString& source, const ACE_TString& delimeters) 
@@ -518,18 +526,6 @@ Profiler::~Profiler()
             m_name, (ACE_UINT32)tm.msec(), m_filename, m_line, (unsigned)h);
 }
 
-bool IsWindows6OrLater()
-{
-#ifdef ACE_WIN32
-    //detect windows version
-    OSVERSIONINFO version;
-    version.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-    GetVersionEx(&version);
-    return version.dwMajorVersion >= 6;
-#endif
-    return false;
-}
-
 #ifndef WIN32
 
 #if defined(__APPLE__)
@@ -548,7 +544,7 @@ uint32_t GETTIMESTAMP()
 {
 #if defined(ACE_HAS_IPHONE)
     if (!orwl_timestart) {
-        mach_timebase_info_data_t tb = { 0 };
+        mach_timebase_info_data_t tb = {};
         mach_timebase_info(&tb);
         orwl_timebase = tb.numer;
         orwl_timebase /= tb.denom;
@@ -573,6 +569,20 @@ uint32_t GETTIMESTAMP()
 
 std::vector<ACE_INET_Addr> DetermineHostAddress(const ACE_TString& host, int port)
 {
+    std::vector<ACE_INET_Addr> result;
+    
+#if ACE_MAJOR_VERSION < 6 || (ACE_MAJOR_VERSION == 6 && ACE_MINOR_VERSION < 4)
+    result.resize(1);
+
+    int address_family = AF_INET;
+    result[0] = ACE_INET_Addr(port, host.c_str(), address_family);
+    if (result[0].is_any())
+    {
+        address_family = AF_INET6;
+        result[0] = ACE_INET_Addr(port, host.c_str(), address_family);
+    }
+    
+#else
     bool encode = true;
     addrinfo hints;
     ACE_OS::memset(&hints, 0, sizeof hints);
@@ -606,7 +616,6 @@ std::vector<ACE_INET_Addr> DetermineHostAddress(const ACE_TString& host, int por
         return std::vector<ACE_INET_Addr>();
     }
 
-    std::vector<ACE_INET_Addr> result;
 
     for(addrinfo *curr = res; curr; curr = curr->ai_next)
     {
@@ -636,15 +645,22 @@ std::vector<ACE_INET_Addr> DetermineHostAddress(const ACE_TString& host, int por
 
     ACE_OS::freeaddrinfo(res);
 
+#endif /* ACE_MAJOR_VERSION */
+    
     return result;
 }
 
 int HttpRequest(const ACE_CString& url, std::string& doc)
 {
 #if defined(ENABLE_ENCRYPTION)
-    // HTTPS session factory is not instantiated unless specified explicitly
+#if defined(ENABLE_TEAMTALKACE)
+    // Enable SNI enabled HTTPS sessions
     ACE::HTTPS::SessionFactory_Impl::registerHTTPS();
-#endif
+#else
+    // HTTPS session factory is not instantiated unless specified explicitly
+    ACE_Singleton<ACE::HTTPS::SessionFactory_Impl, ACE_SYNCH::NULL_MUTEX>::instance();
+#endif /* ENABLE_TEAMTALKACE */
+#endif /* ENABLE_ENCRYPTION */
 
     ACE_Auto_Ptr<ACE::INet::URL_Base> url_safe(ACE::INet::URL_Base::create_from_string(url));
     if(url_safe.get() == 0)
@@ -658,13 +674,12 @@ int HttpRequest(const ACE_CString& url, std::string& doc)
     doc = oss.str();
 
     ACE::HTTP::Status status = http.response().get_status();
-    MYTRACE_COND(!status.is_ok(), ACE_TEXT("HTTP request failed:\n%s\n"),
 #if defined(UNICODE)
-                 Utf8ToUnicode(doc.c_str()).c_str()
+    MYTRACE_COND(!status.is_ok(), ACE_TEXT("HTTP request failed:\n%s\n"),
+                 Utf8ToUnicode(doc.c_str()).c_str());
 #else
-                 doc.c_str()
+    MYTRACE_COND(!status.is_ok(), ACE_TEXT("HTTP request failed:\n%s\n"), doc.c_str());
 #endif
-        );
     
     return status.is_ok() ? 1 : 0;
 }

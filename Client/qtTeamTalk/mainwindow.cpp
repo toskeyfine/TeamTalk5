@@ -47,6 +47,7 @@
 #include "userdesktopdlg.h"
 #include "appinfo.h"
 #include "weblogindlg.h"
+#include "bearwarelogindlg.h"
 
 #include <QMessageBox>
 #include <QInputDialog>
@@ -97,7 +98,6 @@ MainWindow::MainWindow(const QString& cfgfile)
 , m_last_channel()
 , m_srvprop()
 , m_mychannel()
-, m_http_manager(NULL)
 , m_onlineusersdlg(NULL)
 , m_useraccountsdlg(NULL)
 , m_bannedusersdlg(NULL)
@@ -772,28 +772,45 @@ void MainWindow::processTTMessage(const TTMessage& msg)
 
         //reset stats
         ZERO_STRUCT(m_clientstats);
+        // retrieve initial welcome message and access token
+        TT_GetServerProperties(ttInst, &m_srvprop);
 
-        QString nick = ttSettings->value(QString(SETTINGS_GENERAL_NICKNAME)).toString();
+        if (m_host.username.compare(WEBLOGIN_BEARWARE_USERNAME, Qt::CaseInsensitive) == 0 ||
+            m_host.username.endsWith(WEBLOGIN_BEARWARE_USERNAMEPOSTFIX, Qt::CaseInsensitive))
+        {
+            QString username = ttSettings->value(SETTINGS_GENERAL_BEARWARE_USERNAME).toString();
+            QString token = ttSettings->value(SETTINGS_GENERAL_BEARWARE_TOKEN).toString();
+            QString accesstoken = _Q(m_srvprop.szAccessToken);
 
-        if(m_host.username.compare(WEBLOGIN_FACEBOOK_USERNAME, Qt::CaseInsensitive) == 0)
+            username = QUrl::toPercentEncoding(username);
+            token = QUrl::toPercentEncoding(token);
+            accesstoken = QUrl::toPercentEncoding(accesstoken);
+
+            QString urlReq = WEBLOGIN_BEARWARE_URLTOKEN(username, token, accesstoken);
+
+            QUrl url(urlReq);
+
+            auto networkMgr = new QNetworkAccessManager(this);
+            connect(networkMgr, SIGNAL(finished(QNetworkReply*)),
+                SLOT(slotBearWareAuthReply(QNetworkReply*)));
+
+            QNetworkRequest request(url);
+            networkMgr->get(request);
+        }
+        else if (m_host.username.compare(WEBLOGIN_FACEBOOK_USERNAME, Qt::CaseInsensitive) == 0 ||
+            m_host.username.endsWith(WEBLOGIN_FACEBOOK_USERNAMEPOSTFIX, Qt::CaseInsensitive))
         {
             WebLoginDlg dlg(this);
             if(dlg.exec() != QDialog::Accepted)
                 return;
             m_host.password = dlg.m_password;
+
+            login();
         }
-
-        int cmdid = TT_DoLoginEx(ttInst, _W(nick), _W(m_host.username),
-                                 _W(m_host.password), _W(QString(APPNAME_SHORT)));
-        if(cmdid>0)
-            m_commands.insert(cmdid, CMD_COMPLETE_LOGIN);
-
-        addStatusMsg(tr("Connected to %1 TCP port %2 UDP port %3")
-                     .arg(m_host.ipaddr).arg(m_host.tcpport).arg(m_host.udpport));
-
-        //query server's max payload
-        if(ttSettings->value(SETTINGS_CONNECTION_QUERYMAXPAYLOAD, false).toBool())
-            TT_QueryMaxPayload(ttInst, 0);
+        else
+        {
+            login();
+        }
 
         update_ui = true;
     }
@@ -880,9 +897,11 @@ void MainWindow::processTTMessage(const TTMessage& msg)
     {
         Q_ASSERT(msg.ttType == __SERVERPROPERTIES);
 
-        ui.chatEdit->updateServer(msg.serverproperties); 
+        ui.chatEdit->updateServer(msg.serverproperties);
 
         emit(serverUpdate(msg.serverproperties));
+
+        m_srvprop = msg.serverproperties;
 
         update_ui = true;
     }
@@ -1353,7 +1372,7 @@ void MainWindow::commandProcessing(int cmdid, bool complete)
                 if (*ite == CMD_COMPLETE_LIST_CHANNELBANS)
                 {
                     int chanid = ui.channelsWidget->selectedChannel(true);
-                    TTCHAR path[TT_STRLEN] = {0};
+                    TTCHAR path[TT_STRLEN] = {};
                     TT_GetChannelPath(ttInst, chanid, path);
                     chanpath = _Q(path);
                 }
@@ -1630,6 +1649,23 @@ void MainWindow::Disconnect()
         m_sysicon->setIcon(QIcon(APPTRAYICON));
 
     updateWindowTitle();
+}
+
+void MainWindow::login()
+{
+    QString nick = ttSettings->value(QString(SETTINGS_GENERAL_NICKNAME)).toString();
+
+    int cmdid = TT_DoLoginEx(ttInst, _W(nick), _W(m_host.username),
+                             _W(m_host.password), _W(QString(APPNAME_SHORT)));
+    if (cmdid>0)
+        m_commands.insert(cmdid, CMD_COMPLETE_LOGIN);
+
+    addStatusMsg(tr("Connected to %1 TCP port %2 UDP port %3")
+        .arg(m_host.ipaddr).arg(m_host.tcpport).arg(m_host.udpport));
+
+    //query server's max payload
+    if(ttSettings->value(SETTINGS_CONNECTION_QUERYMAXPAYLOAD, false).toBool())
+        TT_QueryMaxPayload(ttInst, 0);
 }
 
 void MainWindow::showTTErrorMessage(const ClientErrorMsg& msg, CommandComplete cmd_type)
@@ -1978,8 +2014,10 @@ void MainWindow::timerEvent(QTimerEvent *event)
         {
             //only update desktop if there's users in the channel
             //(save bandwidth)
+
             users_t users = ui.channelsWidget->getUsers(m_mychannel.nChannelID);
-            if(users.size() > 1 || (users.begin()->uPeerSubscriptions & SUBSCRIBE_DESKTOP))
+            auto sub = std::find_if(users.begin(), users.end(), [] (const User& user) { return user.uPeerSubscriptions & SUBSCRIBE_DESKTOP;});
+            if(sub != users.end())
                 sendDesktopWindow();
         }
         else
@@ -2278,7 +2316,7 @@ void MainWindow::processMyselfJoined(int channelid)
     //Enable AGC, denoise etc.
     updateAudioConfig();
 
-    TTCHAR buff[TT_STRLEN] = {0};
+    TTCHAR buff[TT_STRLEN] = {};
     TT_GetChannelPath(ttInst, channelid, buff);
     addStatusMsg(tr("Joined channel %1").arg(_Q(buff)));
 
@@ -2343,7 +2381,7 @@ bool MainWindow::timerExists(TimerEvent e)
 void MainWindow::updateChannelFiles(int channelid)
 {
     m_filesmodel->slotChannelUpdated(channelid);
-    TTCHAR chanpath[TT_STRLEN] = {0};
+    TTCHAR chanpath[TT_STRLEN] = {};
     TT_GetChannelPath(ttInst, channelid, chanpath);
     ui.channelLabel->setText(tr("Files in channel: %1").arg(_Q(chanpath)));
 
@@ -2631,16 +2669,10 @@ void MainWindow::sendDesktopCursor()
 #if defined(Q_OS_LINUX)
     if(!m_display)
         return;
-    Window root, winid;
-    int x, y;
-    unsigned int w, h, bwr, depth;
+
     XWindowAttributes attr;
     Status s = XGetWindowAttributes(m_display, m_nWindowShareWnd, &attr);
 
-    // winid = m_nWindowShareWnd;
-    // s = XGetGeometry(m_display, winid, &root, &x, &y, &w, &h, &bwr, &depth);
-
-    // XQueryPointer(m_display, &root, 
     if(s)
     {
         int x = curPos.x() - attr.x;
@@ -2804,7 +2836,7 @@ void MainWindow::processDesktopInput(int userid, const DesktopInput& input)
 
 void MainWindow::startStreamMediaFile()
 {
-    QString fileName = ttSettings->value(SETTINGS_STREAMMEDIA_FILENAME).toString();
+    QString fileName = ttSettings->value(QString(SETTINGS_STREAMMEDIA_FILENAME).arg(0)).toString();
 
     VideoCodec vidcodec;
     vidcodec.nCodec = (Codec)ttSettings->value(SETTINGS_STREAMMEDIA_CODEC).toInt();
@@ -3039,12 +3071,6 @@ void MainWindow::executeDesktopInput(const DesktopInput& input)
 
         XEvent event;
         ZERO_STRUCT(event);
-
-        long event_mask = 0;
-//        event_mask |= ButtonMotionMask;
-//        event_mask |= ButtonPressMask;
-//        event_mask |= ButtonReleaseMask;
-//        event_mask |= PointerMotionMask;
         
         switch(input.uKeyState)
         {
@@ -3099,8 +3125,7 @@ void MainWindow::executeDesktopInput(const DesktopInput& input)
             }
         }
 
-        int ret = XSendEvent(m_display, PointerWindow, True, 0, &event);
-        //qDebug() << "Sent event" << ret << "btn" << event.xbutton.button;
+        XSendEvent(m_display, PointerWindow, True, 0, &event);
         XFlush(m_display);
     }
 }
@@ -3112,13 +3137,13 @@ void MainWindow::checkAppUpdate()
     {
         QUrl url(URL_APPUPDATE);
 
-        m_http_manager = new QNetworkAccessManager(this);
-        connect(m_http_manager, SIGNAL(finished(QNetworkReply*)),
-            SLOT(slotHttpUpdateReply(QNetworkReply*)));
+        auto networkMgr = new QNetworkAccessManager(this);
+        connect(networkMgr, SIGNAL(finished(QNetworkReply*)),
+            SLOT(slotSoftwareUpdateReply(QNetworkReply*)));
 
         QNetworkRequest request(url);
-        m_http_manager->get(request);
-}
+        networkMgr->get(request);
+    }
 }
 
 void MainWindow::slotClientNewInstance(bool /*checked=false*/)
@@ -3448,7 +3473,8 @@ void MainWindow::slotMeEnableVideoTransmission(bool /*checked*/)
         if(!getVideoCaptureCodec(vidcodec) || !initVideoCaptureFromSettings())
         {
             ui.actionEnableVideoTransmission->setChecked(false);
-            QMessageBox::warning(this, 
+            ttSettings->setValue(SETTINGS_VIDCAP_ENABLE, false);
+            QMessageBox::warning(this,
             MENUTEXT(ui.actionEnableVideoTransmission->text()), 
             tr("Video device hasn't been configured property. Check settings in 'Preferences'"));
         }
@@ -3458,7 +3484,8 @@ void MainWindow::slotMeEnableVideoTransmission(bool /*checked*/)
             {
                 ui.actionEnableVideoTransmission->setChecked(false);
                 TT_CloseVideoCaptureDevice(ttInst);
-                QMessageBox::warning(this, 
+                ttSettings->setValue(SETTINGS_VIDCAP_ENABLE, false);
+                QMessageBox::warning(this,
                                  MENUTEXT(ui.actionEnableVideoTransmission->text()), 
                              tr("Failed to configure video codec. Check settings in 'Preferences'"));
                 return;
@@ -3927,7 +3954,7 @@ void MainWindow::slotChannelsDeleteChannel(bool /*checked =false */)
     if(chanid<=0)
         return;
 
-    TTCHAR buff[TT_STRLEN] = {0};
+    TTCHAR buff[TT_STRLEN] = {};
     TT_GetChannelPath(ttInst, chanid, buff);
     if(QMessageBox::information(this, MENUTEXT(ui.actionDeleteChannel->text()),
         tr("Are you sure you want to delete channel \"%1\"?").arg(_Q(buff)), 
@@ -5477,9 +5504,8 @@ void MainWindow::slotLoadTTFile(const QString& filepath)
     Connect();
 }
 
-void MainWindow::slotHttpUpdateReply(QNetworkReply* reply)
+void MainWindow::slotSoftwareUpdateReply(QNetworkReply* reply)
 {
-    Q_ASSERT(m_http_manager);
     QByteArray data = reply->readAll();
 
     QDomDocument doc("foo");
@@ -5488,9 +5514,34 @@ void MainWindow::slotHttpUpdateReply(QNetworkReply* reply)
         QString version = newVersionAvailable(doc);
         if(version.size())
             addStatusMsg(tr("New version available: %1").arg(version));
+        BearWareLoginDlg::registerUrl = getBearWareRegistrationUrl(doc);
     }
 
-    m_http_manager->deleteLater();
+    reply->manager()->deleteLater();
+}
+
+void MainWindow::slotBearWareAuthReply(QNetworkReply* reply)
+{
+    QByteArray data = reply->readAll();
+    QDomDocument doc("foo");
+    if(doc.setContent(data))
+    {
+        auto child = doc.firstChildElement("teamtalk");
+        if(!child.isNull())
+        {
+            child = child.firstChildElement("bearware");
+            if(!child.isNull())
+            {
+                auto id = child.firstChildElement("username");
+                if(!id.isNull())
+                    m_host.username = id.text();
+            }
+        }
+    }
+    reply->manager()->deleteLater();
+
+    // connect even if auth failed. Otherwise user will not see progress
+    login();
 }
 
 void MainWindow::slotClosedOnlineUsersDlg(int)
