@@ -46,6 +46,7 @@ namespace teamtalk {
         int maxusers;
         int maxloginattempts; //max login attempts with wrong password
         int max_logins_per_ipaddr;
+        int logindelay = 0; // msec before IP-address can log in again
         ACE_INT64 diskquota; //max bytes for each channel to store files
         ACE_INT64 maxdiskusage; //max bytes to use for storage of files
         int usertimeout;
@@ -84,6 +85,8 @@ namespace teamtalk {
         int usersservered;
         //uptime
         ACE_Time_Value starttime;
+        
+        ACE_INT64 packets_received = 0, packets_sent = 0; // only used internally
 
         ServerStats()
             : total_bytessent(0), total_bytesreceived(0), last_bytessent(0)
@@ -604,6 +607,8 @@ namespace teamtalk {
         AFF_MP3_256KBIT_FORMAT   = 7,
     };
 
+    int AFFToMP3Bitrate(AudioFileFormat aff);
+
     /* Remember to updated DLL header file when modifying this.
      * If more than 16 bits ServerUser subscription model will be broken. */
     enum
@@ -650,7 +655,6 @@ namespace teamtalk {
     int SumFrameSizes(const std::vector<uint16_t>& in);
     std::vector<uint16_t> ConvertFrameSizes(const std::vector<int>& in);
     int SumFrameSizes(const std::vector<int>& in);
-    int GetAudioFileFormatBitrate(AudioFileFormat aff);
 
 #define TRANSMITUSERS_FREEFORALL 0xFFF
 
