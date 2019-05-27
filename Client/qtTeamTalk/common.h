@@ -51,14 +51,6 @@
  * To download the TeamTalk 5 SDK go to the GitHub website:
  *
  * https://github.com/BearWare/TeamTalk5
- *
- * Once downloaded copy TeamTalk.h from the downloaded TeamTalk 5 SDK
- * folder "Library/C-API/TeamTalk_DLL" to the folder
- * "../../TeamTalk_DLL"
- *
- * Also copy libTeamTalk5.a or libTeamTalk5Pro.a from the downloaded
- * TeamTalk 5 SDK folder "Library/C-API/TeamTalk_DLL" to the folder
- * ../../TeamTalk_DLL
  */
 
 #include <TeamTalk.h>
@@ -101,7 +93,7 @@
 
 #define ZERO_STRUCT(a) memset(&a, 0, sizeof(a))
 
-#ifdef ENABLE_ENCRYPTION
+#ifdef ENABLE_TEAMTALKPRO
 
 #define DEFAULT_TCPPORT 10443
 #define DEFAULT_UDPPORT 10443
@@ -171,7 +163,7 @@
 #define DEFAULT_VIDEO_WIDTH     320
 #define DEFAULT_VIDEO_HEIGHT    240
 #define DEFAULT_VIDEO_FPS       10
-#define DEFAULT_VIDEO_FOURCC    FOURCC_RGB32
+#define DEFAULT_VIDEO_FOURCC    FOURCC_I420
 
 //Default video codec settings
 #define DEFAULT_VIDEO_CODEC         WEBM_VP8_CODEC
@@ -398,7 +390,10 @@ bool hasDesktopAccess(const QVector<DesktopAccessEntry>& entries,
                       const User& user);
 void deleteDesktopAccessEntries();
 
+QString parseXML(const QDomDocument& doc, QString elements);
 QString newVersionAvailable(const QDomDocument& updateDoc);
+QString getBearWareRegistrationUrl(const QDomDocument& doc);
+
 
 QByteArray generateTTFile(const HostEntry& entry);
 
