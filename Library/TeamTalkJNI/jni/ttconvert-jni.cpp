@@ -294,7 +294,7 @@ void setChannel(JNIEnv* env, Channel& chan, jobject lpChannel, JConvert conv)
         env->SetObjectField(lpChannel, fid_txusers, outer);
         
         intArr = env->NewIntArray(TT_TRANSMITQUEUE_MAX);
-        jint tmp[TT_TRANSMITQUEUE_MAX] = {0};
+        jint tmp[TT_TRANSMITQUEUE_MAX] = {};
         env->SetIntArrayRegion(intArr, 0, TT_TRANSMITQUEUE_MAX, TO_JINT_ARRAY(chan.transmitUsersQueue, tmp, TT_TRANSMITQUEUE_MAX));
         env->SetObjectField(lpChannel, fid_queueusers, intArr);
     }
@@ -320,7 +320,7 @@ void setChannel(JNIEnv* env, Channel& chan, jobject lpChannel, JConvert conv)
             env->DeleteLocalRef(intArr);
         }
         jintArray intArr = (jintArray)env->GetObjectField(lpChannel, fid_queueusers);
-        jint tmp[TT_TRANSMITQUEUE_MAX] = {0};
+        jint tmp[TT_TRANSMITQUEUE_MAX] = {};
         env->GetIntArrayRegion(intArr, 0, TT_TRANSMITQUEUE_MAX, tmp);
         TO_INT32_ARRAY(tmp, chan.transmitUsersQueue, TT_TRANSMITQUEUE_MAX);
     }
@@ -869,6 +869,7 @@ void setServerProperties(JNIEnv* env, ServerProperties& srvprop, jobject lpServe
     jfieldID fid_motdraw = env->GetFieldID(cls_srv, "szMOTDRaw", "Ljava/lang/String;");
     jfieldID fid_maxusers = env->GetFieldID(cls_srv, "nMaxUsers", "I");
     jfieldID fid_maxattempts = env->GetFieldID(cls_srv, "nMaxLoginAttempts", "I");
+    jfieldID fid_logindelay = env->GetFieldID(cls_srv, "nLoginDelayMSec", "I");
     jfieldID fid_iplogins = env->GetFieldID(cls_srv, "nMaxLoginsPerIPAddress", "I");
     jfieldID fid_voicetx = env->GetFieldID(cls_srv, "nMaxVoiceTxPerSecond", "I");
     jfieldID fid_vidcaptx = env->GetFieldID(cls_srv, "nMaxVideoCaptureTxPerSecond", "I");
@@ -881,12 +882,14 @@ void setServerProperties(JNIEnv* env, ServerProperties& srvprop, jobject lpServe
     jfieldID fid_tmout = env->GetFieldID(cls_srv, "nUserTimeout", "I");
     jfieldID fid_srvver = env->GetFieldID(cls_srv, "szServerVersion", "Ljava/lang/String;");
     jfieldID fid_srvprot = env->GetFieldID(cls_srv, "szServerProtocolVersion", "Ljava/lang/String;");
+    jfieldID fid_access = env->GetFieldID(cls_srv, "szAccessToken", "Ljava/lang/String;");
 
     assert(fid_name);
     assert(fid_motd);
     assert(fid_motdraw);
     assert(fid_maxusers);
     assert(fid_maxattempts);
+    assert(fid_logindelay);
     assert(fid_iplogins);
     assert(fid_voicetx);
     assert(fid_vidcaptx);
@@ -899,6 +902,7 @@ void setServerProperties(JNIEnv* env, ServerProperties& srvprop, jobject lpServe
     assert(fid_tmout);
     assert(fid_srvver);
     assert(fid_srvprot);
+    assert(fid_access);
 
     if(conv == N2J)
     {
@@ -907,6 +911,7 @@ void setServerProperties(JNIEnv* env, ServerProperties& srvprop, jobject lpServe
         env->SetObjectField(lpServerProperties, fid_motdraw, NEW_JSTRING(env, srvprop.szMOTDRaw));
         env->SetIntField(lpServerProperties, fid_maxusers, srvprop.nMaxUsers);
         env->SetIntField(lpServerProperties, fid_maxattempts, srvprop.nMaxLoginAttempts);
+        env->SetIntField(lpServerProperties, fid_logindelay, srvprop.nLoginDelayMSec);
         env->SetIntField(lpServerProperties, fid_iplogins, srvprop.nMaxLoginsPerIPAddress);
         env->SetIntField(lpServerProperties, fid_voicetx, srvprop.nMaxVoiceTxPerSecond);
         env->SetIntField(lpServerProperties, fid_vidcaptx, srvprop.nMaxVideoCaptureTxPerSecond);
@@ -919,6 +924,7 @@ void setServerProperties(JNIEnv* env, ServerProperties& srvprop, jobject lpServe
         env->SetIntField(lpServerProperties, fid_tmout, srvprop.nUserTimeout);
         env->SetObjectField(lpServerProperties, fid_srvver, NEW_JSTRING(env, srvprop.szServerVersion));
         env->SetObjectField(lpServerProperties, fid_srvprot, NEW_JSTRING(env, srvprop.szServerProtocolVersion));
+        env->SetObjectField(lpServerProperties, fid_access, NEW_JSTRING(env, srvprop.szAccessToken));
     }
     else
     {
@@ -929,6 +935,7 @@ void setServerProperties(JNIEnv* env, ServerProperties& srvprop, jobject lpServe
         srvprop.nMaxUsers = env->GetIntField(lpServerProperties, fid_maxusers);
         srvprop.nMaxLoginAttempts = env->GetIntField(lpServerProperties, fid_maxattempts);
         srvprop.nMaxLoginsPerIPAddress = env->GetIntField(lpServerProperties, fid_iplogins);
+        srvprop.nLoginDelayMSec = env->GetIntField(lpServerProperties, fid_logindelay);
         srvprop.nMaxVoiceTxPerSecond = env->GetIntField(lpServerProperties, fid_voicetx);
         srvprop.nMaxVideoCaptureTxPerSecond = env->GetIntField(lpServerProperties, fid_vidcaptx);
         srvprop.nMaxMediaFileTxPerSecond = env->GetIntField(lpServerProperties, fid_mftx);
@@ -940,6 +947,7 @@ void setServerProperties(JNIEnv* env, ServerProperties& srvprop, jobject lpServe
         srvprop.nUserTimeout = env->GetIntField(lpServerProperties, fid_tmout);
         TT_STRCPY(srvprop.szServerVersion, ttstr(env, (jstring)env->GetObjectField(lpServerProperties, fid_srvver)));
         TT_STRCPY(srvprop.szServerProtocolVersion, ttstr(env, (jstring)env->GetObjectField(lpServerProperties, fid_srvprot)));
+        TT_STRCPY(srvprop.szAccessToken, ttstr(env, (jstring)env->GetObjectField(lpServerProperties, fid_access)));
     }
 }
 
@@ -1074,7 +1082,7 @@ void setUserAccount(JNIEnv* env, UserAccount& account, jobject lpAccount, JConve
         env->SetObjectField(lpAccount, fid_note, NEW_JSTRING(env, account.szNote));
         env->SetObjectField(lpAccount, fid_initchan, NEW_JSTRING(env, account.szInitChannel));
         jintArray intArr = env->NewIntArray(TT_CHANNELS_OPERATOR_MAX);
-        jint tmp[TT_CHANNELS_OPERATOR_MAX] = {0};
+        jint tmp[TT_CHANNELS_OPERATOR_MAX] = {};
         env->SetIntArrayRegion(intArr, 0, TT_CHANNELS_OPERATOR_MAX, TO_JINT_ARRAY(account.autoOperatorChannels, tmp, TT_CHANNELS_OPERATOR_MAX));
         env->SetObjectField(lpAccount, fid_op, intArr);
         env->SetIntField(lpAccount, fid_audbps, account.nAudioCodecBpsLimit);
@@ -1095,7 +1103,7 @@ void setUserAccount(JNIEnv* env, UserAccount& account, jobject lpAccount, JConve
         TT_STRCPY(account.szNote, ttstr(env, (jstring)env->GetObjectField(lpAccount, fid_note)));
         TT_STRCPY(account.szInitChannel, ttstr(env, (jstring)env->GetObjectField(lpAccount, fid_initchan)));
         jintArray intArr = (jintArray)env->GetObjectField(lpAccount, fid_op);
-        jint tmp[TT_CHANNELS_OPERATOR_MAX] = {0};
+        jint tmp[TT_CHANNELS_OPERATOR_MAX] = {};
         env->GetIntArrayRegion(intArr, 0, TT_CHANNELS_OPERATOR_MAX, tmp);
         TO_INT32_ARRAY(tmp, account.autoOperatorChannels, TT_CHANNELS_OPERATOR_MAX);
         account.nAudioCodecBpsLimit = env->GetIntField(lpAccount, fid_audbps);

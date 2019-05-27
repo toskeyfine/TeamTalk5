@@ -45,15 +45,7 @@ import dk.bearware.TTMessage;
 import dk.bearware.TeamTalkBase;
 import dk.bearware.WindowsHelper;
 
-public class TeamTalkTestCase extends TeamTalkTestCaseBase {
-
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
+public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
     public void test_01_This() {
         final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
@@ -318,7 +310,10 @@ public class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
     public void test_VideoCaptureDevs() {
 
-        assertFalse("Video capture tests disabled", VIDEODEVDISABLE.equals(VIDEODEVICEID));
+        if (VIDEODEVICEID.equals(VIDEODEVDISABLE)) {
+            System.err.println("Video capture test skipped due to device id: " + VIDEODEVDISABLE);
+            return;
+        }
 
         TeamTalkBase ttclient = newClientInstance();
         Vector<VideoCaptureDevice> devs = new Vector<VideoCaptureDevice>();
@@ -364,8 +359,11 @@ public class TeamTalkTestCase extends TeamTalkTestCaseBase {
     }
 
     public void test_VideoCaptureStream() {
-
-        assertFalse("Video capture tests disabled", VIDEODEVDISABLE.equals(VIDEODEVICEID));
+        
+        if (VIDEODEVICEID.equals(VIDEODEVDISABLE)) {
+            System.err.println("Video capture test skipped due to device id: " + VIDEODEVDISABLE);
+            return;
+        }
 
         final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
         int USERRIGHTS = UserRight.USERRIGHT_TRANSMIT_VIDEOCAPTURE;
@@ -459,8 +457,11 @@ public class TeamTalkTestCase extends TeamTalkTestCaseBase {
     }
 
     public void test_MediaStreaming() {
-        
-        assertTrue("Mediafile "+MEDIAFILE+" exists", new File(MEDIAFILE).exists());
+
+        if (MEDIAFILE_VIDEO.isEmpty()) {
+            System.err.println(getCurrentMethod() + " skipped due to missing " + MEDIAFILE_VIDEO);
+            return;
+        }
 
         TeamTalkBase ttclient = newClientInstance();
 
@@ -476,13 +477,13 @@ public class TeamTalkTestCase extends TeamTalkTestCaseBase {
         joinRoot(ttclient);
 
         MediaFileInfo mfi = new MediaFileInfo();
-        assertTrue("Get media file info", ttclient.getMediaFileInfo(MEDIAFILE, mfi));
+        assertTrue("Get media file info", ttclient.getMediaFileInfo(MEDIAFILE_VIDEO, mfi));
         
         VideoCodec vidcodec = new VideoCodec();
         vidcodec.nCodec = Codec.WEBM_VP8_CODEC;
         vidcodec.webm_vp8.nRcTargetBitrate = 256;
 
-        assertTrue("Start", ttclient.startStreamingMediaFileToChannel(MEDIAFILE, vidcodec));
+        assertTrue("Start", ttclient.startStreamingMediaFileToChannel(MEDIAFILE_VIDEO, vidcodec));
 
         assertTrue("Wait stream event", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_STREAM_MEDIAFILE, DEF_WAIT, msg));
 
@@ -510,6 +511,11 @@ public class TeamTalkTestCase extends TeamTalkTestCaseBase {
     }
 
     public void test_MediaStreaming_https() {
+
+        if (HTTPS_MEDIAFILE.isEmpty()) {
+            System.err.println(getCurrentMethod() + " skipped due to empty HTTPS URL");
+            return;
+        }
         
         TeamTalkBase ttclient = newClientInstance();
 
@@ -713,6 +719,11 @@ public class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
     public void test_MediaStorage_OpusOutput() {
 
+        if (!OPUSTOOLS) {
+            System.err.println(getCurrentMethod() + " skipped due to OPUS tools disabled.");
+            return;
+        }
+        
         final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
         int USERRIGHTS = UserRight.USERRIGHT_TRANSMIT_VOICE | UserRight.USERRIGHT_MULTI_LOGIN |
             UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL;
@@ -911,7 +922,11 @@ public class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
 
     public void test_AudioBlock() {
-        assertTrue("Media file "+MEDIAFILE_AUDIO+" exists", new File(MEDIAFILE_AUDIO).exists());
+
+        if (MEDIAFILE_AUDIO.isEmpty()) {
+            System.err.println(getCurrentMethod() + " skipped due to missing " + MEDIAFILE_AUDIO);
+            return;
+        }
 
         String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
         int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL |
@@ -1089,7 +1104,7 @@ public class TeamTalkTestCase extends TeamTalkTestCaseBase {
         Channel chan = buildDefaultChannel(ttadmin, "BanTest");
         assertTrue("join new channel", waitCmdSuccess(ttclient, ttclient.doJoinChannel(chan), DEF_WAIT));
 
-        assertTrue("admin join", waitCmdSuccess(ttadmin, ttadmin.doJoinChannelByID(ttclient.getMyChannelID(), ""), DEF_WAIT));
+        assertTrue("admin join (chan/username)", waitCmdSuccess(ttadmin, ttadmin.doJoinChannelByID(ttclient.getMyChannelID(), ""), DEF_WAIT));
 
         assertTrue("ban admin by chan/username", waitCmdSuccess(ttclient, ttclient.doBanUserEx(ttadmin.getMyUserID(), BanType.BANTYPE_CHANNEL | BanType.BANTYPE_USERNAME), DEF_WAIT));
 
@@ -1118,16 +1133,16 @@ public class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         assertTrue("unban", waitCmdSuccess(ttclient, ttclient.doUnBanUserEx(ban), DEF_WAIT));
 
-        assertTrue("admin join", waitCmdSuccess(ttadmin, ttadmin.doJoinChannelByID(ttclient.getMyChannelID(), ""), DEF_WAIT));
+        assertTrue("admin join (IP-ban)", waitCmdSuccess(ttadmin, ttadmin.doJoinChannelByID(ttclient.getMyChannelID(), ""), DEF_WAIT));
 
         assertTrue("ban admin", waitCmdSuccess(ttclient, ttclient.doBan(ban), DEF_WAIT));
 
         assertTrue("admin leave", waitCmdSuccess(ttadmin, ttadmin.doLeaveChannel(), DEF_WAIT));
-        assertTrue("admin join denied", waitCmdError(ttadmin, ttadmin.doJoinChannelByID(ttclient.getMyChannelID(), ""), DEF_WAIT));
+        assertTrue("admin join denied (IP-ban)", waitCmdError(ttadmin, ttadmin.doJoinChannelByID(ttclient.getMyChannelID(), ""), DEF_WAIT));
 
         assertTrue("unban", waitCmdSuccess(ttclient, ttclient.doUnBanUserEx(ban), DEF_WAIT));
 
-        assertTrue("admin join", waitCmdSuccess(ttadmin, ttadmin.doJoinChannelByID(ttclient.getMyChannelID(), ""), DEF_WAIT));
+        assertTrue("admin join (chan/IP-address)", waitCmdSuccess(ttadmin, ttadmin.doJoinChannelByID(ttclient.getMyChannelID(), ""), DEF_WAIT));
         
         assertTrue("ban admin by chan/IP-address", waitCmdSuccess(ttclient, ttclient.doBanUserEx(ttadmin.getMyUserID(), BanType.BANTYPE_CHANNEL | BanType.BANTYPE_IPADDR), DEF_WAIT));
 
@@ -1443,36 +1458,8 @@ public class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertEquals("Stream ended", msg.mediafileinfo.nStatus, MediaFileStatus.MFS_FINISHED);
     }
 
-    // test-case requires a user who is transmitting video capture to root channel
-    public void test_VidcapTest() {
-        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
-        int USERRIGHTS = UserRight.USERRIGHT_VIEW_ALL_USERS;
-        makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
-
-        TeamTalkBase ttclient = newClientInstance();
-
-        TTMessage msg = new TTMessage();
-
-        connect(ttclient);
-        login(ttclient, NICKNAME, USERNAME, PASSWORD);
-        joinRoot(ttclient);
-     
-        int frames = 0;
-        while(frames < 10) {
-            assertTrue("Get video frame", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_VIDEOCAPTURE, DEF_WAIT, msg));
-            long start = System.currentTimeMillis();
-            VideoFrame frm = ttclient.acquireUserVideoCaptureFrame(msg.nSource);
-            if(frm != null) {
-                System.out.println("bearware: Frame "+ frm.nWidth +"x"+ frm.nHeight + " get time " + (System.currentTimeMillis() - start));
-                frames++;
-            }
-            else {
-                System.out.println("bearware: No frame built" + (System.currentTimeMillis() - start));
-            }
-        }
-    }
-
     public void test_SoundDuplex() {
+
         String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
         int USERRIGHTS = UserRight.USERRIGHT_VIEW_ALL_USERS;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
@@ -1492,8 +1479,6 @@ public class TeamTalkTestCase extends TeamTalkTestCaseBase {
         connect(ttclient);
         login(ttclient, NICKNAME, USERNAME, PASSWORD);
         joinRoot(ttclient);
-
-        assertFalse("Wait event", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 1000, msg));
     }
 
     public void test_StoreUserVoiceInFileFormats() {
@@ -1664,11 +1649,21 @@ public class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         assertTrue("Loop virtual duplex-dev stopped", ttclient.closeSoundLoopbackTest(loop));
 
-        loop = ttclient.startSoundLoopbackTest(nodev.nDeviceID, out.value, 48000, 1, true, new SpeexDSP(true));
-        assertTrue("Sound loopback virtual duplex-dev cannot be mixed with real dev", loop<=0);
-
-        loop = ttclient.startSoundLoopbackTest(in.value, nodev.nDeviceID, 48000, 1, true, new SpeexDSP(true));
-        assertTrue("Sound loopback virtual duplex-dev cannot be mixed with real dev", loop<=0);
+        if (out.value == SoundDeviceConstants.TT_SOUNDDEVICE_ID_TEAMTALK_VIRTUAL) {
+            System.err.println("Duplex test skipped due to virtual sound device as output");
+        }
+        else {
+            loop = ttclient.startSoundLoopbackTest(nodev.nDeviceID, out.value, 48000, 1, true, new SpeexDSP(true));
+            assertTrue("Sound loopback virtual duplex-dev cannot be mixed with real dev", loop<=0);
+        }
+        
+        if (in.value == SoundDeviceConstants.TT_SOUNDDEVICE_ID_TEAMTALK_VIRTUAL) {
+            System.err.println("Duplex test skipped due to virtual sound device as input");
+        }
+        else {
+            loop = ttclient.startSoundLoopbackTest(in.value, nodev.nDeviceID, 48000, 1, true, new SpeexDSP(true));
+            assertTrue("Sound loopback virtual duplex-dev cannot be mixed with real dev", loop<=0);
+        }
     }
 
     public void test_VirtualSoundDevice() {
@@ -1722,29 +1717,28 @@ public class TeamTalkTestCase extends TeamTalkTestCaseBase {
         TTMessage msg = new TTMessage();
         this.INPUTDEVICEID = this.OUTPUTDEVICEID = SoundDeviceConstants.TT_SOUNDDEVICE_ID_TEAMTALK_VIRTUAL;
 
-        TeamTalkBase ttclient = newClientInstance();
+        TeamTalkBase ttclient1 = newClientInstance();
 
-        connect(ttclient);
-        initSound(ttclient);
-        login(ttclient, NICKNAME, USERNAME, PASSWORD);
+        connect(ttclient1);
+        initSound(ttclient1);
+        login(ttclient1, NICKNAME, USERNAME, PASSWORD);
 
-        Channel chan = buildDefaultChannel(ttclient, "Opus");
+        Channel chan = buildDefaultChannel(ttclient1, "Opus");
         assertEquals("opus default", chan.audiocodec.nCodec, Codec.OPUS_CODEC);
         chan.uChannelType |= ChannelType.CHANNEL_SOLO_TRANSMIT;
 
-        assertTrue("join", waitCmdSuccess(ttclient, ttclient.doJoinChannel(chan), DEF_WAIT));
+        assertTrue("join", waitCmdSuccess(ttclient1, ttclient1.doJoinChannel(chan), DEF_WAIT));
 
-        assertTrue("Channel id set", ttclient.getChannel(ttclient.getMyChannelID(), chan));
+        assertTrue("Channel id set", ttclient1.getChannel(ttclient1.getMyChannelID(), chan));
 
         for(int u : chan.transmitUsersQueue)
             assertEquals("no users in queue", 0, u);
 
-        assertTrue("subscribe", waitCmdSuccess(ttclient, ttclient.doSubscribe(ttclient.getMyUserID(), Subscription.SUBSCRIBE_VOICE), DEF_WAIT));
-
+        assertTrue("subscribe", waitCmdSuccess(ttclient1, ttclient1.doSubscribe(ttclient1.getMyUserID(), Subscription.SUBSCRIBE_VOICE), DEF_WAIT));
 
         for(int i=0;i<2;i++) {
 
-            ttclient = newClientInstance();
+            TeamTalkBase ttclient = newClientInstance();
 
             connect(ttclient);
             initSound(ttclient);
@@ -1771,12 +1765,13 @@ public class TeamTalkTestCase extends TeamTalkTestCaseBase {
             assertTrue("Wait for talking event stopped", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_STATECHANGE, DEF_WAIT, msg));
             assertEquals("User state to no voice", UserState.USERSTATE_NONE, msg.user.uUserState & UserState.USERSTATE_VOICE);
             assertEquals("myself stopped talking", ttclient.getMyUserID(), msg.user.nUserID);
+
+            assertTrue("ttclient1, wait for tx queue start", waitForEvent(ttclient1, ClientEvent.CLIENTEVENT_CMD_CHANNEL_UPDATE, DEF_WAIT));
+            assertTrue("ttclient1, wait for tx queue stop", waitForEvent(ttclient1, ClientEvent.CLIENTEVENT_CMD_CHANNEL_UPDATE, DEF_WAIT));
         }
 
-        // user 0 is make user account, so get user 1
-        TeamTalkBase ttclient1 = ttclients.get(1);
-
-        assertTrue("drain ttclient1", waitCmdComplete(ttclient1, ttclient1.doPing(), DEF_WAIT));
+        // wait for "reset" state
+        assertTrue("ttclient1, drain client 1", waitCmdComplete(ttclient1, ttclient1.doPing(), DEF_WAIT));
 
         assertTrue("ttclient1, Enable voice transmission", ttclient1.enableVoiceTransmission(true));
 
@@ -1784,12 +1779,16 @@ public class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         assertTrue("ttclient1, Channel tx queue set", ttclient1.getChannel(ttclient1.getMyChannelID(), chan));
 
-        assertEquals("ttclient1, myself in queue ", ttclient1.getMyUserID(), chan.transmitUsersQueue[0]);
+        assertEquals("ttclient1, myself is head in queue", ttclient1.getMyUserID(), chan.transmitUsersQueue[0]);
 
-        assertTrue("ttclient1, Wait for talking event", waitForEvent(ttclient1, ClientEvent.CLIENTEVENT_USER_STATECHANGE, DEF_WAIT, msg));
-        assertEquals("ttclient1, User state to voice", UserState.USERSTATE_VOICE, msg.user.uUserState & UserState.USERSTATE_VOICE);
+        // don't know if 'ClientEvent.CLIENTEVENT_USER_STATECHANGE' or
+        // 'ClientEvent.CLIENTEVENT_CMD_CHANNEL_UPDATE' came first, so
+        // don't assertTrue()
+        waitForEvent(ttclient1, ClientEvent.CLIENTEVENT_USER_STATECHANGE, 1000, msg);
+        User user = new User();
+        assertTrue("get ttclient1 state", ttclient1.getUser(ttclient1.getMyUserID(), user));
+        assertEquals("ttclient1, User state to voice", UserState.USERSTATE_VOICE, user.uUserState & UserState.USERSTATE_VOICE);
         assertEquals("ttclient1, myself talking", ttclient1.getMyUserID(), msg.user.nUserID);
-
 
         // ensure ttclient2 doesn't take over transmit queue from ttclient1
         TeamTalkBase ttclient2 = ttclients.get(2);
@@ -1804,7 +1803,8 @@ public class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         assertEquals("ttclient2, myself in queue", ttclient2.getMyUserID(), chan.transmitUsersQueue[1]);
 
-        assertFalse("ttclient2,Wait for talking event", waitForEvent(ttclient2, ClientEvent.CLIENTEVENT_USER_STATECHANGE, DEF_WAIT, msg));
+        waitForEvent(ttclient2, ClientEvent.CLIENTEVENT_NONE, 1000);
+        assertTrue("ttclient2 is not talking", ttclient2.getUser(ttclient2.getMyUserID(), user) && (user.uUserState & UserState.USERSTATE_VOICE) == 0);
 
 
         // ensure ttclient2 takes over transmit queue when ttclient1 stops transmitting
@@ -1838,7 +1838,7 @@ public class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         assertTrue("ttclient1, Channel tx queue set", ttclient1.getChannel(ttclient1.getMyChannelID(), chan));
 
-        assertEquals("ttclient1, myself in queue ", ttclient1.getMyUserID(), chan.transmitUsersQueue[0]);
+        assertEquals("ttclient1, myself is head again in queue ", ttclient1.getMyUserID(), chan.transmitUsersQueue[0]);
     }
 
     public void testAbusePrevention() {
@@ -1871,10 +1871,14 @@ public class TeamTalkTestCase extends TeamTalkTestCaseBase {
         TextMessage txtmsg = new TextMessage();
         txtmsg.nMsgType = TextMsgType.MSGTYPE_USER;
         txtmsg.nToUserID = ttclient.getMyUserID();
-        txtmsg.szMessage = "My text message";
+        txtmsg.szMessage = "My text message that should go through";
 
         assertTrue("do text message", waitCmdSuccess(ttclient, ttclient.doTextMessage(txtmsg), DEF_WAIT));
 
+        waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 200);
+        
+        txtmsg.szMessage = "My text message that should be blocked";
+        
         assertTrue("do text message in less than cmd-timeout", waitCmdError(ttclient, ttclient.doTextMessage(txtmsg), DEF_WAIT));
 
         waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 2000);
@@ -1882,6 +1886,45 @@ public class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue("do text message after cmd-timeout", waitCmdSuccess(ttclient, ttclient.doTextMessage(txtmsg), DEF_WAIT));
     }
 
+    public void testLoginDelay() throws InterruptedException {
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL | UserRight.USERRIGHT_MULTI_LOGIN;
+
+        TTMessage msg = new TTMessage();
+
+        TeamTalkBase ttadmin = newClientInstance();
+        connect(ttadmin);
+        login(ttadmin, ADMIN_NICKNAME, ADMIN_USERNAME, ADMIN_PASSWORD);
+
+        ServerProperties srvprop = new ServerProperties();
+        assertTrue(ttadmin.getServerProperties(srvprop));
+        srvprop.nLoginDelayMSec = 1000;
+        assertTrue(waitCmdSuccess(ttadmin, ttadmin.doUpdateServer(srvprop), DEF_WAIT));
+        
+        UserAccount account = new UserAccount();
+        account.szUsername = USERNAME;
+        account.szPassword = PASSWORD;
+        account.uUserType = UserType.USERTYPE_DEFAULT;
+        account.uUserRights = USERRIGHTS;
+        
+        assertTrue("create account", waitCmdSuccess(ttadmin, ttadmin.doNewUserAccount(account), DEF_WAIT));
+
+        TeamTalkBase ttclient1 = newClientInstance();
+        TeamTalkBase ttclient2 = newClientInstance();
+        
+        connect(ttclient1);
+        login(ttclient1, NICKNAME, USERNAME, PASSWORD);
+        connect(ttclient2);
+        
+        assertTrue("login failure", waitCmdError(ttclient2, ttclient2.doLogin(NICKNAME, USERNAME, PASSWORD), DEF_WAIT));
+
+        Thread.sleep(2000);
+        login(ttclient2, NICKNAME, USERNAME, PASSWORD);
+
+        srvprop.nLoginDelayMSec = 0;
+        assertTrue(waitCmdSuccess(ttadmin, ttadmin.doUpdateServer(srvprop), DEF_WAIT));
+    }
+    
     public void testLoginAttempts() {
 
         TeamTalkBase ttadmin = newClientInstance();
@@ -2017,24 +2060,99 @@ public class TeamTalkTestCase extends TeamTalkTestCaseBase {
         wnd.nProtocol = DesktopProtocol.DESKTOPPROTOCOL_ZLIB_1;
         wnd.frameBuffer = new byte[wnd.nWidth * wnd.nHeight * 4];
 
-        assertTrue("send desktop window", ttclient1.sendDesktopWindow(wnd, BitmapFormat.BMP_RGB32)>0);
+        assertTrue("send desktop #1 window", ttclient1.sendDesktopWindow(wnd, BitmapFormat.BMP_RGB32)>0);
 
-        assertTrue("Wait for desktop window", waitForEvent(ttclient2, ClientEvent.CLIENTEVENT_USER_DESKTOPWINDOW, DEF_WAIT));
+        TTMessage msg = new TTMessage();
+        assertTrue("Wait for desktop #1 window", waitForEvent(ttclient2, ClientEvent.CLIENTEVENT_USER_DESKTOPWINDOW, DEF_WAIT, msg));
+
+        int desktop1ID = msg.nStreamID;
+        assertTrue("Desktop #1 shown", desktop1ID > 0);
         
         assertTrue("subscribe desktopinput", waitCmdSuccess(ttclient1,
                                                             ttclient1.doSubscribe(ttclient2.getMyUserID(),
                                                                                   Subscription.SUBSCRIBE_DESKTOPINPUT),
                                                             DEF_WAIT));
-        
         DesktopInput[] inputs = new DesktopInput[2];
-        for (int i=0;i<inputs.length;++i) {
-            inputs[i] = new DesktopInput();
-            inputs[i].uMousePosY = 100;
-            inputs[i].uKeyState = DesktopKeyStates.DESKTOPKEYSTATE_NONE;
+        for (int x=0;x<wnd.nWidth;x++) {
+            inputs[0] = new DesktopInput();
+            inputs[0].uMousePosX = x;
+            inputs[0].uMousePosY = 10;
+            inputs[0].uKeyState = DesktopKeyStates.DESKTOPKEYSTATE_NONE;
+        
+            inputs[1] = new DesktopInput();
+            inputs[1].uMousePosX = x;
+            inputs[1].uMousePosY = 20;
+            inputs[1].uKeyState = DesktopKeyStates.DESKTOPKEYSTATE_NONE;
+
+            assertTrue("send desktop #1 input x="+x, ttclient2.sendDesktopInput(ttclient1.getMyUserID(), inputs));
+
+            assertTrue("get desktop #1 input[0]", waitForEvent(ttclient1, ClientEvent.CLIENTEVENT_USER_DESKTOPINPUT, DEF_WAIT, msg));
+            assertEquals("desktop #1 input[0] x", x, msg.desktopinput.uMousePosX);
+            assertEquals("desktop #1 input[0] y", 10, msg.desktopinput.uMousePosY);
+
+            assertTrue("get desktop #1 input[1]", waitForEvent(ttclient1, ClientEvent.CLIENTEVENT_USER_DESKTOPINPUT, DEF_WAIT, msg));
+            assertEquals("desktop #1 input[1] x", x, msg.desktopinput.uMousePosX);
+            assertEquals("desktop #1 input[1] y", 20, msg.desktopinput.uMousePosY);
         }
 
-        assertTrue("send desktop input", ttclient2.sendDesktopInput(ttclient1.getMyUserID(), inputs));
+        assertTrue("send cursor pos", ttclient1.sendDesktopCursorPosition(5, 6));
 
-        assertTrue("get desktop input", waitForEvent(ttclient1, ClientEvent.CLIENTEVENT_USER_DESKTOPINPUT, DEF_WAIT));
+        assertTrue("get desktop cursor", waitForEvent(ttclient2, ClientEvent.CLIENTEVENT_USER_DESKTOPCURSOR, DEF_WAIT, msg));
+        assertEquals("pos x", 5, msg.desktopinput.uMousePosX);
+        assertEquals("pos y", 6, msg.desktopinput.uMousePosY);
+
+        // // start new desktop session
+        // wnd = new DesktopWindow();
+        // wnd.nWidth = 1024;
+        // wnd.nHeight = 1024;
+        // wnd.bmpFormat = BitmapFormat.BMP_RGB32;
+        // wnd.nProtocol = DesktopProtocol.DESKTOPPROTOCOL_ZLIB_1;
+        // wnd.frameBuffer = new byte[wnd.nWidth * wnd.nHeight * 4];
+
+        // assertTrue("send desktop #2 window", ttclient1.sendDesktopWindow(wnd, BitmapFormat.BMP_RGB32)>0);
+
+        // assertTrue("Wait for desktop #2 window", waitForEvent(ttclient2, ClientEvent.CLIENTEVENT_USER_DESKTOPWINDOW, DEF_WAIT, msg));
+
+        // assertTrue("Desktop #2 shown", desktop1ID != msg.nStreamID);        
+
+        // DesktopInput[] input = new DesktopInput[1];
+        // int y = wnd.nHeight;
+        // for (int x=0;x<wnd.nWidth;x++) {
+        //     inputs[0] = new DesktopInput();
+        //     inputs[0].uMousePosX = x;
+        //     inputs[0].uMousePosY = --y;
+        //     inputs[0].uKeyState = DesktopKeyStates.DESKTOPKEYSTATE_NONE;
+        
+        //     assertTrue("send desktop #2 input x="+x, ttclient2.sendDesktopInput(ttclient1.getMyUserID(), inputs));
+
+        //     assertTrue("get desktop #2 input 0", waitForEvent(ttclient1, ClientEvent.CLIENTEVENT_USER_DESKTOPINPUT, DEF_WAIT, msg));
+        //     assertEquals("desktop #2 input[0] x", x, msg.desktopinput.uMousePosX);
+        //     assertEquals("desktop #2 input[0] y", y, msg.desktopinput.uMousePosY);
+        // }
+        
     }
+
+    public void testWebLogin() {
+        String USERNAME = "facebook", PASSWORD = "code=123", NICKNAME = "jUnit - " + getCurrentMethod();
+
+        TeamTalkBase ttclient1 = newClientInstance();
+        TeamTalkBase ttclient2 = newClientInstance();
+        
+        connect(ttclient1);
+        connect(ttclient2);
+
+        int cmdid = ttclient1.doLoginEx(NICKNAME, USERNAME, PASSWORD, "");
+        assertTrue("do login 1", cmdid > 0);
+        cmdid = ttclient2.doLoginEx(NICKNAME, USERNAME, PASSWORD, "");
+        assertTrue("do login 2", cmdid > 0);
+
+        TTMessage msg = new TTMessage();
+        assertTrue("wait login failure 1", waitForEvent(ttclient1, ClientEvent.CLIENTEVENT_CMD_ERROR, DEF_WAIT, msg));
+        assertTrue("wait login failure 2", waitForEvent(ttclient2, ClientEvent.CLIENTEVENT_CMD_ERROR, DEF_WAIT, msg));
+
+        ttclient1.disconnect();
+        ttclient2.disconnect();
+        
+    }
+        
 }
