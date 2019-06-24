@@ -295,13 +295,33 @@ green.
 If you manually want to connect to a TeamTalk server then the person
 who is running the server must provide the information for the fields
 Host IP-address, TCP port and UDP port along with a user account
-containing both username and password.
+containing both username and password. If the server is hosted on an
+encrypted connection then the *Encrypted server* option must be
+checked.
 
-If the username to log on to the server is "facebook" then a dialog
-will pop up asking you to log into Facebook. For more information on
-Facebook login read section @ref fbuseraccount. If at some point you
-want to log into a different Facebook account then hit Escape when the
-Facebook login dialog appears.
+### Authentication
+
+Most TeamTalk server owners set up their own usernames and passwords
+for users. Some TeamTalk server also support publicly available login
+systems provided by BearWare.dk and Facebook.
+
+- BearWare.dk Web Login
+  - If the username to log on to a server is "bearware" then you must
+    register a username on BearWare.dk and use this to log on to the
+    server.
+
+- Facebook Login
+  - If the username to log on to the server is "facebook" then a
+    dialog will pop up asking you to log into Facebook. For more
+    information on Facebook login read section @ref fbuseraccount. If
+    at some point you want to log into a different Facebook account
+    then hit Escape when the Facebook login dialog appears.
+
+Learn more about setting up user accounts by read the section on
+[configuring TeamTalk servers](@ref teamtalkserver) or the section
+about [User Accounts](@ref useraccountsdlg).
+
+### Join or create specific channel
 
 To join a specific channel once you have logged on to the server can
 be done by filling out Channel and Password fields. Once you have
@@ -310,9 +330,7 @@ server to the Server List by filling the Entry name field and
 afterwards click **Save**. Finally click **Connect** to connect to the
 server.
 
-Learn more about setting up user accounts by read the section on
-[configuring TeamTalk servers](@ref teamtalkserver) or the section
-about [User Accounts](@ref useraccountsdlg).
+### Generate .tt File
 
 If you want others to connect to the same TeamTalk server as you, you
 can press **Generate .tt File** so you'll generate a file you can email to
@@ -353,12 +371,10 @@ Each of the items in the dialog are explained here:
         - Each user in your channel will have a separate audio file
           every time the person starts talking.
 - **Audio file format**
-    - The file format to use for storing audio files. By default only
-      Wave-format is support but if you download the LAME MP3 encoder
-      you can store to MP3 format by placing the *lame_enc.dll* file
-      in the same directory as the TeamTalk executable. lame_enc.dll
-      is not included in the TeamTalk distribution due to MP3
-      licensing.
+    - The file format to use for storing audio files. Choosing
+      ogg-format will store in the audio codec format selected by the
+      channel. The <a href="https://www.videolan.org">VLC
+      media player</a> can play ogg-format.
 - **Folder for audio files**
     - The file name for the audio files is generated automatically but the
       folder for storing the files has to be specified in this field.
