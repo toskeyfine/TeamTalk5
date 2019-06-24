@@ -34,6 +34,8 @@ extern TTInstance* ttInst;
 
 // COnlineUsersDlg dialog
 
+#define DISCONNECTED_USERID 0
+
 IMPLEMENT_DYNAMIC(COnlineUsersDlg, CDialog)
 
 COnlineUsersDlg::COnlineUsersDlg(CTeamTalkDlg* pParent /*=NULL*/)
@@ -54,6 +56,7 @@ void COnlineUsersDlg::DoDataExchange(CDataExchange* pDX)
 {
     CDialog::DoDataExchange(pDX);
     DDX_Control(pDX, IDC_LIST_ONLINEUSERS, m_wndUsers);
+    DDX_Control(pDX, IDC_CHECK_SHOWDISCONNECTED, m_wndDisconnectUsers);
 }
 
 
@@ -65,6 +68,8 @@ BEGIN_MESSAGE_MAP(COnlineUsersDlg, CDialog)
     ON_COMMAND(ID_POPUP_COPYUSERINFORMATION, &COnlineUsersDlg::OnPopupCopyuserinformation)
     ON_WM_SIZE()
     ON_COMMAND(ID_POPUP_MESSAGES, &COnlineUsersDlg::OnPopupMessages)
+    ON_COMMAND(ID_POPUP_STOREFORMOVE, &COnlineUsersDlg::OnPopupStoreformove)
+    ON_BN_CLICKED(IDC_CHECK_SHOWDISCONNECTED, &COnlineUsersDlg::OnBnClickedCheckShowdisconnected)
 END_MESSAGE_MAP()
 
 
@@ -78,19 +83,25 @@ BOOL COnlineUsersDlg::OnInitDialog()
 
     static CResizer::CBorderInfo s_bi[] = {
 
-        { IDC_STATIC_CURUSERS,
-        { CResizer::eFixed, IDC_MAIN, CResizer::eLeft },
-        { CResizer::eFixed, IDC_MAIN, CResizer::eTop },
-        { CResizer::eFixed, IDC_MAIN, CResizer::eRight },
-        { CResizer::eFixed, IDC_MAIN, CResizer::eBottom } },
-
         { IDC_LIST_ONLINEUSERS,
         { CResizer::eFixed, IDC_MAIN, CResizer::eLeft },
         { CResizer::eFixed, IDC_MAIN, CResizer::eTop },
         { CResizer::eFixed, IDC_MAIN, CResizer::eRight },
         { CResizer::eFixed, IDC_MAIN, CResizer::eBottom } },
 
+        { IDC_STATIC_CURUSERS,
+        { CResizer::eFixed, IDC_MAIN, CResizer::eLeft },
+        { CResizer::eFixed, IDC_MAIN, CResizer::eTop },
+        { CResizer::eFixed, IDC_MAIN, CResizer::eRight },
+        { CResizer::eFixed, IDC_MAIN, CResizer::eBottom } },
+
+        { IDC_CHECK_SHOWDISCONNECTED,
+        { CResizer::eFixed, IDC_MAIN, CResizer::eLeft },
+        { CResizer::eFixed, IDC_MAIN, CResizer::eBottom },
+        { CResizer::eFixed, IDC_MAIN, CResizer::eRight },
+        { CResizer::eFixed, IDC_MAIN, CResizer::eBottom } },
     };
+
     const int nSize = sizeof(s_bi) / sizeof(s_bi[0]);
     m_resizer.Init(m_hWnd, NULL, s_bi, nSize);
 
@@ -152,16 +163,30 @@ void COnlineUsersDlg::AddUser(const User& user)
 
 void COnlineUsersDlg::RemoveUser(int nUserID)
 {
-    auto i = std::find_if(m_users.begin(), m_users.end(), [nUserID] (User u) { return u.nUserID == nUserID; });
-    if (i != m_users.end())
-        i->nUserID = 0;
+    BOOL bEraseItem = m_wndDisconnectUsers.GetCheck() != BST_CHECKED;
+
+    auto ite = std::find_if(m_users.begin(), m_users.end(), [nUserID] (User u) { return u.nUserID == nUserID; });
+    if (ite != m_users.end())
+    {
+        ite->nUserID = DISCONNECTED_USERID;
+        if (bEraseItem)
+            m_users.erase(ite);
+    }
 
     for(int i=0;i<m_wndUsers.GetItemCount();i++)
     {
         if (m_wndUsers.GetItemData(i) == nUserID)
         {
-            m_wndUsers.SetItemText(i, 0, _T("0"));
-            m_wndUsers.SetItemData(i, 0);
+            if (bEraseItem)
+            {
+                m_wndUsers.DeleteItem(i);
+            }
+            else
+            {
+                m_wndUsers.SetItemText(i, 0, _T("0"));
+                m_wndUsers.SetItemData(i, DISCONNECTED_USERID);
+                break;
+            }
         }
     }
 }
@@ -285,6 +310,10 @@ void COnlineUsersDlg::MenuCommand(UINT uCmd)
         if(m_pParent)
             m_pParent->OnUsersMessages(user.nUserID);
         break;
+    case ID_POPUP_STOREFORMOVE :
+        if (user.nUserID != 0)
+            m_pParent->m_moveusers.insert(user.nUserID);
+        break;
     }
 }
 
@@ -313,12 +342,16 @@ void COnlineUsersDlg::OnPopupMessages()
     MenuCommand(ID_POPUP_MESSAGES);
 }
 
+void COnlineUsersDlg::OnPopupStoreformove()
+{
+    MenuCommand(ID_POPUP_STOREFORMOVE);
+}
+
 void COnlineUsersDlg::OnSize(UINT nType, int cx, int cy)
 {
     // TODO: Group box overlaps listbox for some reason...
-    //m_resizer.Move();
     CDialog::OnSize(nType, cx, cy);
-
+    m_resizer.Move();
 }
 
 void COnlineUsersDlg::PostNcDestroy()
@@ -332,4 +365,26 @@ void COnlineUsersDlg::OnCancel()
 {
     CDialog::OnCancel();
     DestroyWindow();
+}
+
+
+void COnlineUsersDlg::OnBnClickedCheckShowdisconnected()
+{
+    BOOL bEraseItem = m_wndDisconnectUsers.GetCheck() != BST_CHECKED;
+
+    auto ite = m_users.begin();
+    while ((ite = std::find_if(m_users.begin(), m_users.end(), [](User u) { return u.nUserID == DISCONNECTED_USERID; })) != m_users.end())
+    {
+        m_users.erase(ite);
+    }
+
+    for (int i = 0; i<m_wndUsers.GetItemCount(); )
+    {
+        if(m_wndUsers.GetItemData(i) == DISCONNECTED_USERID)
+        {
+            m_wndUsers.DeleteItem(i);
+        }
+        else i++;
+    }
+
 }
