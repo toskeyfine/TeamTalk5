@@ -38,24 +38,25 @@
     <string name="pref_header_general">Allgemein</string>
     <string name="pref_title_nickname">Nickname</string>
     <string name="pref_default_nickname">Unbekannt</string>
+    <string name="pref_title_proximity_sensor">Annäherungssensor</string>
     <string name="pref_title_keep_screen_on">Bildschirm während der Verbindung aktiviert lassen</string>
     <string name="pref_title_vibrate">Bei PTT vibrieren</string>
     <string name="pref_show_log_messages">Lognachrichten im Chatverlauf anzeigen</string>
     <string name="pref_title_audio_icons">Klangereignisse</string>
     <string name="pref_title_rx_tx_audio_icon">Sprachübertragung umschalten</string>
     <string name="pref_summary_rx_tx_audio_icon">Klang abspielen, wenn TX-Schalter gedrückt wird</string>
-    <string name="pref_title_personal_message_audio_icon">Privatnachricht</string>
     <string name="pref_title_vox_triggered_icon">Sprachaktivierung ausgelöst</string>
-    <string name="pref_summary_vox_triggered_icon">Klang abspielen, wenn Sprachaktivierung ausgelöst wird</string>
-    <string name="pref_summary_personal_message_audio_icon">Klang bei Empfang einer Privatnachricht abspielen</string>
+    <string name="pref_summary_vox_triggered_icon">Klang beim Auslösen der Sprachaktivierung abspielen</string>
+    <string name="pref_title_private_message_audio_icon">Privatnachricht</string>
+    <string name="pref_summary_private_message_audio_icon">Klang bei Empfang einer Privatnachricht abspielen</string>
     <string name="pref_title_channel_message_audio_icon">Raumnachricht</string>
     <string name="pref_summary_channel_message_audio_icon">Klang bei Empfang einer Raumnachricht abspielen</string>
     <string name="pref_title_broadcast_message_audio_icon">Servernachricht</string>
     <string name="pref_summary_broadcast_message_audio_icon">Klang bei Empfang einer Servernachricht abspielen</string>
-    <string name="pref_title_server_lost_audio_icon">Serververbindung unterbrochen</string>
-    <string name="pref_summary_server_lost_audio_icon">Klang abspielen, wenn die Serververbindung unterbrochen wird</string>
+    <string name="pref_title_server_lost_audio_icon">Server-Verbindung unterbrochen</string>
+    <string name="pref_summary_server_lost_audio_icon">Klang bei Verbindungsverlust abspielen</string>
     <string name="pref_title_files_update_audio_icon">Dateiliste aktualisiert</string>
-    <string name="pref_summary_files_update_audio_icon">Klang abspielen, wenn Dateien hochgeladen oder gelöscht werden</string>
+    <string name="pref_summary_files_update_audio_icon">Klang abspielen, wenn Dateien hochgeladen oder entfernt werden</string>
     <string name="pref_title_transmitready_icon">Exklusiver Modus umgeschaltet</string>
     <string name="pref_summary_transmitready_icon">Klang bei Sprechbereitschaft in unterbrechungsfreien Räumen abspielen</string>
     <string name="pref_title_userjoin_icon">Benutzer hat Raum betreten</string>
@@ -78,6 +79,8 @@
     <string name="pref_title_sub_mediafile">Mediendateien</string>
     <string name="pref_summary_sub_mediafile">Übertragung von Mediendateien empfangen</string>
     <string name="pref_header_tts">Sprachausgabe</string>
+    <string name="pref_title_speech_engine">Sprachausgabe wählen</string>
+    <string name="pref_summary_speech_engine">Wähle aus einer der installierten Sprachausgaben, unabhängig von Systemeinstellungen</string>
     <string name="pref_title_server_login">Benutzer meldet sich an</string>
     <string name="pref_summary_server_login">Ansage des Benutzers, der sich am Server anmeldet</string>
     <string name="pref_title_server_logout">Benutzer meldet sich ab</string>
@@ -86,13 +89,19 @@
     <string name="pref_summary_channel_join">Ansage, wenn ein Benutzer den Raum betritt</string>
     <string name="pref_title_channel_leave">Benutzer verlässt den Raum</string>
     <string name="pref_summary_channel_leave">Ansage, wenn ein Benutzer den Raum verlässt</string>
-    <string name="pref_title_personal_message">Privatnachrichten</string>
+    <string name="pref_title_private_message">Privatnachrichten</string>
+    <string name="pref_summary_private_message">Privatnachrichten ansaagen</string>
+    <string name="pref_title_channel_message">Raumnachrichten</string>
+    <string name="pref_summary_channel_message">Raumnachrichten ansagen</string>
     <string name="pref_title_broadcast_message">Servernachrichten</string>
-    <string name="pref_summary_message">Namen des Absenders ansagen</string>
+    <string name="pref_summary_broadcast_message">Servernachrichten ansagen</string>
     <string name="pref_title_mute_speakers">Lautsprecher beim Drücken der TX-Schaltfläche stummschalten</string>
     <string name="pref_summary_mute_speakers">Dies verhindert Echos aus dem Lautsprecher</string>
     <string name="pref_title_show_usernames">Zeige Benutzernamen</string>
     <string name="pref_summary_show_usernames">Zeigt Benutzernamen anstelle des Nicknamens an</string>
+    <string name="pref_title_bearwareid">BearWare.dk WebLogin</string>
+    <string name="pref_summary_bearwareid">BearWare.dk WebLogin einrichten</string>
+    
     <string name="pref_title_mediafile_volume">Medienlautstärke</string>
     <string name="pref_summary_mediafile_volume">Lautstärke der Mediendateien gegenüber Sprachübertragungen</string>
     <string name="pref_title_speakerphone_checkbox">Telefonhörer einschalten</string>
@@ -106,7 +115,8 @@
     <string name="text_tts_loggedout">hat sich abgemeldet</string>
     <string name="text_tts_joined_chan">hat den Raum betreten</string>
     <string name="text_tts_left_chan">hat den Raum verlassen</string>
-    <string name="text_tts_personal_message">Privatnachricht von Benutzer %1$s</string>
+    <string name="text_tts_private_message">Privatnachricht von Benutzer %1$s</string>
+    <string name="text_tts_channel_message">Raumnachricht von %1$s - %2$s</string>
     <string name="text_tts_broadcast_message">Servernachricht von Benutzer %1$s</string>
     <string name="pref_header_soundsystem">Soundsystem</string>
     <string name="title_activity_audio_codec">Audio-Codec</string>
@@ -293,8 +303,8 @@
     <string name="err_filesharing_disabled">Dateiübertragungen sind auf diesem Server nicht erlaubt</string>
     <string name="err_channel_has_users">Raum ist nicht leer</string>
 
-    <string name="personal_message_notification">Neue Privatnachricht von Benutzer %1$s</string>
-    <string name="personal_message_notification_hint">Klicken zum Lesen und Beantworten</string>
+    <string name="private_message_notification">Neue Privatnachricht von Benutzer %1$s</string>
+    <string name="private_message_notification_hint">Klicken zum Lesen und Beantworten</string>
     <string name="user_state_now_speaking">%1$s spricht gerade</string>
     <string name="text_waitstream">Warte auf Videoübertragung</string>
     <string name="text_desktop_session">Desktopsitzung</string>
@@ -312,5 +322,15 @@
 
     <string name="facebook_app_id">611833262539381</string>
     <string name="fb_login_protocol_scheme">fb611833262539381</string>
+    <string name="title_activity_web_login">WebLogin-Aktivität</string>
+    <string name="weblogin_prop_title_bearwareid">Benutzername</string>
+    <string name="weblogin_prop_title_bearwarepasswd">Passwort</string>
+    <string name="weblogin_prop_title_login">Anmelden</string>
+    <string name="weblogin_prop_title_web_login_id">BearWare.dk-Login-ID</string>
+    <string name="weblogin_prop_title_create_web_login_id">BearWare.dk-Login-ID erstellen</string>
+    <string name="weblogin_prop_title_reset_web_login_id">BearWare.dk-Login-ID zurücksetzen</string>
+    <string name="text_bearwarelogin_success">%1$s dein Benutzername %2$s wurde bestätigt</string>
+    <string name="text_bearwarelogin_failed">Fehler beim Authentifizieren des Benutzernamens %1$s</string>
+    <string name="text_weblogin_authfailure">BearWare.dk Web-Login konnte nicht authentifiziert werden</string>
 
 </resources>
