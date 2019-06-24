@@ -81,6 +81,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
@@ -136,6 +140,7 @@ implements TeamTalkConnectionListener,
         OnItemClickListener, 
         OnItemLongClickListener, 
         OnMenuItemClickListener, 
+        SensorEventListener, 
         OnVoiceTransmissionToggleListener {
 
     /**
@@ -177,6 +182,8 @@ implements TeamTalkConnectionListener,
     NotificationManager notificationManager;
     WakeLock wakeLock;
     boolean restarting;
+    SensorManager mSensorManager;
+    Sensor mSensor;
 
     static final String MESSAGE_NOTIFICATION_TAG = "incoming_message";
 
@@ -221,6 +228,8 @@ implements TeamTalkConnectionListener,
             setTitle(serverName);
         getActionBar().setDisplayHomeAsUpEnabled(true);
 
+        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         restarting = (savedInstanceState != null);
         accessibilityAssistant = new AccessibilityAssistant(this);
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
@@ -359,8 +368,9 @@ implements TeamTalkConnectionListener,
     protected void onStart() {
         super.onStart();
 
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         if (ttsWrapper == null)
-            ttsWrapper = TTSWrapper.getInstance(this);
+            ttsWrapper = new TTSWrapper(this, prefs.getString("pref_speech_engine", TTSWrapper.defaultEngineName));
         if (mConnection == null)
             mConnection = new TeamTalkConnection(this);
 
@@ -372,7 +382,6 @@ implements TeamTalkConnectionListener,
                 Log.e(TAG, "Failed to bind to TeamTalk service");
         }
         else {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 
             int mastervol = prefs.getInt(Preferences.PREF_SOUNDSYSTEM_MASTERVOLUME, SoundLevel.SOUND_VOLUME_DEFAULT);
             int gain = prefs.getInt(Preferences.PREF_SOUNDSYSTEM_MICROPHONEGAIN, SoundLevel.SOUND_GAIN_DEFAULT);
@@ -401,6 +410,7 @@ implements TeamTalkConnectionListener,
     @Override
     protected void onResume() {
         super.onResume();
+        mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
 
         if (audioIcons != null)
             audioIcons.release();
@@ -421,14 +431,14 @@ implements TeamTalkConnectionListener,
             sounds.put(SOUND_VOICETXON, audioIcons.load(getApplicationContext(), R.raw.on, 1));
             sounds.put(SOUND_VOICETXOFF, audioIcons.load(getApplicationContext(), R.raw.off, 1));
         }
-        if (prefs.getBoolean("personal_message_audio_icon", true)) {
+        if (prefs.getBoolean("private_message_audio_icon", true)) {
             sounds.put(SOUND_USERMSG, audioIcons.load(getApplicationContext(), R.raw.user_message, 1));
         }
         if (prefs.getBoolean("channel_message_audio_icon", true)) {
             sounds.put(SOUND_CHANMSG, audioIcons.load(getApplicationContext(), R.raw.channel_message, 1));
         }
         if (prefs.getBoolean("broadcast_message_audio_icon", true)) {
-            sounds.put(SOUND_BCASTMSG, audioIcons.load(getApplicationContext(), R.raw.channel_message, 1));
+            sounds.put(SOUND_BCASTMSG, audioIcons.load(getApplicationContext(), R.raw.broadcast_message, 1));
         }
         if (prefs.getBoolean("files_updated_audio_icon", true)) {
             sounds.put(SOUND_FILESUPDATE, audioIcons.load(getApplicationContext(), R.raw.fileupdate, 1));
@@ -453,6 +463,7 @@ implements TeamTalkConnectionListener,
         getWindow().getDecorView().setKeepScreenOn(prefs.getBoolean("keep_screen_on_checkbox", false));
 
         createStatusTimer();
+        ttsWrapper.switchEngine(prefs.getString("pref_speech_engine", TTSWrapper.defaultEngineName));
     }
 
     @Override
@@ -506,6 +517,7 @@ implements TeamTalkConnectionListener,
     protected void onDestroy() {
         super.onDestroy();
 
+        mSensorManager.unregisterListener(this);
         // Unbind from the service
         if(mConnection.isBound()) {
             Log.d(TAG, "Unbinding TeamTalk service");
@@ -529,6 +541,27 @@ implements TeamTalkConnectionListener,
             }
             else {
                 Toast.makeText(this, R.string.upload_started, Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    }
+
+    public void onSensorChanged(SensorEvent event) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        boolean proximity_sensor = prefs.getBoolean("proximity_sensor_checkbox", false);
+        if (proximity_sensor && (mConnection != null) && mConnection.isBound()) {
+            if (event.values[0] == 0) {
+                audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+                audioManager.setSpeakerphoneOn(false);
+                ttservice.enableVoiceTransmission(true);
+            } else {
+                audioManager.setMode(prefs.getBoolean(Preferences.PREF_SOUNDSYSTEM_VOICEPROCESSING, false)?
+                        AudioManager.MODE_IN_COMMUNICATION : AudioManager.MODE_NORMAL);
+                audioManager.setSpeakerphoneOn(prefs.getBoolean(Preferences.PREF_SOUNDSYSTEM_SPEAKERPHONE, false));
+                if (ttservice.isVoiceTransmissionEnabled())
+                    ttservice.enableVoiceTransmission(false);
             }
         }
     }
@@ -1880,21 +1913,31 @@ implements TeamTalkConnectionListener,
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         switch (textmessage.nMsgType) {
         case TextMsgType.MSGTYPE_CHANNEL :
+            accessibilityAssistant.lockEvents();
+            textmsgAdapter.notifyDataSetChanged();
+            accessibilityAssistant.unlockEvents();
+            
+            if (sounds.get(SOUND_CHANMSG) != 0)
+                audioIcons.play(sounds.get(SOUND_CHANMSG), 1.0f, 1.0f, 0, 0, 1.0f);
+            if (ttsWrapper != null && prefs.getBoolean("channel_message_checkbox", false)) {
+                User sender = ttservice.getUsers().get(textmessage.nFromUserID);
+                String name = Utils.getDisplayName(getBaseContext(), sender);
+                ttsWrapper.speak(getString(R.string.text_tts_channel_message, (sender != null) ? name : "", textmessage.szMessage));
+            }
+            Log.d(TAG, "Channel message in " + this.hashCode());
+            break;
         case TextMsgType.MSGTYPE_BROADCAST :
             accessibilityAssistant.lockEvents();
             textmsgAdapter.notifyDataSetChanged();
             accessibilityAssistant.unlockEvents();
             
-            // audio event
-            if (sounds.get(SOUND_CHANMSG) != 0)
-                audioIcons.play(sounds.get(SOUND_CHANMSG), 1.0f, 1.0f, 0, 0, 1.0f);
-            // TTS event
+            if (sounds.get(SOUND_BCASTMSG) != 0)
+                audioIcons.play(sounds.get(SOUND_BCASTMSG), 1.0f, 1.0f, 0, 0, 1.0f);
             if (ttsWrapper != null && prefs.getBoolean("broadcast_message_checkbox", false)) {
                 User sender = ttservice.getUsers().get(textmessage.nFromUserID);
                 String name = Utils.getDisplayName(getBaseContext(), sender);
-                ttsWrapper.speak(getString(R.string.text_tts_broadcast_message, (sender != null) ? name : ""));
+                ttsWrapper.speak(getString(R.string.text_tts_broadcast_message, (sender != null) ? name : "", textmessage.szMessage));
             }
-            Log.d(TAG, "Channel message in " + this.hashCode());
             break;
         case TextMsgType.MSGTYPE_USER :
             if (sounds.get(SOUND_USERMSG) != 0)
@@ -1903,8 +1946,8 @@ implements TeamTalkConnectionListener,
             User sender = ttservice.getUsers().get(textmessage.nFromUserID);
             String name = Utils.getDisplayName(getBaseContext(), sender);
             String senderName = (sender != null) ? name : "";
-            if (ttsWrapper != null && prefs.getBoolean("personal_message_checkbox", false))
-                ttsWrapper.speak(getString(R.string.text_tts_personal_message, senderName));
+            if (ttsWrapper != null && prefs.getBoolean("private_message_checkbox", false))
+                ttsWrapper.speak(getString(R.string.text_tts_private_message, senderName, textmessage.szMessage));
             Intent action = new Intent(this, TextMessageActivity.class);
             Notification.Builder notification = new Notification.Builder(this);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -1916,8 +1959,8 @@ implements TeamTalkConnectionListener,
                 notificationManager.createNotificationChannel(mChannel);
             }
             notification.setSmallIcon(R.drawable.message)
-                .setContentTitle(getString(R.string.personal_message_notification, senderName))
-                .setContentText(getString(R.string.personal_message_notification_hint))
+                .setContentTitle(getString(R.string.private_message_notification, senderName))
+                .setContentText(getString(R.string.private_message_notification_hint))
                 .setContentIntent(PendingIntent.getActivity(this, textmessage.nFromUserID, action.putExtra(TextMessageActivity.EXTRA_USERID, textmessage.nFromUserID), 0))
                 .setAutoCancel(true);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
