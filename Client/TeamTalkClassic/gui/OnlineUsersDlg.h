@@ -24,6 +24,7 @@
 #pragma once
 #include "afxcmn.h"
 #include "Resizer.h"
+#include "afxwin.h"
 
 enum
 {
@@ -81,5 +82,8 @@ public:
     afx_msg void OnPopupCopyuserinformation();
     afx_msg void OnSize(UINT nType, int cx, int cy);
     afx_msg void OnPopupMessages();
+    afx_msg void OnPopupStoreformove();
     virtual void OnCancel();
+    CButton m_wndDisconnectUsers;
+    afx_msg void OnBnClickedCheckShowdisconnected();
 };
