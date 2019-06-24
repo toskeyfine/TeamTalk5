@@ -222,6 +222,7 @@
 #define IDS_BEARWAREAUTHFAIL            317
 #define IDS_BEARWARETIMEOUT             318
 #define IDS_BEARWAREAUTHSUCCESS         319
+#define IDS_USER_BCASTMSG               320
 #define MAX_STRING_LENGTH               511
 #define MAX_USERS                       1000
 #define IDC_SLIDER_VOICEACT             1001
@@ -684,6 +685,7 @@
 #define IDC_STATIC_BEARWARECREATE       1563
 #define IDC_STATIC_BEARWAREAUTH         1564
 #define IDC_BUTTON_BEARWARECREATE       1565
+#define IDC_CHECK_SHOWDISCONNECTED      1566
 #define ID_HELP_WHATISMYIP              32791
 #define ID_USERS_OP                     32798
 #define ID_CHANNELS_VIEWCHANNELMESSAGES 32801
@@ -791,6 +793,7 @@
 #define ID_KICK_KICKANDBANFROMCHANNEL   32951
 #define ID_CHANNELS_BANNEDUSERSINCHANNEL 32952
 #define ID_CLIENT_NEWCLIENTINSTANCE     32953
+#define ID_POPUP_STOREFORMOVE           32954
 #define TT_MAX_ID                       0xFFFF
 
 // Next default values for new objects
@@ -798,8 +801,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        320
-#define _APS_NEXT_COMMAND_VALUE         32954
-#define _APS_NEXT_CONTROL_VALUE         1566
+#define _APS_NEXT_COMMAND_VALUE         32955
+#define _APS_NEXT_CONTROL_VALUE         1567
 #define _APS_NEXT_SYMED_VALUE           320
 #endif
 #endif
