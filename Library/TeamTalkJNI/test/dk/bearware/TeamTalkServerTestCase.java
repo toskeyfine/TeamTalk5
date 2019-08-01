@@ -653,6 +653,10 @@ public class TeamTalkServerTestCase extends TeamTalkTestCaseBase {
 
         assertTrue("join channel", waitCmdSuccess(client2, cmdid, DEF_WAIT, interleave));
 
+        cmdid = client1.doPing();
+        
+        assertTrue("drain client1", waitCmdComplete(client1, cmdid, DEF_WAIT, interleave));
+
         cmdid = client2.doMoveUser(client1.getMyUserID(), client2.getMyChannelID());
 
         assertTrue("move user", waitCmdSuccess(client2, cmdid, DEF_WAIT, interleave));
