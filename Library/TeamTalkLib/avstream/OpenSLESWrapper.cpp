@@ -34,7 +34,12 @@ int detectMinumumBuffer(SLAndroidSimpleBufferQueueItf bq,
                         std::vector<short>& buffer, int samplerate,
                         int framesize, int channels);
 
-#define DEFAULT_DEVICE_ID 0
+enum AndroidSoundDevice
+{
+    DEFAULT_DEVICE_ID           = (0 & SOUND_DEVICEID_MASK),
+    SHARED_DEFAULT_DEVICE_ID    = (DEFAULT_DEVICE_ID | SOUND_DEVICE_SHARED_FLAG)
+};
+
 #define DEFAULT_SAMPLERATE 16000
 
 OpenSLESWrapper::OpenSLESWrapper()
@@ -230,8 +235,8 @@ void bqRecorderCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
         sample_index += (streamer->framesize * streamer->channels))
     {
         streamer->recorder->StreamCaptureCb(*streamer,
-                                                  &streamer->buffers[buf_index][sample_index],
-                                                  streamer->framesize);
+                                            &streamer->buffers[buf_index][sample_index],
+                                            streamer->framesize);
     }
     result = (*bq)->Enqueue(bq, &streamer->buffers[buf_index][0],
                             streamer->buffers[buf_index].size()*sizeof(short));
@@ -307,7 +312,8 @@ inputstreamer_t OpenSLESWrapper::NewStream(StreamCapture* capture,
                                                  framesize,
                                                  samplerate,
                                                  channels,
-                                                 SOUND_API_OPENSLES_ANDROID));
+                                                 SOUND_API_OPENSLES_ANDROID,
+                                                 inputdeviceid));
 
     streamer->recorderObject = recorderObject;
     streamer->recorderRecord = recorderRecord;
@@ -344,7 +350,7 @@ inputstreamer_t OpenSLESWrapper::NewStream(StreamCapture* capture,
             goto failure;
     }
 
-    MYTRACE(ACE_TEXT("Open capture stream %p, samplerate %d, channels %d\n"),
+    MYTRACE(ACE_TEXT("Opened capture stream %p, samplerate %d, channels %d\n"),
             capture, samplerate, channels);
 
     return streamer;
@@ -384,9 +390,8 @@ void OpenSLESWrapper::CloseStream(inputstreamer_t streamer)
     SLresult result;
 
     // in case already recording, stop recording and clear buffer queue
-    result = (*streamer->recorderRecord)->SetRecordState(streamer->recorderRecord, 
-                                                         SL_RECORDSTATE_STOPPED);
-    assert(SL_RESULT_SUCCESS == result);
+    StopStream(streamer);
+
     {
         //wait for recorder callback to complete, otherwise OpenSLES
         //may hang
@@ -397,6 +402,8 @@ void OpenSLESWrapper::CloseStream(inputstreamer_t streamer)
     assert(SL_RESULT_SUCCESS == result);
 
     (*streamer->recorderObject)->Destroy(streamer->recorderObject);
+    
+    MYTRACE(ACE_TEXT("Closed capture stream %p\n"), streamer->recorder);
 }
 
 // this callback handler is called every time a buffer finishes playing
@@ -417,8 +424,8 @@ void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
         sample_index += (streamer->framesize * streamer->channels))
     {
         more = streamer->player->StreamPlayerCb(*streamer,
-                                                       &streamer->buffers[buf_index][sample_index],
-                                                       streamer->framesize);
+                                                &streamer->buffers[buf_index][sample_index],
+                                                streamer->framesize);
         //soft volume also handles mute
         SoftVolume(*streamer, 
                    &streamer->buffers[buf_index][sample_index],
@@ -502,7 +509,8 @@ outputstreamer_t OpenSLESWrapper::NewStream(soundsystem::StreamPlayer* player,
     outputstreamer_t streamer(new SLOutputStreamer(player, sndgrpid, 
                                                    framesize, samplerate,
                                                    channels, 
-                                                   SOUND_API_OPENSLES_ANDROID));
+                                                   SOUND_API_OPENSLES_ANDROID,
+                                                   outputdeviceid));
   
     streamer->playerObject = playerObject;
     streamer->playerPlay = playerPlay;
@@ -752,6 +760,21 @@ void OpenSLESWrapper::FillDevices(sounddevices_t& sounddevs)
     }
 
     sounddevs[dev.id] = dev;
+
+    // create shared audio device (SHARED_DEFAULT_DEVICE_ID)
+    DeviceInfo shareddev = dev;
+    shareddev.id = SHARED_DEFAULT_DEVICE_ID;
+    shareddev.devicename += ACE_TEXT(" - Shared @ ") + i2string(shareddev.default_samplerate) + ACE_TEXT(" KHz, ");
+    if (shareddev.max_input_channels == 2)
+        shareddev.devicename += ACE_TEXT("Stereo");
+    else
+        shareddev.devicename += ACE_TEXT("Mono");
+    // clear as output device (currently shared is only supported by input)
+    shareddev.max_output_channels = 0;
+    shareddev.output_samplerates.clear();
+    shareddev.output_channels.clear();
+    
+    sounddevs[shareddev.id] = shareddev;
 
     RemoveSoundGroup(sg);
 }
