@@ -1,8 +1,12 @@
+
 /* log entry */
 "%@ joined channel" = "%@ 加入频道";
 
 /* log entry */
 "%@ left channel" = "%@ 离开频道";
+
+/* Web Login Controller */
+"%@, your username \"%@\" has been validated" = "%@, 您的用户名 \"%@\" 已通过验证";
 
 /* preferences */
 "%d %% - Default" = "%d %% - 默认";
@@ -48,16 +52,16 @@
 "Announce lost server connection" = "播报丢失连接";
 
 /* preferences */
-"Announce user joining channel" = "播报用户加入频道";
+"Announce user joining channel" = "播报加入频道的用户";
 
 /* preferences */
-"Announce user leaving channel" = "播报用户离开频道";
+"Announce user leaving channel" = "播报离开频道的用户";
 
 /* preferences */
-"Announce user logged onto server" = "播报用户登录服务器";
+"Announce user logged onto server" = "播报登录服务器的用户";
 
 /* preferences */
-"Announce user logged out of server" = "播报用户退出服务器";
+"Announce user logged out of server" = "播报退出服务器的用户";
 
 /* text to speech */
 "Announcements" = "通知";
@@ -77,7 +81,11 @@
 /* create channel */
 "Audio Codec" = "音频编解码器";
 
-/* server entry */
+/* Web Login Controller */
+"Authenticate" = "验证";
+
+/* server entry
+   Web Login controller */
 "Authentication" = "认证";
 
 /* channel list */
@@ -95,6 +103,9 @@
 /* preferences
    user detail */
 "Broadcast Messages" = "广播消息";
+
+/* preferences */
+"Broadcast Text Message" = "广播消息";
 
 /* channel list
    server entry */
@@ -163,6 +174,9 @@
 
 /* channel list */
 "Edit properties" = "编辑属性";
+
+/* server entry */
+"Encrypted" = "加密";
 
 /* Dialog message */
 "Enter Password" = "输入密码";
@@ -314,7 +328,8 @@
 /* Dialog
    Dialog message
    message dialog
-   user detail */
+      user detail
+   Web Login Controller */
 "OK" = "好";
 
 /* codec detail */
@@ -328,7 +343,8 @@
 
 /* create channel
    Dialog message
-   server entry */
+      server entry
+   Web Login Controller */
 "Password" = "密码";
 
 /* channel list */
@@ -342,6 +358,9 @@
 
 /* preferences */
 "Play sound when a user leaves the channel" = "用户离开频道时播放声音";
+
+/* preferences */
+"Play sound when broadcast text message is received" = "收到广播消息时播放声音";
 
 /* preferences */
 "Play sound when channel text message is received" = "收到频道消息时播放声音";
@@ -585,8 +604,12 @@
 "User Messages" = "用户消息";
 
 /* server entry
-   user detail */
+      user detail
+   Web Login Controller */
 "Username" = "用户名";
+
+/* Web Login Controller */
+"Username or password incorrect" = "用户名或密码不正确";
 
 /* preferences */
 "Version Information" = "版本信息";
@@ -628,6 +651,9 @@
 /* user detail */
 "Volume Controls" = "音量控制";
 
+/* Web Login controller */
+"Web Login ID" = "Web 登陆 ID";
+
 /* preferences
    user detail */
 "WebCam" = "视频";
@@ -637,4 +663,3 @@
 
 /* speech */
 "You have selected %@" = "您已选择 %@";
-
