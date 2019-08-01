@@ -28,8 +28,6 @@
 
 #include <map>
 
-#include <ace/Bound_Ptr.h>
-
 #include <assert.h>
 
 namespace soundsystem {
@@ -37,9 +35,6 @@ namespace soundsystem {
 #define VOLUME_MAX 32000
 #define VOLUME_DEFAULT 1000
 #define VOLUME_MIN 0
-
-#define SOUND_DEVICEID_INVALID -1
-#define SOUND_DEVICEID_VIRT 1978
 
     enum SoundAPI
     {
@@ -53,6 +48,18 @@ namespace soundsystem {
         SOUND_API_OPENSLES_ANDROID = 7,
         SOUND_API_AUDIOUNIT = 8,
         SOUND_API_AUDIOTOOLKIT = 9,
+    };
+
+    enum SoundDeviceID
+    {
+        SOUND_DEVICEID_INVALID           = /* 0xFFFFFFFF */ -1,
+        SOUND_DEVICEID_VIRTUAL           = /* 0x000007BA */ 1978,
+        
+        /* Sound devices are from 0 => 0x7FF */
+        SOUND_DEVICEID_MASK              = 0x000007FF,
+        /* Flag for a shared sound device. The original sound device
+         * is in the mask SOUND_DEVICEID_MASK */
+        SOUND_DEVICE_SHARED_FLAG         = 0x00000800
     };
 
     class StreamCapture;
@@ -169,31 +176,35 @@ namespace soundsystem {
     {
         StreamCapture* recorder;
         SoundAPI soundsystem;
+        int inputdeviceid;
         int channels;
 #if defined(DEBUG)
         bool duplex;
 #endif
-        InputStreamer(StreamCapture* r, int sg, int fs, int sr, int chs, SoundAPI sndsys)
+        InputStreamer(StreamCapture* r, int sg, int fs, int sr, int chs, SoundAPI sndsys, int devid)
             : SoundStreamer(sg, fs, sr)
             , recorder(r)
-            , channels(chs)
             , soundsystem(sndsys)
+            , inputdeviceid(devid)
+            , channels(chs)
 #if defined(DEBUG)
             , duplex(false)
 #endif
             { }
 
-        ~InputStreamer()
+        virtual ~InputStreamer()
         {
             MYTRACE(ACE_TEXT("~InputStreamer() - %p for StreamCapture %p\n"), this, recorder);
         }
-        bool IsVirtual() const { return soundsystem == SOUND_API_NOSOUND; }
+        bool IsVirtual() const { return inputdeviceid == SOUND_DEVICEID_VIRTUAL; }
+        bool IsShared() const { return (inputdeviceid & SOUND_DEVICE_SHARED_FLAG) != 0; }
     };
 
     struct OutputStreamer : public SoundStreamer
     {
         StreamPlayer* player;
         SoundAPI soundsystem;
+        int outputdeviceid;
         int channels;
         int volume;
         bool mute;
@@ -201,10 +212,11 @@ namespace soundsystem {
 #if defined(DEBUG)
         bool duplex;
 #endif
-        OutputStreamer(StreamPlayer* p, int sg, int fs, int sr, int chs, SoundAPI sndsys)
+        OutputStreamer(StreamPlayer* p, int sg, int fs, int sr, int chs, SoundAPI sndsys, int devid)
             : SoundStreamer(sg, fs, sr)
             , player(p)
             , soundsystem(sndsys)
+            , outputdeviceid(devid)
             , channels(chs)
             , volume(VOLUME_DEFAULT)
             , mute(false)
@@ -213,11 +225,11 @@ namespace soundsystem {
             , duplex(false)
 #endif
             { }
-        ~OutputStreamer()
+        virtual ~OutputStreamer()
         {
             MYTRACE(ACE_TEXT("~OutputStreamer() - %p for StreamPlayer %p\n"), this, player);
         }
-        bool IsVirtual() const { return soundsystem == SOUND_API_NOSOUND; }
+        bool IsVirtual() const { return outputdeviceid == SOUND_DEVICEID_VIRTUAL; }
     };
 
     struct DuplexStreamer : public SoundStreamer
@@ -228,24 +240,29 @@ namespace soundsystem {
         int input_channels;
         int output_channels;
         SoundAPI output_soundsystem;
+        int inputdeviceid, outputdeviceid;
         std::vector<short> tmpOutputBuffer;
 
-        DuplexStreamer(StreamDuplex* d, int sg, int fs, int sr, int inchs, int outchs, SoundAPI out_sndsys)
+        DuplexStreamer(StreamDuplex* d, int sg, int fs, int sr, int inchs, int outchs,
+                       SoundAPI out_sndsys, int indevid, int outdevid)
             : SoundStreamer(sg, fs, sr)
             , duplex(d)
             , input_channels(inchs)
             , output_channels(outchs)
             , output_soundsystem(out_sndsys)
+            , inputdeviceid(indevid)
+            , outputdeviceid(outdevid)
         {
             tmpOutputBuffer.resize(outchs * fs);
         }
 
-        ~DuplexStreamer()
+        virtual ~DuplexStreamer()
         {
             MYTRACE(ACE_TEXT("~DuplexStreamer() - %p for StreamDuplex %p\n"), this, duplex);
         }
 
-        bool IsVirtual() const { return output_soundsystem == SOUND_API_NOSOUND; }
+        bool IsVirtual() const { return inputdeviceid == SOUND_DEVICEID_VIRTUAL &&
+                                        outputdeviceid == SOUND_DEVICEID_VIRTUAL; }
     };
 
 
