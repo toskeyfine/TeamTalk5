@@ -16,7 +16,7 @@
  * client's version can be seen in the @a szVersion member of the
  * #User-struct. */
 
-#define TEAMTALK_VERSION "5.4.0.4965"
+#define TEAMTALK_VERSION "5.4.0.4969"
 
 
 #if defined(WIN32)
@@ -1337,6 +1337,10 @@ extern "C" {
         INT32 nLoginDelayMSec;
         /** @brief A randomly generated 256 bit access token created
          * by the server to identify the login session.
+         *
+         * The szAccessToken is available after receiving
+         * #CLIENTEVENT_CON_SUCCESS.
+         *
          * Read-only property. */
         TTCHAR szAccessToken[TT_STRLEN];
     } ServerProperties;
