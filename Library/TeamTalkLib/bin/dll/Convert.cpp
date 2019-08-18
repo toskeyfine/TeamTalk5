@@ -934,6 +934,29 @@ void Convert(const AudioConfig& audcfg, teamtalk::AudioConfig& result)
     result.gain_level = audcfg.nGainLevel;
 }
 
+void Convert(const AudioPreprocessor& audpreprocess, teamtalk::AudioPreprocessor& result)
+{
+    result.preprocessor = teamtalk::AudioPreprocessorType(audpreprocess.nPreprocessor);
+    switch(audpreprocess.nPreprocessor)
+    {
+    case NO_AUDIOPREPROCESSOR:
+        break;
+    case SPEEXDSP_AUDIOPREPROCESSOR:
+        Convert(audpreprocess.speexdsp, result.speexdsp);
+        break;
+    case TEAMTALK_AUDIOPREPROCESSOR :
+        Convert(audpreprocess.ttpreprocessor, result.ttpreprocessor);
+        break;
+    }
+}
+
+void Convert(const TTAudioPreprocessor& ttpreprocess, teamtalk::TTAudioPreprocessor& result)
+{
+    result.gainlevel = ttpreprocess.nGainLevel;
+    result.muteleft = ttpreprocess.bMuteLeftSpeaker;
+    result.muteright = ttpreprocess.bMuteRightSpeaker;
+}
+
 void Convert(const teamtalk::SpeexDSP& spxdsp, SpeexDSP& result)
 {
     ZERO_STRUCT(result);
@@ -1093,7 +1116,7 @@ void Convert(const teamtalk::ClientUser& clientuser, User& result)
     Convert(static_cast<const teamtalk::User&>(clientuser), result);
 
     teamtalk::clientchannel_t channel = clientuser.GetChannel();
-    if(!channel.null())
+    if(channel)
         result.nChannelID = channel->GetChannelID();
     else
         result.nChannelID = 0;
@@ -1148,7 +1171,7 @@ void Convert(const teamtalk::ServerUser& serveruser, User& result)
 
     Convert(static_cast<const teamtalk::User&>(serveruser), result);
     teamtalk::serverchannel_t channel = serveruser.GetChannel();
-    if(!channel.null())
+    if(channel)
         result.nChannelID = channel->GetChannelID();
     else
         result.nChannelID = 0;
