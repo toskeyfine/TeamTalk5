@@ -24,8 +24,6 @@
 #ifndef STREAMPLAYERS_H
 #define STREAMPLAYERS_H
 
-#include <ace/Bound_Ptr.h>
-
 #include <myace/MyACE.h>
 
 #include <avstream/SoundSystem.h>
@@ -55,16 +53,6 @@
 class AudioMuxer;
 
 namespace teamtalk {
-
-    enum Stereo
-    {
-        STEREO_NONE = 0x0,
-        STEREO_LEFT = 0x1,
-        STEREO_RIGHT = 0x2,
-        STEREO_BOTH = STEREO_LEFT | STEREO_RIGHT
-    };
-
-    typedef unsigned char StereoMask;
 
     struct encframe
     {
