@@ -26,7 +26,6 @@
 
 #include <ace/Task.h>
 #include <ace/Thread_Semaphore.h> 
-#include <ace/Bound_Ptr.h>
 
 #if defined(ENABLE_SPEEX)
 #include <codec/SpeexEncoder.h>
@@ -42,10 +41,6 @@
 #include <teamtalk/Common.h>
 
 #include <memory>
-
-#define GAIN_MAX 32000
-#define GAIN_NORMAL 1000
-#define GAIN_MIN 0
 
 typedef std::function< void (const teamtalk::AudioCodec& codec,
                              const char* enc_data, int enc_len,
