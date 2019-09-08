@@ -26,8 +26,10 @@
 
 #include "MediaStreamer.h"
 
-#include <thread>
-#include <ace/Future.h>
+#include <stdint.h>
+
+#include <atlbase.h>
+#include <mfapi.h>
 
 bool GetMFMediaFileProp(const ACE_TString& filename, MediaFileProp& fileprop);
 
@@ -35,18 +37,11 @@ class MFStreamer : public MediaStreamer
 {
 public:
     MFStreamer(MediaStreamListener* listener);
-    ~MFStreamer();
 
-    bool OpenFile(const MediaFileProp& in_prop,
-                  const MediaStreamOutput& out_prop);
-    void Close();
-
-    bool StartStream();
-
-private:
+protected:
     void Run();
 
-    std::shared_ptr< std::thread > m_thread;
-    ACE_Future<bool> m_open, m_start;
+    int QueueAudioSample(CComPtr<IMFSample>& pSample, int64_t sampletime);
+    int QueueVideoSample(CComPtr<IMFSample>& pSample, int64_t sampletime);
 };
 #endif
