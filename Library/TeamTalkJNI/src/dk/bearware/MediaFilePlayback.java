@@ -21,9 +21,14 @@
  *
  */
 
-#include "SoundSystemBase.h"
+package dk.bearware;
 
-namespace soundsystem {
-
-    soundsystem_t getAudUnit();
+public class MediaFilePlayback {
+    
+    public int uOffsetMSec;
+    public boolean bPaused;
+    public AudioPreprocessor audioPreprocessor = new AudioPreprocessor();
+    
+    public MediaFilePlayback() {
+    }
 }
