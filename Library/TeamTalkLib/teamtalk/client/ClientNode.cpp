@@ -93,14 +93,17 @@ ClientNode::ClientNode(const ACE_TString& version, ClientListener* listener)
 
     m_listener->RegisterEventSuspender(this);
 
-    m_local_voicelog = clientuser_t(new ClientUser(LOCAL_USERID, this, m_listener));
+    m_soundsystem = soundsystem::GetInstance();
+    m_soundprop.soundgroupid = m_soundsystem->OpenSoundGroup();
+
+    m_local_voicelog.reset(new ClientUser(LOCAL_USERID, this,
+                                          m_listener, m_soundsystem));
 
     this->activate();
 #if defined(_DEBUG)
     m_reactor_wait.acquire();
 #endif
 
-    m_soundprop.soundgroupid = SOUNDSYSTEM->OpenSoundGroup();
 }
 
 ClientNode::~ClientNode()
@@ -125,7 +128,7 @@ ClientNode::~ClientNode()
     audiomuxer().StopThread();
 
     AUDIOCONTAINER::instance()->ReleaseAllAudio(m_soundprop.soundgroupid);
-    SOUNDSYSTEM->RemoveSoundGroup(m_soundprop.soundgroupid);
+    m_soundsystem->RemoveSoundGroup(m_soundprop.soundgroupid);
 
     MYTRACE( (ACE_TEXT("~ClientNode\n")) );
 }
@@ -1012,11 +1015,11 @@ void ClientNode::OpenAudioCapture(const AudioCodec& codec)
         return;
 
     int input_samplerate = 0, input_channels = 0, input_samples = 0;
-    if(!SOUNDSYSTEM->SupportsInputFormat(m_soundprop.inputdeviceid,
+    if(!m_soundsystem->SupportsInputFormat(m_soundprop.inputdeviceid,
                                        codec_channels, codec_samplerate))
     {
         DeviceInfo dev;
-        if(!SOUNDSYSTEM->GetDevice(m_soundprop.inputdeviceid, dev) ||
+        if(!m_soundsystem->GetDevice(m_soundprop.inputdeviceid, dev) ||
            dev.default_samplerate == 0)
             return;
         
@@ -1053,7 +1056,7 @@ void ClientNode::OpenAudioCapture(const AudioCodec& codec)
     if(m_flags & CLIENT_SNDINOUTPUT_DUPLEX)
     {
         DeviceInfo dev;
-        SOUNDSYSTEM->GetDevice(m_soundprop.outputdeviceid, dev);
+        m_soundsystem->GetDevice(m_soundprop.outputdeviceid, dev);
         assert(dev.SupportsOutputFormat(output_channels, input_samplerate));
         if(!dev.SupportsOutputFormat(output_channels, input_samplerate))
         {
@@ -1073,14 +1076,14 @@ void ClientNode::OpenAudioCapture(const AudioCodec& codec)
             m_playback_buffer.resize(codec_samples * codec_channels);
         }
 
-        b = SOUNDSYSTEM->OpenDuplexStream(this, m_soundprop.inputdeviceid,
+        b = m_soundsystem->OpenDuplexStream(this, m_soundprop.inputdeviceid,
                                         m_soundprop.outputdeviceid,
                                         m_soundprop.soundgroupid, 
                                         input_samplerate, input_channels,
                                         output_channels, input_samples);
     }
     else
-        b = SOUNDSYSTEM->OpenInputStream(this, m_soundprop.inputdeviceid, 
+        b = m_soundsystem->OpenInputStream(this, m_soundprop.inputdeviceid, 
                                        m_soundprop.soundgroupid,
                                        input_samplerate, input_channels, 
                                        input_samples);
@@ -1097,9 +1100,9 @@ void ClientNode::CloseAudioCapture()
     ASSERT_REACTOR_LOCKED(this);
 
     if(m_flags & CLIENT_SNDINOUTPUT_DUPLEX)
-        SOUNDSYSTEM->CloseDuplexStream(this);
+        m_soundsystem->CloseDuplexStream(this);
     else
-        SOUNDSYSTEM->CloseInputStream(this);
+        m_soundsystem->CloseInputStream(this);
 
     audiomuxer().QueueUserAudio(MUX_MYSELF_USERID, NULL, 
                                 m_soundprop.samples_transmitted, true,
@@ -1113,74 +1116,6 @@ void ClientNode::CloseAudioCapture()
     //clear playback resampler if initiated (in duplex mode)
     m_playback_resampler.reset();
     m_playback_buffer.clear();
-}
-
-bool ClientNode::UpdateSoundInputPreprocess()
-{
-    ASSERT_REACTOR_LOCKED(this);
-
-    rguard_t g_snd(lock_sndprop());
-
-    //if audio thread isn't running, then Speex preprocess is not set up
-    if(m_voice_thread.codec().codec == CODEC_NO_CODEC)
-        return true;
-
-    int channels = GetAudioCodecChannels(m_voice_thread.codec());
-
-#if defined(ENABLE_SPEEXDSP)
-    //set AGC
-    bool ret = true;
-    wguard_t gp(m_voice_thread.m_preprocess_lock);
-
-    SpeexAGC agc;
-    agc.gain_level = (float)m_soundprop.speexdsp.agc_gainlevel;
-    agc.max_increment = m_soundprop.speexdsp.agc_maxincdbsec;
-    agc.max_decrement = m_soundprop.speexdsp.agc_maxdecdbsec;
-    agc.max_gain = m_soundprop.speexdsp.agc_maxgaindb;
-
-    //AGC
-    ret &= m_voice_thread.m_preprocess_left.EnableAGC(m_soundprop.speexdsp.enable_agc);
-    ret &= (channels == 1 || m_voice_thread.m_preprocess_right.EnableAGC(m_soundprop.speexdsp.enable_agc));
-    ret &= m_voice_thread.m_preprocess_left.SetAGCSettings(agc);
-    ret &= (channels == 1 || m_voice_thread.m_preprocess_right.SetAGCSettings(agc));
-
-    //denoise
-    ret &= m_voice_thread.m_preprocess_left.EnableDenoise(m_soundprop.speexdsp.enable_denoise);
-    ret &= (channels == 1 || m_voice_thread.m_preprocess_right.EnableDenoise(m_soundprop.speexdsp.enable_denoise));
-    ret &= m_voice_thread.m_preprocess_left.SetDenoiseLevel(m_soundprop.speexdsp.maxnoisesuppressdb);
-    ret &= (channels == 1 || m_voice_thread.m_preprocess_right.SetDenoiseLevel(m_soundprop.speexdsp.maxnoisesuppressdb));
-
-    //set AEC
-    ret &= m_voice_thread.m_preprocess_left.EnableEchoCancel(m_soundprop.speexdsp.enable_aec);
-    ret &= (channels == 1 || m_voice_thread.m_preprocess_right.EnableEchoCancel(m_soundprop.speexdsp.enable_aec));
-
-    ret &= m_voice_thread.m_preprocess_left.SetEchoSuppressLevel(m_soundprop.speexdsp.aec_suppress_level);
-    ret &= (channels == 1 || m_voice_thread.m_preprocess_right.SetEchoSuppressLevel(m_soundprop.speexdsp.aec_suppress_level));
-    ret &= m_voice_thread.m_preprocess_left.SetEchoSuppressActive(m_soundprop.speexdsp.aec_suppress_active);
-    ret &= (channels == 1 || m_voice_thread.m_preprocess_right.SetEchoSuppressActive(m_soundprop.speexdsp.aec_suppress_active));
-
-    //set dereverb
-    m_voice_thread.m_preprocess_left.EnableDereverb(m_soundprop.dereverb);
-    if(channels == 2)
-        m_voice_thread.m_preprocess_right.EnableDereverb(m_soundprop.dereverb);
-
-    MYTRACE_COND(!ret, ACE_TEXT("Failed to set AGC settings\n"));
-
-    if((m_soundprop.speexdsp.enable_agc || m_soundprop.speexdsp.enable_denoise || 
-        m_soundprop.speexdsp.enable_aec) && !ret)
-        return false;
-
-    MYTRACE(ACE_TEXT("Set audio cfg. AGC: %d, %d, %d, %d, %d. Denoise: %d, %d. AEC: %d, %d, %d.\n"),
-            m_soundprop.speexdsp.enable_agc, (int)m_soundprop.speexdsp.agc_gainlevel,
-            m_soundprop.speexdsp.agc_maxincdbsec,m_soundprop.speexdsp.agc_maxdecdbsec,
-            m_soundprop.speexdsp.agc_maxgaindb, m_soundprop.speexdsp.enable_denoise,
-            m_soundprop.speexdsp.maxnoisesuppressdb, m_soundprop.speexdsp.enable_aec,
-            m_soundprop.speexdsp.aec_suppress_level, m_soundprop.speexdsp.aec_suppress_active);
-
-    return true;
-#else
-    return false;
-#endif
 }
 
 void ClientNode::QueueAudioFrame(const media::AudioFrame& audframe)
@@ -1596,6 +1531,12 @@ void ClientNode::MediaStreamStatusCallback(MediaStreamer* streamer,
         mfs = MFS_FINISHED;
         StartUserTimer(USER_TIMER_STOP_STREAM_MEDIAFILE_ID, 0, 0, 
                        ACE_Time_Value::zero);
+        break;
+    case MEDIASTREAM_PAUSED :
+        mfs = MFS_PAUSED;
+        break;
+    case MEDIASTREAM_NONE :
+        assert(status != MEDIASTREAM_NONE);
         break;
     }
 
@@ -2722,7 +2663,7 @@ bool ClientNode::InitSoundInputDevice(int inputdevice)
     if(m_flags & CLIENT_SNDINPUT_READY)
         return false;
 
-    if(!SOUNDSYSTEM->CheckInputDevice(inputdevice))
+    if(!m_soundsystem->CheckInputDevice(inputdevice))
         return false;
 
     rguard_t g_snd(lock_sndprop());
@@ -2747,7 +2688,7 @@ bool ClientNode::InitSoundOutputDevice(int outputdevice)
 
     if(m_flags & CLIENT_SNDOUTPUT_READY)
         return false;
-    if(!SOUNDSYSTEM->CheckOutputDevice(outputdevice))
+    if(!m_soundsystem->CheckOutputDevice(outputdevice))
         return false;
 
     rguard_t g_snd(lock_sndprop());
@@ -2771,9 +2712,9 @@ bool ClientNode::InitSoundDuplexDevices(int inputdeviceid,
     if((m_flags & CLIENT_SNDINPUT_READY) ||
        (m_flags & CLIENT_SNDOUTPUT_READY))
         return false; //already enabled
-    if(!SOUNDSYSTEM->CheckInputDevice(inputdeviceid))
+    if(!m_soundsystem->CheckInputDevice(inputdeviceid))
         return false;
-    if(!SOUNDSYSTEM->CheckOutputDevice(outputdeviceid))
+    if(!m_soundsystem->CheckOutputDevice(outputdeviceid))
         return false;
 
     rguard_t g_snd(lock_sndprop());
@@ -2857,12 +2798,12 @@ bool ClientNode::CloseSoundDuplexDevices()
 bool ClientNode::SetSoundOutputVolume(int volume)
 {
     rguard_t g_snd(lock_sndprop());
-    return SOUNDSYSTEM->SetMasterVolume(m_soundprop.soundgroupid, volume);
+    return m_soundsystem->SetMasterVolume(m_soundprop.soundgroupid, volume);
 }
 int ClientNode::GetSoundOutputVolume()
 {
     rguard_t g_snd(lock_sndprop());
-    return SOUNDSYSTEM->GetMasterVolume(m_soundprop.soundgroupid);
+    return m_soundsystem->GetMasterVolume(m_soundprop.soundgroupid);
 }
 
 void ClientNode::EnableVoiceTransmission(bool enable)
@@ -2928,7 +2869,7 @@ bool ClientNode::EnableAutoPositioning(bool enable)
         m_flags |= CLIENT_SNDOUTPUT_AUTO3DPOSITION;
     else
         m_flags &= ~CLIENT_SNDOUTPUT_AUTO3DPOSITION;
-    return SOUNDSYSTEM->SetAutoPositioning(m_soundprop.soundgroupid, enable);
+    return m_soundsystem->SetAutoPositioning(m_soundprop.soundgroupid, enable);
 }
 bool ClientNode::AutoPositionUsers()
 {
@@ -2936,7 +2877,7 @@ bool ClientNode::AutoPositionUsers()
 
     if(m_flags & CLIENT_SNDINOUTPUT_DUPLEX)
         return false;
-    return SOUNDSYSTEM->AutoPositionPlayers(m_soundprop.soundgroupid, true);
+    return m_soundsystem->AutoPositionPlayers(m_soundprop.soundgroupid, true);
 }
 void ClientNode::EnableAudioBlockCallback(int userid, StreamType stream_type,
                                           bool enable)
@@ -2960,7 +2901,7 @@ bool ClientNode::MuteAll(bool muteall)
         m_flags &= ~CLIENT_SNDOUTPUT_MUTE;
 
     rguard_t g_snd(lock_sndprop());
-    return SOUNDSYSTEM->MuteAll(m_soundprop.soundgroupid, muteall);
+    return m_soundsystem->MuteAll(m_soundprop.soundgroupid, muteall);
 }
 
 void ClientNode::SetVoiceGainLevel(int gainlevel)
@@ -2985,7 +2926,7 @@ void ClientNode::SetSoundPreprocess(const SpeexDSP& speexdsp)
 
     m_soundprop.speexdsp = speexdsp;
 
-    UpdateSoundInputPreprocess();
+    m_voice_thread.UpdatePreprocess(speexdsp);
 }
 
 void ClientNode::SetSoundInputTone(StreamTypes streams, int frequency)
@@ -3032,14 +2973,20 @@ bool ClientNode::StartMTUQuery()
 }
 
 bool ClientNode::StartStreamingMediaFile(const ACE_TString& filename,
+                                         uint32_t offset, bool paused,
+                                         const AudioPreprocessor& preprocessor,
                                          const VideoCodec& vid_codec)
 {
     ASSERT_REACTOR_LOCKED(this);
 
     //don't allow video streaming if not in channel or already streaming
-    if (!m_mychannel ||
-       (m_flags & CLIENT_STREAM_VIDEOFILE) ||
-       (m_flags & CLIENT_STREAM_AUDIOFILE))
+    if (!m_mychannel)
+        return false;
+    if ((m_flags & CLIENT_STREAM_VIDEOFILE) || (m_flags & CLIENT_STREAM_AUDIOFILE))
+        return false;
+
+    m_media_streamer = MakeMediaStreamer(this);
+    if (!m_media_streamer)
         return false;
 
     MediaStreamOutput media_out;
@@ -3048,12 +2995,8 @@ bool ClientNode::StartStreamingMediaFile(const ACE_TString& filename,
     media_out.audio.samplerate = GetAudioCodecSampleRate(m_mychannel->GetAudioCodec());
     media_out.audio_samples = GetAudioCodecCbSamples(m_mychannel->GetAudioCodec());
 
-    TTASSERT(!m_media_streamer);
-    if (!m_media_streamer)
-        m_media_streamer = MakeMediaStreamer(this);
-
     MediaFileProp file_in(filename);
-    if (!m_media_streamer || !m_media_streamer->OpenFile(file_in, media_out))
+    if (!m_media_streamer->OpenFile(file_in, media_out))
     {
         StopStreamingMediaFile();
         return false;
@@ -3064,9 +3007,8 @@ bool ClientNode::StartStreamingMediaFile(const ACE_TString& filename,
     //initiate audio part of media file
     if(file_in.audio.IsValid())
     {
-        if(!m_audiofile_thread.StartEncoder(std::bind(&ClientNode::EncodedAudioFileFrame, this,
-                                                      _1, _2, _3, _4, _5),
-                                            m_mychannel->GetAudioCodec(), true))
+        auto cbfunc = std::bind(&ClientNode::EncodedAudioFileFrame, this, _1, _2, _3, _4, _5);
+        if (!m_audiofile_thread.StartEncoder(cbfunc, m_mychannel->GetAudioCodec(), true))
         {
             StopStreamingMediaFile();
             return false;
@@ -3076,22 +3018,18 @@ bool ClientNode::StartStreamingMediaFile(const ACE_TString& filename,
 
     TTASSERT(!m_videofile_thread);
     //initiate video part of media file
-    if(file_in.video.IsValid() && !m_videofile_thread)
+    if (file_in.video.IsValid() && !m_videofile_thread)
     {
         m_flags |= CLIENT_STREAM_VIDEOFILE;
 
-        VideoThread* vid_thread;
-        ACE_NEW_NORETURN(vid_thread, VideoThread());
-        m_videofile_thread = video_thread_t(vid_thread);
-    
-        if(!vid_thread ||
-           !vid_thread->StartEncoder(std::bind(&ClientNode::EncodedVideoFileFrame, this, _1, _2, _3, _4, _5),
-                                     m_media_streamer->GetMediaOutput().video, vid_codec, VIDEOFILE_ENCODER_FRAMES_MAX))
+        m_videofile_thread.reset(new VideoThread());
+        auto cbfunc = std::bind(&ClientNode::EncodedVideoFileFrame, this, _1, _2, _3, _4, _5);
+        if (!m_videofile_thread->StartEncoder(cbfunc, m_media_streamer->GetMediaOutput().video,
+                                              vid_codec, VIDEOFILE_ENCODER_FRAMES_MAX))
         {
             StopStreamingMediaFile();
             return false;
         }
-
     }
     
     // give up if input file has no video or audio
@@ -3104,14 +3042,56 @@ bool ClientNode::StartStreamingMediaFile(const ACE_TString& filename,
     //both audio and video part of mediafile use same stream id
     GEN_NEXT_ID(m_mediafile_stream_id);
 
-    bool b = m_media_streamer->StartStream();
-    if(!b)
+    if (!UpdateStreamingMediaFile(offset, paused, preprocessor, vid_codec))
     {
         StopStreamingMediaFile();
         return false;
     }
 
     return true;
+}
+
+bool ClientNode::UpdateStreamingMediaFile(uint32_t offset, bool paused,
+                                          const AudioPreprocessor& preprocessor,
+                                          const VideoCodec& vid_codec)
+{
+    if (!m_media_streamer)
+        return false;
+
+    if (m_videofile_thread)
+    {
+        if (!m_videofile_thread->UpdateEncoder(vid_codec))
+        {
+            MYTRACE(ACE_TEXT("Failed to update video encoder on %s\n"),
+                    m_media_streamer->GetMediaInput().filename.c_str());
+            return false;
+        }
+    }
+
+    switch(preprocessor.preprocessor)
+    {
+    case AUDIOPREPROCESSOR_NONE :
+        break;
+    case AUDIOPREPROCESSOR_SPEEXDSP :
+        if (!m_audiofile_thread.UpdatePreprocess(preprocessor.speexdsp))
+            return false;
+        break;
+    case AUDIOPREPROCESSOR_TEAMTALK :
+        m_audiofile_thread.m_gainlevel = preprocessor.ttpreprocessor.gainlevel;
+        m_audiofile_thread.MuteSound(preprocessor.ttpreprocessor.muteleft,
+                                     preprocessor.ttpreprocessor.muteright);
+        break;
+    }
+
+    if (offset != MEDIASTREAMER_OFFSET_IGNORE)
+        m_media_streamer->SetOffset(offset);
+
+    if (paused)
+        return m_media_streamer->Pause();
+    else
+    {
+        return m_media_streamer->StartStream();
+    }
 }
 
 void ClientNode::StopStreamingMediaFile()
@@ -3152,7 +3132,7 @@ int ClientNode::InitMediaPlayback(const ACE_TString& filename, uint32_t offset, 
 
     mediaplayback_t playback;
     playback.reset(new MediaPlayback(std::bind(&ClientNode::MediaPlaybackStatus, this, _1, _2, _3),
-                   m_mediaplayback_counter, soundsystem::GetInstance()));
+                   m_mediaplayback_counter, m_soundsystem));
     
     if (!playback)
         return 0;
@@ -3168,36 +3148,19 @@ int ClientNode::InitMediaPlayback(const ACE_TString& filename, uint32_t offset, 
             return 0;
     }
 
-    switch(preprocessor.preprocessor)
-    {
-    case AUDIOPREPROCESSOR_NONE :
-        break;
-    case AUDIOPREPROCESSOR_TEAMTALK :
-        playback->MuteSound(preprocessor.ttpreprocessor.muteleft, preprocessor.ttpreprocessor.muteright);
-        break;
-    case AUDIOPREPROCESSOR_SPEEXDSP :
-#if defined(ENABLE_SPEEXDSP)
-        SpeexAGC agc(float(preprocessor.speexdsp.agc_gainlevel), preprocessor.speexdsp.agc_maxincdbsec,
-                     preprocessor.speexdsp.agc_maxdecdbsec, preprocessor.speexdsp.agc_maxgaindb);
-
-        if (!playback->SetupSpeexPreprocess(preprocessor.speexdsp.enable_agc, agc,
-                                            preprocessor.speexdsp.enable_denoise,
-                                            preprocessor.speexdsp.maxnoisesuppressdb))
-            return false;
-#endif
-        break;
-    }
-
     m_mediaplayback_streams[m_mediaplayback_counter] = playback;
 
-    if (!paused)
-        playback->PlayMedia();
+    if (!UpdateMediaPlayback(m_mediaplayback_counter, offset, paused, preprocessor))
+    {
+        m_mediaplayback_streams.erase(m_mediaplayback_counter);
+        return 0;
+    }
 
-    return true;
+    return m_mediaplayback_counter;
 }
 
 bool ClientNode::UpdateMediaPlayback(int id, uint32_t offset, bool paused, 
-                                     const AudioPreprocessor& preprocessor)
+                                     const AudioPreprocessor& preprocessor, bool initial)
 {
     ASSERT_REACTOR_LOCKED(this);
 
@@ -3205,29 +3168,50 @@ bool ClientNode::UpdateMediaPlayback(int id, uint32_t offset, bool paused,
     if (iplayback == m_mediaplayback_streams.end())
         return false;
 
+    auto playback = iplayback->second;
+
     switch(preprocessor.preprocessor)
     {
     case AUDIOPREPROCESSOR_NONE:
-        iplayback->second->MuteSound(false, false);
-        iplayback->second->SetGainLevel();
+        playback->MuteSound(false, false);
+        playback->SetGainLevel();
         break;
     case AUDIOPREPROCESSOR_TEAMTALK:
-        iplayback->second->MuteSound(preprocessor.ttpreprocessor.muteleft, preprocessor.ttpreprocessor.muteright);
-        iplayback->second->SetGainLevel(preprocessor.ttpreprocessor.gainlevel);
+        playback->MuteSound(preprocessor.ttpreprocessor.muteleft, preprocessor.ttpreprocessor.muteright);
+        playback->SetGainLevel(preprocessor.ttpreprocessor.gainlevel);
         break;
     case AUDIOPREPROCESSOR_SPEEXDSP:
 #if defined(ENABLE_SPEEXDSP)
         SpeexAGC agc(float(preprocessor.speexdsp.agc_gainlevel), preprocessor.speexdsp.agc_maxincdbsec,
                      preprocessor.speexdsp.agc_maxdecdbsec, preprocessor.speexdsp.agc_maxgaindb);
 
-        if(!iplayback->second->SetupSpeexPreprocess(preprocessor.speexdsp.enable_agc, agc,
-                                                    preprocessor.speexdsp.enable_denoise,
-                                                    preprocessor.speexdsp.maxnoisesuppressdb))
+        if(!playback->SetupSpeexPreprocess(preprocessor.speexdsp.enable_agc, agc,
+                                           preprocessor.speexdsp.enable_denoise,
+                                           preprocessor.speexdsp.maxnoisesuppressdb))
             return false;
 #endif
         break;
     }
-    return true;
+
+    if(offset != MEDIASTREAMER_OFFSET_IGNORE)
+    {
+        if (!playback->Seek(offset))
+            return false;
+    }
+
+    if (paused)
+    {
+        //if (initial)
+        //{
+        //    if (!playback->Pause())
+        //        return false;
+
+        //    return playback->PlayMedia();
+        //}
+        return playback->Pause();
+    }
+    else
+        return playback->PlayMedia();
 }
 
 bool ClientNode::StopMediaPlayback(int id)
@@ -3256,6 +3240,9 @@ void ClientNode::MediaPlaybackStatus(int id, const MediaFileProp& mfp, MediaStre
         TTASSERT(ret >= 0);
         break;
     }
+    case MEDIASTREAM_PAUSED :
+        m_listener->OnLocalMediaFilePlayback(id, mfp, MFS_PAUSED);
+        break;
     case MEDIASTREAM_FINISHED :
     {
         // issue playback destroy message
@@ -3264,6 +3251,9 @@ void ClientNode::MediaPlaybackStatus(int id, const MediaFileProp& mfp, MediaStre
         TTASSERT(ret >= 0);
         break;
     }
+    case MEDIASTREAM_NONE :
+        assert(status != MEDIASTREAM_NONE);
+        break;
     }
 }
 
@@ -3902,11 +3892,10 @@ void ClientNode::JoinChannel(clientchannel_t& chan)
     if(ValidAudioCodec(codec))
     {
         //set encoder properties
-        if(m_voice_thread.StartEncoder(std::bind(&ClientNode::EncodedAudioVoiceFrame, this,
-                                                 _1, _2, _3, _4, _5),
-                                       codec, true))
+        auto cbenc = std::bind(&ClientNode::EncodedAudioVoiceFrame, this, _1, _2, _3, _4, _5);
+        if(m_voice_thread.StartEncoder(cbenc, codec, true))
         {
-            if(!UpdateSoundInputPreprocess()) //set AGC, denoise, etc.
+            if (!m_voice_thread.UpdatePreprocess(m_soundprop.speexdsp)) //set AGC, denoise, etc.
             {
                 m_listener->OnInternalError(TT_INTERR_AUDIOCONFIG_INIT_FAILED,
                             GetErrorDescription(TT_INTERR_AUDIOCONFIG_INIT_FAILED));
@@ -4955,7 +4944,7 @@ void ClientNode::HandleLoggedIn(const mstrings_t& properties)
         return;
 
     TTASSERT(m_users.find(userid) == m_users.end());
-    clientuser_t user (new ClientUser(userid, this, m_listener));
+    clientuser_t user (new ClientUser(userid, this, m_listener, m_soundsystem));
 
     if(GetProperty(properties, TT_NICKNAME, nick))
         user->SetNickname(nick);
@@ -5041,7 +5030,7 @@ void ClientNode::HandleAddUser(const mstrings_t& properties)
 
     clientuser_t user = GetUser(userid);
     if (!user) //view all users disabled scenario
-        user = clientuser_t(new ClientUser(userid, this, m_listener));
+        user = clientuser_t(new ClientUser(userid, this, m_listener, m_soundsystem));
 
     if(GetProperty(properties, TT_NICKNAME, nickname))
         user->SetNickname(nickname);
