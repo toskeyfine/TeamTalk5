@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2005-2018, BearWare.dk
- * 
+ *
  * Contact Information:
  *
  * Bjoern D. Rasmussen
@@ -21,9 +21,15 @@
  *
  */
 
-#include "SoundSystemBase.h"
+package dk.bearware;
 
-namespace soundsystem {
+public class TTAudioPreprocessor {
 
-    soundsystem_t getAudUnit();
+    public int nGainLevel;
+
+    public boolean bMuteLeftSpeaker;
+    public boolean bMuteRightSpeaker;
+    
+    public TTAudioPreprocessor() {
+    }
 }
