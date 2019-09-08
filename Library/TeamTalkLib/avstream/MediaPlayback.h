@@ -45,7 +45,7 @@ class MediaPlayback : public MediaStreamListener
 public:
     MediaPlayback(mediaplayback_status_t statusfunc,
                   int userdata,
-                  soundsystem::SoundSystem* sndsys);
+                  soundsystem::soundsystem_t sndsys);
     ~MediaPlayback();
     
     bool OpenFile(const ACE_TString& filename);
@@ -53,6 +53,10 @@ public:
     bool OpenSoundSystem(int sndgrpid, int outputdeviceid, bool speexdsp = false);
 
     bool PlayMedia();
+
+    bool Pause();
+
+    bool Seek(ACE_UINT32 offset);
 
     // required by TeamTalkAudioPreprocessor
     void MuteSound(bool left, bool right);
@@ -86,7 +90,7 @@ private:
     mediaplayback_status_t m_statusfunc;
     int m_userdata = 0;
     int m_gainlevel = GAIN_NORMAL;
-    soundsystem::SoundSystem* m_sndsys;
+    soundsystem::soundsystem_t m_sndsys;
     audio_resampler_t m_resampler;
     std::queue<ACE_Message_Block*> m_audio_buffer;
     std::mutex m_mutex;
