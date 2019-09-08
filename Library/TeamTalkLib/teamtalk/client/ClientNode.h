@@ -339,14 +339,19 @@ namespace teamtalk {
 
         //stream media file (DirectShow wrapper)
         bool StartStreamingMediaFile(const ACE_TString& filename,
+                                     uint32_t offset, bool paused,
+                                     const AudioPreprocessor& preprocessor,
                                      const VideoCodec& vid_codec);
+        bool UpdateStreamingMediaFile(uint32_t offset, bool paused,
+                                      const AudioPreprocessor& preprocessor,
+                                      const VideoCodec& vid_codec);
         void StopStreamingMediaFile();
 
         // playback local media file
         int InitMediaPlayback(const ACE_TString& filename, uint32_t offset,
                               bool paused, const AudioPreprocessor& preprocessor);
         bool UpdateMediaPlayback(int id, uint32_t offset, bool paused, 
-                                 const AudioPreprocessor& preprocessor);
+                                 const AudioPreprocessor& preprocessor, bool initial = false);
         bool StopMediaPlayback(int id);
 
         void MediaPlaybackStatus(int id, const MediaFileProp& mfp, MediaStreamStatus status);
@@ -572,7 +577,6 @@ namespace teamtalk {
         //audio start/stop/update
         void OpenAudioCapture(const AudioCodec& codec);
         void CloseAudioCapture();
-        bool UpdateSoundInputPreprocess();
         void QueueAudioFrame(const media::AudioFrame& audframe);
 
         void SendVoicePacket(const VoicePacket& packet);
@@ -594,6 +598,8 @@ namespace teamtalk {
 
         void ResetAudioPlayers();
 
+        // shared sound system instance
+        soundsystem::soundsystem_t m_soundsystem;
         //the reactor associated with this client instance
         ACE_Reactor m_reactor;
         ClientFlags m_flags; //Mask of ClientFlag-enum
