@@ -21,9 +21,15 @@
  *
  */
 
-#include "SoundSystemBase.h"
+package dk.bearware;
 
-namespace soundsystem {
+public class AudioPreprocessor {
 
-    soundsystem_t getAudUnit();
+    int nPreprocessor = AudioPreprocessorType.NO_AUDIOPREPROCESSOR;
+
+    public SpeexDSP speexdsp = new SpeexDSP();
+    public TTAudioPreprocessor ttpreprocessor = new TTAudioPreprocessor();
+    
+    AudioPreprocessor() {
+    }
 }
