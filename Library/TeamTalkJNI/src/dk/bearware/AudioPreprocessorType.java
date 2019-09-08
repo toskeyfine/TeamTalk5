@@ -21,9 +21,10 @@
  *
  */
 
-#include "SoundSystemBase.h"
+package dk.bearware;
 
-namespace soundsystem {
-
-    soundsystem_t getAudUnit();
+public interface AudioPreprocessorType {
+    public static final int NO_AUDIOPREPROCESSOR        = 0;
+    public static final int SPEEXDSP_AUDIOPREPROCESSOR  = 1;
+    public static final int TEAMTALK_AUDIOPREPROCESSOR  = 2;
 }
