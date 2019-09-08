@@ -503,7 +503,7 @@ void setTTMessage(JNIEnv* env, TTMessage& msg, jobject pMsg)
     {
         jclass cls_obj = env->FindClass("dk/bearware/MediaFileInfo");
         jobject newObj = newObject(env, cls_obj);
-        setMediaFileInfo(env, msg.mediafileinfo, newObj);
+        setMediaFileInfo(env, msg.mediafileinfo, newObj, N2J);
         env->SetObjectField(pMsg, fid_mfi, newObj);
     }
     break;
@@ -860,6 +860,60 @@ void setSpeexDSP(JNIEnv* env, SpeexDSP& spxdsp, jobject lpSpeexDSP, JConvert con
     }
 }
 
+void setTTAudioPreprocessor(JNIEnv* env, TTAudioPreprocessor& preprocessor, jobject lpPreprocessor, JConvert conv) {
+    jclass cls = env->GetObjectClass(lpPreprocessor);
+    jfieldID fid_gain = env->GetFieldID(cls, "nGainLevel", "I");
+    jfieldID fid_left = env->GetFieldID(cls, "bMuteLeftSpeaker", "Z");
+    jfieldID fid_right = env->GetFieldID(cls, "bMuteRightSpeaker", "Z");
+
+    assert(fid_gain);
+    assert(fid_left);
+    assert(fid_right);
+
+    if (conv == N2J)
+    {
+        env->SetIntField(lpPreprocessor, fid_gain, preprocessor.nGainLevel);
+        env->SetBooleanField(lpPreprocessor, fid_left, preprocessor.bMuteLeftSpeaker);
+        env->SetBooleanField(lpPreprocessor, fid_right, preprocessor.bMuteRightSpeaker);
+    }
+    else
+    {
+        preprocessor.nGainLevel = env->GetIntField(lpPreprocessor, fid_gain);
+        preprocessor.bMuteLeftSpeaker = env->GetBooleanField(lpPreprocessor, fid_left);
+        preprocessor.bMuteRightSpeaker = env->GetBooleanField(lpPreprocessor, fid_right);
+    }
+}
+
+void setAudioPreprocessor(JNIEnv* env, AudioPreprocessor& preprocessor, jobject lpPreprocessor, JConvert conv) {
+    jclass cls = env->GetObjectClass(lpPreprocessor);
+    jfieldID fid_type = env->GetFieldID(cls, "nPreprocessor", "I");
+    jfieldID fid_spx = env->GetFieldID(cls, "speexdsp", "Ldk/bearware/SpeexDSP;");
+    jfieldID fid_ttp = env->GetFieldID(cls, "ttpreprocessor", "Ldk/bearware/TTAudioPreprocessor;");
+
+    assert(fid_type);
+    assert(fid_spx);
+    assert(fid_ttp);
+
+    if (conv == N2J)
+        env->SetIntField(lpPreprocessor, fid_type, preprocessor.nPreprocessor);
+    else
+        preprocessor.nPreprocessor = AudioPreprocessorType(env->GetIntField(lpPreprocessor, fid_type));
+    
+    jobject spx = env->GetObjectField(lpPreprocessor, fid_spx);
+    jobject ttp = env->GetObjectField(lpPreprocessor, fid_ttp);
+    
+    switch (preprocessor.nPreprocessor) {
+    case NO_AUDIOPREPROCESSOR :
+        break;
+    case SPEEXDSP_AUDIOPREPROCESSOR :
+        setSpeexDSP(env, preprocessor.speexdsp, spx, conv);
+        break;
+    case TEAMTALK_AUDIOPREPROCESSOR :
+        setTTAudioPreprocessor(env, preprocessor.ttpreprocessor, ttp, conv);
+        break;
+    }
+}
+
 void setServerProperties(JNIEnv* env, ServerProperties& srvprop, jobject lpServerProperties, JConvert conv)
 {
     jclass cls_srv = env->GetObjectClass(lpServerProperties);
@@ -951,7 +1005,7 @@ void setServerProperties(JNIEnv* env, ServerProperties& srvprop, jobject lpServe
     }
 }
 
-void setClientStatistics(JNIEnv* env, const ClientStatistics& stats, jobject lpStats)
+void setClientStatistics(JNIEnv* env, ClientStatistics& stats, jobject lpStats)
 {
     jclass cls_stats = env->GetObjectClass(lpStats);
 
@@ -1205,7 +1259,7 @@ void setRemoteFile(JNIEnv* env, RemoteFile& fileinfo, jobject lpRemoteFile, JCon
     }
 }
 
-void setUserStatistics(JNIEnv* env, const UserStatistics& stats, jobject lpUserStatistics)
+void setUserStatistics(JNIEnv* env, UserStatistics& stats, jobject lpUserStatistics)
 {
     jclass cls_stats = env->GetObjectClass(lpUserStatistics);
     
@@ -1250,7 +1304,7 @@ void setUserStatistics(JNIEnv* env, const UserStatistics& stats, jobject lpUserS
     env->SetLongField(lpUserStatistics, fid_mfvidfdropped, stats.nMediaFileVideoFramesDropped);
 }
 
-void setFileTransfer(JNIEnv* env, const FileTransfer& filetx, jobject lpFileTransfer)
+void setFileTransfer(JNIEnv* env, FileTransfer& filetx, jobject lpFileTransfer)
 {
     jclass cls_ftx = env->GetObjectClass(lpFileTransfer);
 
@@ -1487,7 +1541,7 @@ void setAudioBlock(JNIEnv* env, AudioBlock& audblock, jobject lpAudioBlock)
     env->SetIntField(lpAudioBlock, fid_si, audblock.uSampleIndex);
 }
 
-void setMediaFileInfo(JNIEnv* env, MediaFileInfo& mfi, jobject lpMediaFileInfo)
+void setMediaFileInfo(JNIEnv* env, MediaFileInfo& mfi, jobject lpMediaFileInfo, JConvert conv)
 {
    jclass cls = env->GetObjectClass(lpMediaFileInfo);
 
@@ -1496,28 +1550,44 @@ void setMediaFileInfo(JNIEnv* env, MediaFileInfo& mfi, jobject lpMediaFileInfo)
    jfieldID fid_audfmt = env->GetFieldID(cls, "audioFmt", "Ldk/bearware/AudioFormat;");
    jfieldID fid_vidfmt = env->GetFieldID(cls, "videoFmt", "Ldk/bearware/VideoFormat;");
    jfieldID fid_dur = env->GetFieldID(cls, "uDurationMSec", "I");
+   jfieldID fid_elap = env->GetFieldID(cls, "uElapsedMSec", "I");
 
    assert(fid_status);
    assert(fid_fname);
    assert(fid_audfmt);
    assert(fid_vidfmt);
    assert(fid_dur);
+   assert(fid_elap);
 
-   env->SetIntField(lpMediaFileInfo, fid_status, mfi.nStatus);
-   env->SetObjectField(lpMediaFileInfo, fid_fname, NEW_JSTRING(env, mfi.szFileName));
-   
    jclass cls_audfmt = env->FindClass("dk/bearware/AudioFormat");
    jclass cls_vidfmt = env->FindClass("dk/bearware/VideoFormat");
-   jobject audfmt_obj = newObject(env, cls_audfmt);
-   jobject vidfmt_obj = newObject(env, cls_vidfmt);
-   setAudioFormat(env, mfi.audioFmt, audfmt_obj);
-   setVideoFormat(env, mfi.videoFmt, vidfmt_obj, N2J);
-   env->SetObjectField(lpMediaFileInfo, fid_audfmt, audfmt_obj);
-   env->SetObjectField(lpMediaFileInfo, fid_vidfmt, vidfmt_obj);
-   env->SetIntField(lpMediaFileInfo, fid_dur, mfi.uDurationMSec);
+
+   if (conv == N2J) {
+       env->SetIntField(lpMediaFileInfo, fid_status, mfi.nStatus);
+       env->SetObjectField(lpMediaFileInfo, fid_fname, NEW_JSTRING(env, mfi.szFileName));
+   
+       jobject audfmt_obj = newObject(env, cls_audfmt);
+       jobject vidfmt_obj = newObject(env, cls_vidfmt);
+       setAudioFormat(env, mfi.audioFmt, audfmt_obj, conv);
+       setVideoFormat(env, mfi.videoFmt, vidfmt_obj, conv);
+       env->SetObjectField(lpMediaFileInfo, fid_audfmt, audfmt_obj);
+       env->SetObjectField(lpMediaFileInfo, fid_vidfmt, vidfmt_obj);
+       env->SetIntField(lpMediaFileInfo, fid_dur, mfi.uDurationMSec);
+       env->SetIntField(lpMediaFileInfo, fid_elap, mfi.uElapsedMSec);
+   }
+   else {
+       mfi.nStatus = MediaFileStatus(env->GetIntField(lpMediaFileInfo, fid_status));
+       TT_STRCPY(mfi.szFileName, ttstr(env, (jstring)env->GetObjectField(lpMediaFileInfo, fid_fname)));
+       jobject audfmt_obj = env->GetObjectField(lpMediaFileInfo, fid_audfmt);
+       jobject vidfmt_obj = env->GetObjectField(lpMediaFileInfo, fid_vidfmt);
+       setAudioFormat(env, mfi.audioFmt, audfmt_obj, conv);
+       setVideoFormat(env, mfi.videoFmt, vidfmt_obj, conv);
+       mfi.uDurationMSec = env->GetIntField(lpMediaFileInfo, fid_dur);
+       mfi.uElapsedMSec = env->GetIntField(lpMediaFileInfo, fid_elap);
+   }
 }
 
-void setAudioFormat(JNIEnv* env, const AudioFormat& fmt, jobject lpAudioFormat)
+void setAudioFormat(JNIEnv* env, AudioFormat& fmt, jobject lpAudioFormat, JConvert conv)
 {
     jclass cls = env->GetObjectClass(lpAudioFormat);
     jfieldID fid_audfmt = env->GetFieldID(cls, "nAudioFmt", "I");
@@ -1528,9 +1598,16 @@ void setAudioFormat(JNIEnv* env, const AudioFormat& fmt, jobject lpAudioFormat)
     assert(fid_sr);
     assert(fid_ch);
 
-    env->SetIntField(lpAudioFormat, fid_audfmt, fmt.nAudioFmt);
-    env->SetIntField(lpAudioFormat, fid_sr, fmt.nSampleRate);
-    env->SetIntField(lpAudioFormat, fid_ch, fmt.nChannels);
+    if (conv == N2J) {
+        env->SetIntField(lpAudioFormat, fid_audfmt, fmt.nAudioFmt);
+        env->SetIntField(lpAudioFormat, fid_sr, fmt.nSampleRate);
+        env->SetIntField(lpAudioFormat, fid_ch, fmt.nChannels);
+    }
+    else {
+        fmt.nAudioFmt = AudioFileFormat(env->GetIntField(lpAudioFormat, fid_audfmt));
+        fmt.nSampleRate = env->GetIntField(lpAudioFormat, fid_sr);
+        fmt.nChannels = env->GetIntField(lpAudioFormat, fid_ch);
+    }
 }
 
 void setVideoFormat(JNIEnv* env, VideoFormat& fmt, jobject lpVideoFormat, JConvert conv)
@@ -1641,5 +1718,31 @@ void setAbusePrevention(JNIEnv* env, AbusePrevention& abuse, jobject lpAbusePrev
     else {
         abuse.nCommandsLimit = env->GetIntField(lpAbusePrevention, fid_cmds);
         abuse.nCommandsIntervalMSec = env->GetIntField(lpAbusePrevention, fid_msec);
+    }
+}
+
+void setMediaFilePlayback(JNIEnv* env, MediaFilePlayback& playback, jobject lpMediaPlayback, JConvert conv) {
+
+    jclass cls = env->GetObjectClass(lpMediaPlayback);
+    jfieldID fid_off = env->GetFieldID(cls, "uOffsetMSec", "I");
+    jfieldID fid_pause = env->GetFieldID(cls, "bPaused", "Z");
+    jfieldID fid_pre = env->GetFieldID(cls, "audioPreprocessor", "Ldk/bearware/AudioPreprocessor;");
+
+    assert(fid_off);
+    assert(fid_pause);
+    assert(fid_pre);
+
+    jobject pre = env->GetObjectField(lpMediaPlayback, fid_pre);
+    
+    if (conv == N2J) {
+        env->SetIntField(lpMediaPlayback, fid_off, playback.uOffsetMSec);
+        env->SetBooleanField(lpMediaPlayback, fid_pause, playback.bPaused);
+        setAudioPreprocessor(env, playback.audioPreprocessor, pre, conv);
+    }
+    else
+    {
+        playback.uOffsetMSec = env->GetIntField(lpMediaPlayback, fid_off);
+        playback.bPaused = env->GetBooleanField(lpMediaPlayback, fid_pause);
+        setAudioPreprocessor(env, playback.audioPreprocessor, pre, conv);
     }
 }
