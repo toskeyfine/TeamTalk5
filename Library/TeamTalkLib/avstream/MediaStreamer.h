@@ -26,11 +26,13 @@
 
 #include <ace/ACE.h>
 #include <ace/SString.h>
+#include <ace/Future.h>
 
 #include <myace/MyACE.h>
 #include <codec/MediaUtil.h>
 
 #include <memory>
+#include <thread>
 
 struct MediaStream
 {
@@ -45,7 +47,7 @@ struct MediaStream
 
 struct MediaFileProp : public MediaStream
 {
-    ACE_UINT32 duration_ms = 0;
+    ACE_UINT32 duration_ms = 0, elapsed_ms = 0;
     ACE_TString filename;
 
     MediaFileProp() { }
@@ -74,9 +76,11 @@ bool GetMediaFileProp(const ACE_TString& filename, MediaFileProp& fileprop);
 
 enum MediaStreamStatus
 {
+    MEDIASTREAM_NONE        = 0,
     MEDIASTREAM_STARTED     = 1,
     MEDIASTREAM_ERROR       = 2,
     MEDIASTREAM_FINISHED    = 3,
+    MEDIASTREAM_PAUSED      = 4,
 };
 
 class MediaStreamer;
@@ -98,41 +102,55 @@ public:
                                            MediaStreamStatus status) = 0;
 };
 
+#define MEDIASTREAMER_OFFSET_IGNORE (0xFFFFFFFF)
+
 class MediaStreamer
 {
 public:
     MediaStreamer(MediaStreamListener* listener) 
-        : m_listener(listener), m_stop(false) { }
-    virtual ~MediaStreamer() { }
-    virtual bool OpenFile(const MediaFileProp& in_prop,
-                          const MediaStreamOutput& out_prop) = 0;
-    virtual void Close() = 0;
+        : m_listener(listener) { }
+    virtual ~MediaStreamer();
+    
+    bool OpenFile(const MediaFileProp& in_prop,
+                  const MediaStreamOutput& out_prop);
+    void Close();
 
-    virtual bool StartStream() = 0;
+    bool StartStream();
+
+    bool Pause();
+
+    void SetOffset(ACE_UINT32 offset) { m_offset = offset; }
 
     const MediaFileProp& GetMediaInput() const { return m_media_in; }
     const MediaStreamOutput& GetMediaOutput() const { return m_media_out; }
 
 protected:
+    virtual void Run() = 0;
     void Reset();
     void InitBuffers();
+    void ClearBuffers();
     ACE_UINT32 GetMinimumFrameDurationMSec() const;
     int GetQueuedAudioDataSize();
 
     MediaFileProp m_media_in;
+    ACE_UINT32 m_offset = MEDIASTREAMER_OFFSET_IGNORE;
     MediaStreamOutput m_media_out;
     MediaStreamListener* m_listener;
-    bool m_stop;
+
+    std::shared_ptr< std::thread > m_thread;
+    ACE_Future<bool> m_open, m_run;
+    bool m_pause = false;
+    bool m_stop = false;
     
     //return 'true' if it should be called again
-    bool ProcessAVQueues(ACE_UINT32 starttime, bool flush);
+    bool ProcessAVQueues(ACE_UINT32 starttime, ACE_UINT32 curtime, bool flush);
 
     msg_queue_t m_audio_frames;
     msg_queue_t m_video_frames;
 
 private:
-    bool ProcessAudioFrame(ACE_UINT32 starttime, bool flush);
-    bool ProcessVideoFrame(ACE_UINT32 starttime);
+    bool ProcessAudioFrame(ACE_UINT32 starttime, ACE_UINT32 curtime, bool flush);
+    bool ProcessVideoFrame(ACE_UINT32 starttime, ACE_UINT32 curtime);
 };
 
 typedef std::shared_ptr< MediaStreamer > media_streamer_t;
