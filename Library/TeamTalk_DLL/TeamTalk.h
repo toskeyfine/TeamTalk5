@@ -16,7 +16,7 @@
  * client's version can be seen in the @a szVersion member of the
  * #User-struct. */
 
-#define TEAMTALK_VERSION "5.4.1.4973"
+#define TEAMTALK_VERSION "5.4.1.4974"
 
 
 #if defined(WIN32)
@@ -202,6 +202,15 @@ extern "C" {
  * #TT_DESKTOPINPUT_KEYCODE_MMOUSEBTN then TT_DesktopInput_Execute()
  * will see the key-code as a middle mouse button click. */
 #define TT_DESKTOPINPUT_KEYCODE_MMOUSEBTN 0x1002
+
+/** @ingroup mediastream
+ * @def TT_MEDIAPLAYBACK_OFFSET_IGNORE
+ *
+ * Specify this value as uOffsetMSec in #MediaFilePlayback when
+ * calling TT_InitLocalPlayback() and TT_UpdateLocalPlayback() to
+ * ignore rewind or forward.
+ */
+#define TT_MEDIAPLAYBACK_OFFSET_IGNORE 0xFFFFFFFF
 
 #endif /* TEAMTALK_TYPES */
 
@@ -508,7 +517,9 @@ extern "C" {
         /** @brief Finished processing media file. */
         MFS_FINISHED        = 3,
         /** @brief Aborted processing of media file. */
-        MFS_ABORTED         = 4
+        MFS_ABORTED         = 4,
+        /** @brief Paused processing of media file. */
+        MFS_PAUSED          = 5
     } MediaFileStatus;
 
     /**
@@ -1180,6 +1191,8 @@ extern "C" {
         VideoFormat videoFmt;
         /** @brief The duration of the media file in miliseconds. */
         UINT32 uDurationMSec;
+        /** @brief The elapsed time of the media file in miliseconds. */
+        UINT32 uElapsedMSec;
     } MediaFileInfo;
 
     /**
@@ -1191,8 +1204,9 @@ extern "C" {
     typedef struct MediaFilePlayback
     {
         /** @brief Offset in milliseconds in the media file where to
-         * start playback. @c uOffsetMSec must be less than @c
-         * uDurationMSec on #MediaFileInfo. */
+         * start playback. Pass -1 (0xffffffff) to ignore this value when 
+         * using TT_UpdateLocalPlayback().
+         * @c uOffsetMSec must be less than @c uDurationMSec in #MediaFileInfo. */
         UINT32 uOffsetMSec;
         /** @brief Start or pause media file playback. */
         TTBOOL bPaused;
@@ -3053,7 +3067,11 @@ extern "C" {
         __INT32                   = 30,
         __DESKTOPINPUT            = 31,
         __SPEEXDSP                = 32,
-        __STREAMTYPE              = 33
+        __STREAMTYPE              = 33,
+        __AUDIOPREPROCESSORTYPE   = 34,
+        __AUDIOPREPROCESSOR       = 35,
+        __TTAUDIOPREPROCESSOR     = 36,
+        __MEDIAPLAYBACK           = 37,
     } TTType;
 
     /**
@@ -4111,8 +4129,14 @@ extern "C" {
     /** @addtogroup mediastream
      * @{ */
 
+    /** @brief Stream media file to channel, e.g. avi-, wav- or MP3-file.
+     * @see TT_StartStreamingMediaFileToChannelEx() */
+    TEAMTALKDLL_API TTBOOL TT_StartStreamingMediaFileToChannel(IN TTInstance* lpTTInstance,
+                                                               IN const TTCHAR* szMediaFilePath,
+                                                               IN const VideoCodec* lpVideoCodec);
+
     /**
-     * @brief Stream media file to channel, e.g. avi-, wav- or MP3-file.
+     * @brief Stream media file to channel, e.g. avi, wav or MP3-file.
      *
      * Call TT_GetMediaFileInfo() to get the properties of a media
      * file, i.e. audio and video format.
@@ -4132,13 +4156,41 @@ extern "C" {
      * @param lpTTInstance Pointer to client instance created by
      * #TT_InitTeamTalk. 
      * @param szMediaFilePath File path to media file.
+     * @param lpMediaFilePlayback Playback settings to pause, seek and
+     * preprocess audio. If #SPEEXDSP_AUDIOPREPROCESSOR then the echo
+     * cancellation part of #SpeexDSP is unused. Only denoise and AGC
+     * settings are applied.
      * @param lpVideoCodec If video file then specify output codec properties 
      * here, otherwise NULL.
      *
      * @see TT_StopStreamingMediaFileToChannel() */
-    TEAMTALKDLL_API TTBOOL TT_StartStreamingMediaFileToChannel(IN TTInstance* lpTTInstance,
-                                                               IN const TTCHAR* szMediaFilePath,
-                                                               IN const VideoCodec* lpVideoCodec);
+    TEAMTALKDLL_API TTBOOL TT_StartStreamingMediaFileToChannelEx(IN TTInstance* lpTTInstance,
+                                                                 IN const TTCHAR* szMediaFilePath,
+                                                                 IN const MediaFilePlayback* lpMediaFilePlayback,
+                                                                 IN const VideoCodec* lpVideoCodec);
+
+    /**
+     * @brief Update active media file being streamed to channel.
+     *
+     * While streaming a media file to a channel it's possible to
+     * pause, seek and manipulate audio preprocessing by passing new
+     * #MediaFilePlayback properties.
+     *
+     * @param lpTTInstance Pointer to client instance created by
+     * #TT_InitTeamTalk. 
+     * @param lpMediaFilePlayback Playback settings to pause, seek and
+     * preprocess audio. If #SPEEXDSP_AUDIOPREPROCESSOR then the echo
+     * cancellation part of #SpeexDSP is unused. Only denoise and AGC
+     * settings are applied.
+     * @param lpVideoCodec If video file then specify output codec properties 
+     * here, otherwise NULL.
+     *
+     * @see TT_StartStreamingMediaFileToChannel()
+     * @see TT_StopStreamingMediaFileToChannel() */
+    TEAMTALKDLL_API TTBOOL TT_UpdateStreamingMediaFileToChannel(IN TTInstance* lpTTInstance,
+                                                                IN const MediaFilePlayback* lpMediaFilePlayback,
+                                                                IN const VideoCodec* lpVideoCodec);
+
     /**
      * @brief Stop streaming media file to channel.
      *
@@ -4156,9 +4208,15 @@ extern "C" {
      * @param lpTTInstance Pointer to client instance created by
      * #TT_InitTeamTalk. 
      * @param szMediaFilePath Path to media file.
-     * @param lpMediaFilePlayback If #SPEEXDSP_AUDIOPREPROCESSOR then
-     * the echo cancellation part of #SpeexDSP is unused. Only denoise
-     * and AGC settings are applied.
+     * @param lpMediaFilePlayback Playback settings to pause, seek and
+     * preprocess audio. If #SPEEXDSP_AUDIOPREPROCESSOR then the echo
+     * cancellation part of #SpeexDSP is unused. Only denoise and AGC
+     * settings are applied.
+     *
+     * @return A Session ID for identifing the media playback session.
+     * If Session ID is <= 0 indicates an error.
+     *
+     * @return A session ID identifier referred to as @c nPlaybackSessionID.
      * 
      * @see TT_UpdateLocalPlayback()
      * @see TT_StopLocalPlayback() */
@@ -4171,7 +4229,7 @@ extern "C" {
      * 
      * @param lpTTInstance Pointer to client instance created by
      * #TT_InitTeamTalk. 
-     * @param nPlaySessionID Session ID created by TT_InitLocalPlayback().
+     * @param nPlaybackSessionID Session ID created by TT_InitLocalPlayback().
      * @param lpMediaFilePlayback #AudioPreprocessorType of
      * #AudioPreprocessor cannot be changed. It must be the same as
      * used in TT_InitLocalPlayback().
@@ -4187,7 +4245,7 @@ extern "C" {
      *
      * @param lpTTInstance Pointer to client instance created by
      * #TT_InitTeamTalk.
-     * @param nPlaySessionID Session ID created by TT_InitLocalPlayback().
+     * @param nPlaybackSessionID Session ID created by TT_InitLocalPlayback().
      *
      * @see TT_InitLocalPlayback()
      * @see TT_UpdateLocalPlayback() */
@@ -6364,6 +6422,9 @@ extern "C" {
     TEAMTALKDLL_API TTBOOL TT_DBG_SetSoundInputTone(IN TTInstance* lpTTInstance,
                                                     IN StreamTypes uStreamTypes,
                                                     IN INT32 nFrequency);
+
+    TEAMTALKDLL_API TTBOOL TT_DBG_WriteAudioFileTone(IN MediaFileInfo* lpMediaFileInfo,
+                                                     IN INT32 nFrequency);
 
 #if defined(WIN32) /* Exclude mixer and firewall functions from
                     * non-Windows platforms */
