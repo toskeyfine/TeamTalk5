@@ -56,6 +56,13 @@ using namespace std::placeholders;
 
 #define LOCAL_USERID 0
 
+#define SIMULATE_RX_PACKETLOSS 0
+#define SIMULATE_TX_PACKETLOSS 0
+
+#if (SIMULATE_RX_PACKETLOSS || SIMULATE_TX_PACKETLOSS) && defined(NDEBUG)
+#error Packetloss in release mode
+#endif
+
 ClientNode::ClientNode(const ACE_TString& version, ClientListener* listener)
                        : m_reactor(new ACE_Select_Reactor(), true) //Ensure we don't use ACE_WFMO_Reactor!!!
 #ifdef _DEBUG
@@ -1249,8 +1256,12 @@ void ClientNode::EncodedAudioVoiceFrame(const teamtalk::AudioCodec& codec,
         if((m_flags & CLIENT_TX_VOICE) == 0)
             GEN_NEXT_ID(m_voice_stream_id);
     }
-    //MYTRACE(ACE_TEXT("Queue voice packet #%d at TS: %u, pkt time: %u\n"),
-    //        m_voice_pkt_counter, GETTIMESTAMP(), org_frame.timestamp);
+
+    MYTRACE_COND(enc_length > MAX_ENC_FRAMESIZE,
+                 ACE_TEXT("Queue voice packet #%d at TS: %u, pkt time: %u, size: %d\n"),
+                 m_voice_pkt_counter, GETTIMESTAMP(), org_frame.timestamp, enc_length);
+    
+    assert(enc_length <= MAX_ENC_FRAMESIZE);
 
     VoicePacket* newpacket;
     if (GetAudioCodecFramesPerPacket(codec)>1 && GetAudioCodecVBRMode(codec))
@@ -4116,7 +4127,9 @@ int ClientNode::DoJoinChannel(const ChannelProp& chanprop, bool forceexisting)
         AppendProperty(TT_PARENTID, chanprop.parentid, command);
         AppendProperty(TT_TOPIC, chanprop.topic, command);
         AppendProperty(TT_OPPASSWORD, chanprop.oppasswd, command);
-        AppendProperty(TT_AUDIOCODEC, chanprop.audiocodec, command);
+        // Deprecated TeamTalk v6
+        if (!AudioCodecConvertBug(m_serverinfo.protocol, chanprop.audiocodec))
+            AppendProperty(TT_AUDIOCODEC, chanprop.audiocodec, command);
         AppendProperty(TT_AUDIOCFG, chanprop.audiocfg, command);
         AppendProperty(TT_CHANNELTYPE, chanprop.chantype, command);
         AppendProperty(TT_USERDATA, chanprop.userdata, command);
@@ -4318,7 +4331,9 @@ int ClientNode::DoMakeChannel(const ChannelProp& chanprop)
     AppendProperty(TT_DISKQUOTA, chanprop.diskquota, command);
     AppendProperty(TT_OPPASSWORD, chanprop.oppasswd, command);
     AppendProperty(TT_MAXUSERS, chanprop.maxusers, command);
-    AppendProperty(TT_AUDIOCODEC, chanprop.audiocodec, command);
+    // Deprecated TeamTalk v6
+    if (!AudioCodecConvertBug(m_serverinfo.protocol, chanprop.audiocodec))
+        AppendProperty(TT_AUDIOCODEC, chanprop.audiocodec, command);
     AppendProperty(TT_AUDIOCFG, chanprop.audiocfg, command);
     AppendProperty(TT_CHANNELTYPE, chanprop.chantype, command);
     AppendProperty(TT_USERDATA, chanprop.userdata, command);
@@ -4345,7 +4360,9 @@ int ClientNode::DoUpdateChannel(const ChannelProp& chanprop)
     AppendProperty(TT_DISKQUOTA, chanprop.diskquota, command);
     AppendProperty(TT_OPPASSWORD, chanprop.oppasswd, command);
     AppendProperty(TT_MAXUSERS, chanprop.maxusers, command);
-    AppendProperty(TT_AUDIOCODEC, chanprop.audiocodec, command);
+    // Deprecated TeamTalk v6
+    if (!AudioCodecConvertBug(m_serverinfo.protocol, chanprop.audiocodec))
+        AppendProperty(TT_AUDIOCODEC, chanprop.audiocodec, command);
     AppendProperty(TT_AUDIOCFG, chanprop.audiocfg, command);
     AppendProperty(TT_CHANNELTYPE, chanprop.chantype, command);
     AppendProperty(TT_USERDATA, chanprop.userdata, command);
