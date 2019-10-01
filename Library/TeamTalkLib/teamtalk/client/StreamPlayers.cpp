@@ -33,8 +33,6 @@ using namespace media;
 
 namespace teamtalk {
 
-#define DEFAULT_BUF_MSEC 1000
-
 AudioPlayer::AudioPlayer(int sndgrpid, int userid, StreamType stream_type,
                          AudioMuxer& audiomuxer, const AudioCodec& codec,
                          audio_resampler_t& resampler)
@@ -56,7 +54,6 @@ AudioPlayer::AudioPlayer(int sndgrpid, int userid, StreamType stream_type,
 , m_new_audio_blocks(0)
 , m_audiopackets_recv(0)
 , m_audiopacket_lost(0)
-, m_buffer_msec(DEFAULT_BUF_MSEC)
 {
     MYTRACE(ACE_TEXT("New AudioPlayer() - #%d\n"), m_userid);
 
@@ -69,7 +66,7 @@ AudioPlayer::AudioPlayer(int sndgrpid, int userid, StreamType stream_type,
     if (m_resampler)
         m_resample_buffer.resize(input_samples*input_channels);
 
-    SetAudioBufferSize(DEFAULT_BUF_MSEC);
+    SetAudioBufferSize(GetAudioCodecCbMillis(m_codec) * 4);
 }
 
 AudioPlayer::~AudioPlayer()
@@ -96,24 +93,20 @@ audiopacket_t AudioPlayer::QueuePacket(const AudioPacket& new_audpkt)
         if(fragno == AudioPacket::INVALID_FRAGMENT_NO)
             return ptr_audpkt;
 
-        //clean out fragments which were never played
-        uint16_t old_packet_no = 0;
-        if(m_audfragments.size() >= 10)
-            old_packet_no = packetno - 10;
-        else
-            old_packet_no = GetPlayedPacketNo();
+        //MYTRACE(ACE_TEXT("User #%d, received pkt no %d, frag no %d/%d\n"), m_userid, int(packetno), int(fragno), int(frag_cnt));
 
-        if(old_packet_no)
-            CleanUpAudioFragments(old_packet_no);
+        //clean out fragments which were never played
+        uint16_t playing_pkt_no = GetPlayedPacketNo();
+        if (playing_pkt_no)
+            CleanUpAudioFragments(playing_pkt_no-1);
 
         //copy packet and queue it
-        AudioPacket* q_audpkt;
-        ACE_NEW_NORETURN(q_audpkt, AudioPacket(new_audpkt));
+        audiopacket_t q_audpkt(new AudioPacket(new_audpkt));
         fragments_queue_t::iterator ii=m_audfragments.find(packetno);
         if(ii != m_audfragments.end())
-            ii->second[fragno] = audiopacket_t(q_audpkt);
+            ii->second[fragno] = q_audpkt;
         else
-            m_audfragments[packetno][fragno] = audiopacket_t(q_audpkt);
+            m_audfragments[packetno][fragno] = q_audpkt;
 
         ii = m_audfragments.find(packetno);
 
@@ -144,11 +137,9 @@ void AudioPlayer::CleanUpAudioFragments(uint16_t too_old_packet_no)
     fragments_queue_t::iterator ii=m_audfragments.begin();
     while(ii != m_audfragments.end())
     {
-        uint16_t oo = ii->first;
-        if(PACKETNO_GEQ(too_old_packet_no, ii->first))
+        if (PACKETNO_GEQ(too_old_packet_no, ii->first))
         {
-            MYTRACE(ACE_TEXT("Packet #%d wasn't reassembled, ejected!\n"),
-                (int)ii->first);
+            MYTRACE(ACE_TEXT("Packet #%d wasn't reassembled, ejected!\n"), int(ii->first));
             m_audfragments.erase(ii++);
         }
         else ii++;
@@ -339,10 +330,13 @@ void AudioPlayer::AddPacket(const teamtalk::AudioPacket& packet)
     }
     else
     {
+        int frames_per_packet = GetAudioCodecFramesPerPacket(m_codec);
         m_buffer[pkt_no].enc_frames.assign(enc_data, enc_data+enc_len);
-        if(GetAudioCodecFramesPerPacket(m_codec)>1)
-            m_buffer[pkt_no].enc_frame_sizes.assign(GetAudioCodecFramesPerPacket(m_codec), 
-                                                     GetAudioCodecEncFrameSize(m_codec));
+        if (frames_per_packet > 1)
+        {
+            int encfrmsize = enc_len / frames_per_packet;
+            m_buffer[pkt_no].enc_frame_sizes.assign(frames_per_packet, encfrmsize);
+        }
         else
             m_buffer[pkt_no].enc_frame_sizes.push_back(enc_len);
     }
@@ -385,21 +379,7 @@ bool AudioPlayer::PlayBuffer(short* output_buffer, int n_samples)
     {
         TTASSERT(W16_GEQ(m_buffer.begin()->first, m_play_pkt_no));
 
-        int maxbuf_msec = m_buffer_msec;
-        switch(m_streamtype)
-        {
-        case STREAMTYPE_VOICE :
-            maxbuf_msec = m_buffer_msec / 2;
-            break;
-        case STREAMTYPE_MEDIAFILE_AUDIO :
-            break;
-        default :
-            TTASSERT(0);
-            break;
-        }
-
-        while(m_stream_id &&
-              GetBufferedAudioMSec() > maxbuf_msec)
+        while(m_stream_id && GetBufferedAudioMSec() > m_buffer_msec)
         {
             MYTRACE(ACE_TEXT("User #%d, dropped packet %d, max %d\n"), 
                     m_userid, m_buffer.begin()->first, m_buffer.rbegin()->first);
@@ -560,18 +540,42 @@ void OpusPlayer::Reset()
 bool OpusPlayer::DecodeFrame(const encframe& enc_frame,
                               short* output_buffer, int n_samples)
 {
-    if(enc_frame.enc_frames.size()) //packet available
+    int framesize = GetAudioCodecFrameSize(m_codec);
+    int samples = GetAudioCodecCbSamples(m_codec);
+    int channels = GetAudioCodecChannels(m_codec);
+    int ret;
+    
+    assert(samples == n_samples);
+    
+    if (enc_frame.enc_frames.size()) //packet available
     {
-        m_decoder.Decode(&enc_frame.enc_frames[0], 
-                         enc_frame.enc_frame_sizes[0],
-                         output_buffer, n_samples);
+        assert(GetAudioCodecFramesPerPacket(m_codec) == enc_frame.enc_frame_sizes.size());
+        int encoffset = 0, decoffset = 0;
+        for (size_t i=0;i<enc_frame.enc_frame_sizes.size();i++)
+        {
+            //MYTRACE(ACE_TEXT("Decoding frame %d/%d, %d bytes\n"),
+            //        int(i), int(enc_frame.enc_frame_sizes.size()),
+            //        int(enc_frame.enc_frame_sizes[i]));
+            
+            ret = m_decoder.Decode(&enc_frame.enc_frames[encoffset], 
+                                   enc_frame.enc_frame_sizes[i],
+                                   &output_buffer[decoffset*channels], framesize);
+            MYTRACE_COND(ret != framesize, ACE_TEXT("OPUS decode failed for #%d. Ret = %d\n"), m_userid, ret);
+            encoffset += enc_frame.enc_frame_sizes[i];
+            decoffset += framesize;
+        }
         return true;
     }
     else  //packet lost
     {
-        MYTRACE(ACE_TEXT("User #%d is missing packet %d\n"), 
-                m_userid, m_play_pkt_no);
-        m_decoder.Decode(NULL, 0, output_buffer, n_samples);
+        MYTRACE(ACE_TEXT("User #%d is missing packet %d\n"), m_userid, m_play_pkt_no);
+        int fpp = GetAudioCodecFramesPerPacket(m_codec);
+        int decoffset = 0;
+        for (int i=0;i<fpp;i++)
+        {
+            m_decoder.Decode(NULL, 0, &output_buffer[decoffset*channels], framesize);
+            decoffset += framesize;
+        }
         //increment 'm_played_packet_time' with GetAudioCodecCbMillis()?
         return false;
     }
