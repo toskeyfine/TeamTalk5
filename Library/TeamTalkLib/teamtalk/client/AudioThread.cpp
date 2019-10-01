@@ -42,6 +42,7 @@ AudioThread::AudioThread()
 {
     memset(&m_codec, 0, sizeof(m_codec));
     m_codec.codec = teamtalk::CODEC_NO_CODEC;
+    m_encbuf.resize(MAX_ENC_FRAMESIZE);
 }
 
 AudioThread::~AudioThread()
@@ -60,7 +61,6 @@ bool AudioThread::StartEncoder(audioencodercallback_t callback,
     int callback_samples = GetAudioCodecCbSamples(codec);
     int sample_rate = GetAudioCodecSampleRate(codec);
     int channels = GetAudioCodecChannels(codec);
-    int enc_size = 0;
 
     switch(codec.codec)
     {
@@ -78,7 +78,6 @@ bool AudioThread::StartEncoder(audioencodercallback_t callback,
         TTASSERT(sample_rate);
         TTASSERT(channels);
 
-        enc_size = GetAudioCodecEncSize(codec);
         m_speex.reset(new SpeexEncoder());
         if(!m_speex->Initialize(codec.speex.bandmode, 
                                 DEFAULT_SPEEX_COMPLEXITY,
@@ -99,7 +98,6 @@ bool AudioThread::StartEncoder(audioencodercallback_t callback,
         TTASSERT(sample_rate);
         TTASSERT(channels);
 
-        enc_size = MAX_ENC_FRAMESIZE * codec.speex_vbr.frames_per_packet;
         m_speex.reset(new SpeexEncoder());
         if(!m_speex->Initialize(codec.speex_vbr.bandmode, 
                                 DEFAULT_SPEEX_COMPLEXITY,
@@ -123,7 +121,6 @@ bool AudioThread::StartEncoder(audioencodercallback_t callback,
         TTASSERT(sample_rate);
         TTASSERT(channels);
 
-        enc_size = MAX_ENC_FRAMESIZE;
         m_opus.reset(new OpusEncode());
         if(!m_opus->Open(codec.opus.samplerate, codec.opus.channels,
                          codec.opus.application) ||
@@ -146,11 +143,9 @@ bool AudioThread::StartEncoder(audioencodercallback_t callback,
         TTASSERT(codec.codec == CODEC_SPEEX);
     }
 
-    TTASSERT(enc_size);
     TTASSERT(sample_rate);
-    TTASSERT(enc_size);
 
-    if(!sample_rate || !callback_samples || !enc_size)
+    if(!sample_rate || !callback_samples)
         return false;
 
 #if defined(ENABLE_SPEEXDSP)
@@ -178,7 +173,6 @@ bool AudioThread::StartEncoder(audioencodercallback_t callback,
     }
 #endif
 
-    m_encbuf.resize(enc_size);
     m_codec = codec;
     m_callback = callback;
 
@@ -198,10 +192,9 @@ bool AudioThread::StartEncoder(audioencodercallback_t callback,
     }
 
     MYTRACE_COND(codec.codec == CODEC_SPEEX,
-                 ACE_TEXT("Launched Speex encoder, samplerate %d, bitrate %d, cb %d, fpp %d, enc frame: %d\n"),
+                 ACE_TEXT("Launched Speex encoder, samplerate %d, bitrate %d, cb %d, fpp %d\n"),
                  GetAudioCodecSampleRate(codec), GetAudioCodecBitRate(codec),
-                 GetAudioCodecFrameSize(codec), GetAudioCodecFramesPerPacket(codec), 
-                 GetAudioCodecEncFrameSize(codec));
+                 GetAudioCodecFrameSize(codec), GetAudioCodecFramesPerPacket(codec));
 
     MYTRACE_COND(codec.codec == CODEC_SPEEX_VBR,
                  ACE_TEXT("Launched Speex VBR encoder, samplerate %d, bitrate %d, cb %d, fpp %d\n"),
@@ -236,7 +229,6 @@ void AudioThread::StopEncoder()
 #endif
     m_enc_cleared = true;
 
-    m_encbuf.clear();
     m_echobuf.clear();
 
     m_callback = {};
@@ -521,38 +513,32 @@ const char* AudioThread::ProcessSpeex(const media::AudioFrame& audblock,
     TTASSERT(m_speex);
     
     int framesize = GetAudioCodecFrameSize(m_codec);
-    bool vbr = GetAudioCodecVBRMode(m_codec);
-    char* enc_frames = &m_encbuf[0];
     int nbBytes = 0, n_processed = 0, ret;
-    int enc_frm_size = 0;
+    int fpp = GetAudioCodecFramesPerPacket(m_codec);
+    int enc_frm_size;
 
+    assert(fpp);
     assert(framesize>0);
-    if(framesize <= 0)
-        return NULL;
-    if(!vbr)
-        enc_frm_size = GetAudioCodecEncFrameSize(m_codec);
+    if (framesize <= 0 || fpp <= 0)
+        return nullptr;
+
+    enc_frm_size = int(m_encbuf.size()) / fpp;
 
     while(n_processed < audblock.input_samples)
     {
-        if(vbr)
-        {
-            ret = m_speex->Encode(&audblock.input_buffer[n_processed], 
-                                  &enc_frames[nbBytes], MAX_ENC_FRAMESIZE);
-        }
-        else
-        {
-            ret = m_speex->Encode(&audblock.input_buffer[n_processed], 
-                                  &enc_frames[nbBytes], enc_frm_size);
-        }
+        assert(nbBytes + enc_frm_size <= m_encbuf.size());
+        ret = m_speex->Encode(&audblock.input_buffer[n_processed], 
+                              &m_encbuf[nbBytes], enc_frm_size);
         assert(ret>0);
         if(ret <= 0)
-            return NULL;
+            return nullptr;
 
         enc_frame_sizes.push_back(ret);
         n_processed += framesize;
         nbBytes += ret;
     }
-    return enc_frames;
+    TTASSERT(nbBytes <= (int)m_encbuf.size());
+    return &m_encbuf[0];
 }
 #endif
 
@@ -562,37 +548,35 @@ const char* AudioThread::ProcessOPUS(const media::AudioFrame& audblock,
 {
     TTASSERT(m_opus);
     TTASSERT(audblock.input_samples == GetAudioCodecCbSamples(m_codec));
-    char* enc_frames = &m_encbuf[0];
-    bool vbr = GetAudioCodecVBRMode(m_codec);
     int framesize = GetAudioCodecFrameSize(m_codec);
     int channels = GetAudioCodecChannels(m_codec);
+    int fpp = GetAudioCodecFramesPerPacket(m_codec);
     int nbBytes = 0, n_processed = 0, ret;
-    int enc_frm_size = 0;
+    int enc_frm_size;
 
+    assert(fpp);
     assert(framesize>0);
-    if(framesize <= 0)
-        return NULL;
+    if (framesize <= 0 || fpp <= 0)
+        return nullptr;
 
-    if(!vbr)
-        enc_frm_size = GetAudioCodecEncFrameSize(m_codec);
-    else
-        enc_frm_size = MAX_ENC_FRAMESIZE;
-    TTASSERT(m_encbuf.size() == (size_t)enc_frm_size);
+    enc_frm_size = int(m_encbuf.size()) / fpp;
+    
     while(n_processed < audblock.input_samples)
     {
+        assert(nbBytes + enc_frm_size <= m_encbuf.size());
         ret = m_opus->Encode(&audblock.input_buffer[n_processed*channels], 
-                             framesize, &enc_frames[nbBytes], enc_frm_size);
-
+                             framesize, &m_encbuf[nbBytes], enc_frm_size);
         assert(ret>0);
         if(ret <= 0)
-            return NULL;
+            return nullptr;
 
+        // enc_frm_size -= ret; /* stay within MAX_ENC_FRAMESIZE */
         enc_frame_sizes.push_back(ret);
         n_processed += framesize;
         nbBytes += ret;
     }
     TTASSERT(nbBytes <= (int)m_encbuf.size());
-    return enc_frames;
+    return &m_encbuf[0];
 }
 #endif
 
