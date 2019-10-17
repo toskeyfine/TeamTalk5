@@ -59,6 +59,8 @@
 #include <ace/SOCK_Connector.h>
 #endif
 
+#include <atomic>
+
 #define CLIENT_UDPKEEPALIVE_INTERVAL        10 //secs. Delay between UDP keepalive packets
 #define CLIENT_UDPKEEPALIVE_CHECK_INTERVAL  ACE_Time_Value(1) //Delay between checking if UDP keepalive should be sent
 #define CLIENT_UDPKEEPALIVE_RTX_INTERVAL    ACE_Time_Value(0, 500000) //Delay between UDP keepalive packets
@@ -272,7 +274,6 @@ namespace teamtalk {
 
         //server properties
         bool GetServerInfo(ServerInfo& info);
-        bool GetServerStatistics(ServerStats& stats);
         bool GetClientStatistics(ClientStats& stats);
 
         ClientFlags GetFlags() const { return m_flags; }
@@ -399,10 +400,10 @@ namespace teamtalk {
         int GetServerTimeout() const { return m_server_timeout; }
 
         //Start timer which is handled and terminated outside ClientNode
-        long StartUserTimer(ACE_UINT32 timer_id, int userid, 
+        long StartUserTimer(uint16_t timer_id, uint16_t userid, 
                             long userdata, const ACE_Time_Value& delay, 
                             const ACE_Time_Value& interval = ACE_Time_Value::zero);
-        bool StopUserTimer(ACE_UINT32 timer_id, int userid);
+        bool StopUserTimer(uint16_t timer_id, uint16_t userid);
         bool TimerExists(ACE_UINT32 timer_id);
         bool TimerExists(ACE_UINT32 timer_id, int userid);
         //TimerListener - reactor thread
@@ -494,7 +495,6 @@ namespace teamtalk {
         int DoQueryServerStats();
         int DoQuit();
 
-        // Admin specific
         int DoMakeChannel(const ChannelProp& chanprop);
         int DoUpdateChannel(const ChannelProp& chanprop);
         int DoRemoveChannel(int channelid);
@@ -653,6 +653,7 @@ namespace teamtalk {
         AudioThread m_voice_thread;
         uint8_t m_voice_stream_id; //0 means not used
         uint16_t m_voice_pkt_counter;
+        std::atomic<bool> m_voice_tx_closed{false}; // CLIENT_TX_VOICE was toggled (transmit next packet)
 
         //encode video from video capture
         vidcap::videocapture_t m_vidcap;
@@ -673,7 +674,7 @@ namespace teamtalk {
 
         // local playback of media files
         std::map<int, mediaplayback_t> m_mediaplayback_streams;
-        int m_mediaplayback_counter = 0;
+        uint16_t m_mediaplayback_counter = 0;
 
         //desktop session
         desktop_initiator_t m_desktop;
