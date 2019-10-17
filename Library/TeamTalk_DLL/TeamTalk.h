@@ -16,7 +16,7 @@
  * client's version can be seen in the @a szVersion member of the
  * #User-struct. */
 
-#define TEAMTALK_VERSION "5.5.0.4977"
+#define TEAMTALK_VERSION "5.5.0.4978"
 
 
 #if defined(WIN32)
@@ -3070,7 +3070,7 @@ extern "C" {
          * being streamed. */
         CLIENTEVENT_STREAM_MEDIAFILE = CLIENTEVENT_NONE + 1060,
         /**
-         * @brief Media file played locally is procesing.
+         * @brief Media file played locally is processing.
          *
          * This event is called as a result of TT_InitLocalPlayback()
          * to monitor progress of playback.
