@@ -12,6 +12,13 @@ if (FFMPEG_STATIC)
     ${TTLIBS_ROOT}/ffmpeg/lib/libswresample.a
     ${TTLIBS_ROOT}/ffmpeg/lib/libswscale.a
     ${TTLIBS_ROOT}/ffmpeg/lib/libavutil.a)
+
+  if ( ${CMAKE_SYSTEM_NAME} MATCHES "Linux" )
+    # Ubuntu: libasound2-dev
+    find_library(ASOUND_LIBRARY asound)
+    list (APPEND FFMPEG_LINK_FLAGS ${ASOUND_LIBRARY})
+  endif()
+  
 else()
   # Ubuntu: libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavresample-dev libavutil-dev libswresample-dev libswscale-dev
 
@@ -19,12 +26,12 @@ else()
   list (APPEND FFMPEG_LINK_FLAGS ${AVDEVICE_LIBRARY})
   find_library(AVFILTER_LIBRARY avfilter)
   list (APPEND FFMPEG_LINK_FLAGS ${AVFILTER_LIBRARY})
-  find_library(avformat_LIBRARY avformat)
+  find_library(AVFORMAT_LIBRARY avformat)
   list (APPEND FFMPEG_LINK_FLAGS ${AVFORMAT_LIBRARY})
   find_library(AVCODEC_LIBRARY avcodec)
   list (APPEND FFMPEG_LINK_FLAGS ${AVCODEC_LIBRARY})
   find_library(SWRESAMPLE_LIBRARY swresample)
-  list (APPEND FFMPEG_LINK_FLAGS ${DWRESAMPLE_LIBRARY})
+  list (APPEND FFMPEG_LINK_FLAGS ${SWRESAMPLE_LIBRARY})
   find_library(SWSCALE_LIBRARY swscale)
   list (APPEND FFMPEG_LINK_FLAGS ${SWSCALE_LIBRARY})
   find_library(AVUTIL_LIBRARY avutil)
@@ -32,7 +39,6 @@ else()
 endif()
 
 set (FFMPEG_COMPILE_FLAGS -D__STDC_CONSTANT_MACROS)
-
 
 if ( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
   find_library(COCOA_LIBRARY Cocoa)

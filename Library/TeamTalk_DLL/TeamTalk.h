@@ -16,7 +16,7 @@
  * client's version can be seen in the @a szVersion member of the
  * #User-struct. */
 
-#define TEAMTALK_VERSION "5.5.0.4979"
+#define TEAMTALK_VERSION "5.5.0.4984"
 
 
 #if defined(WIN32)
@@ -497,6 +497,30 @@ extern "C" {
          * talking @c nSampleIndex will be reset to 0 again. */
         UINT32 uSampleIndex;
     } AudioBlock;
+
+/**
+ * @brief User ID passed to TT_EnableAudioBlockEvent() in order to
+ * receive #AudioBlock directly from sound input device after joining
+ * a channel.
+ *
+ * When this user ID is passed then the #AudioBlock received will be
+ * prior to audio preprocessing (#AudioPreprocessor).
+ *
+ * Note, however, that #CLIENTEVENT_USER_AUDIOBLOCK will not be
+ * triggered until the #TTInstance is in a channel. This is because
+ * the sound input device is not started until it knows the
+ * #AudioCodec's sample rate, number of channels and transmit
+ * interval. */
+#define TT_LOCAL_USERID 0
+
+/**
+ * @brief User ID used to identify muxed audio that has been mixed
+ * into a single stream.
+ *
+ * This user ID is passed to TT_EnableAudioBlockEvent() in order to
+ * receive #AudioBlock of audio that is played in the #TTInstance's
+ * channel. */
+#define TT_MUXED_USERID 0x1001 /* TT_USERID_MAX + 1 */
 
     /** @} */
 
@@ -995,8 +1019,9 @@ extern "C" {
          * @a nGainLevel, @a nMaxIncDBSec, @a nMaxDecDBSec and @a
          * nMaxGainDB.
          * 
-         * Since TeamTalk version 5.2.0.4742 AGC is also supported on
-         * ARM architectures. */
+         * Note that AGC is not supported on ARM (iOS and Android),
+         * since there's no fixed point implementation of AGC in
+         * SpeexDSP. */
         TTBOOL bEnableAGC;
         /** @brief A value from 0 to 32768. Default is 8000.
          * Value is ignored if @a bEnableAGC is FALSE. */
@@ -1246,6 +1271,20 @@ extern "C" {
         /** @brief Option to activate audio preprocessor on local media file playback. */
         AudioPreprocessor audioPreprocessor;
     } MediaFilePlayback;
+
+    /** @brief The progress of the audio currently being processed as
+     * audio input.  @see TT_InsertAudioBlock() */
+    typedef struct AudioInputProgress
+    {
+        /** @brief The stream ID provided in the #AudioBlock. */
+        INT32 nStreamID;
+        /** @brief The duration of the audio currently queued for
+         * transmission. */
+        UINT32 uQueueMSec;
+        /** @brief The duration of the audio that has been
+         * transmitted. */
+        UINT32 uElapsedMSec;
+    } AudioInputProgress;
 
     /** @} */
     
@@ -2234,26 +2273,38 @@ extern "C" {
          * This timeout applies to both the TCP and UDP
          * connection. I.e. @c nTcpServerSilenceSec or @c
          * nUdpServerSilenceSec in #ClientStatistics should not exceed
-         * this value.  */
+         * @c nConnectionLostMSec. */
         INT32 nConnectionLostMSec;
-        /** @brief Client instance's interval between TT_DoPing()
-         * command. Read-only value. Will be half of
-         * #ServerProperties' @c nUserTimeout.
-         */
+        /** @brief Client instance's interval between automatically
+         * doing TT_DoPing() command. Read-only value. Will be half of
+         * #ServerProperties' @c nUserTimeout. */
         INT32 nTcpKeepAliveIntervalMSec;
         /** @brief Client instance's interval between sending UDP keep
-         * alive packets. This value must be less than @c
-         * nConnectionLostMSec. */
+         * alive packets. The UDP keep alive packets are used to
+         * ensure audio, video and desktop streams can be sent from
+         * the server to the client immediately. This value must be
+         * less than @c nConnectionLostMSec. */
         INT32 nUdpKeepAliveIntervalMSec;
         /** @brief Client instance's interval for retransmitting UDP
-         * keep alive packets. */
+         * keep alive packets. If server hasn't responded to UDP keep
+         * alive sent at interval @c nUdpKeepAliveIntervalMSec then a
+         * new UDP keep alive will be sent at the rate specified by
+         * @c nUdpKeepAliveRTXMSec. */
         INT32 nUdpKeepAliveRTXMSec;
         /** @brief Client instance's interval for retransmitting UDP
          * connect packets. UDP connect packets are only sent when
-         * TT_Connect() is initially called. */
+         * TT_Connect() is initially called. If the server doesn't
+         * respond to the client instance's initial UDP connect then a
+         * retransmission will be started at the rate of @c
+         * nUdpConnectRTXMSec. */
         INT32 nUdpConnectRTXMSec;
-        /** @brief The duration before the #TTInstance should give up
-         * trying to connect to the server. */
+        /** @brief The duration before the client instance should give
+         * up trying to connect to the server on UDP. When
+         * TT_Connect() manages to connect to the server's TCP port
+         * then the client will afterwards try to connect on server's
+         * UDP port. If the client cannot connect on UDP before the
+         * time specified by @c nUdpConnectTimeoutMSec then the client
+         * instance will report #CLIENTEVENT_CON_FAILED. */
         INT32 nUdpConnectTimeoutMSec;
     } ClientKeepAlive;
     
@@ -3002,7 +3053,8 @@ extern "C" {
          *
          * Call TT_AcquireUserAudioBlock() to extract the #AudioBlock.
          *
-         * @param nSource The user ID.
+         * @param nSource The user ID. @see TT_LOCAL_USERID
+         * @see TT_MUTEX_USERID
          * @param ttType #__STREAMTYPE */
         CLIENTEVENT_USER_AUDIOBLOCK = CLIENTEVENT_NONE + 570,
         /** 
@@ -3121,6 +3173,29 @@ extern "C" {
          * being played.
          */
          CLIENTEVENT_LOCAL_MEDIAFILE = CLIENTEVENT_NONE + 1070,
+
+        /**
+         * @brief Progress is audio being injected as
+         * #STREAMTYPE_VOICE.
+         *
+         * @c nStreamID of #AudioInputProgress is the stream ID
+         * provided in the #AudioBlock when calling
+         * TT_InsertAudioBlock().
+         *
+         * When @c uElapsedMSec and @c uQueueMSec of
+         * #AudioInputProgress are zero then the stream ID (session)
+         * has ended. An audio input session has ended when an empty
+         * #AudioBlock has been inserted using TT_InsertAudioBlock().
+         *
+         * @param nSource Stream ID used for sending audio input.
+         * The stream ID will appear in #AudioBlock's @c nStreamID
+         * on the receiving side.
+         * @param ttType #__AUDIOINPUTPROGRESS
+         * @param audioinputprogress Placed in union of #TTMessage.
+         * Tells how much audio remains in queue. The queue should 
+         * be refilled as long as the audio input should remain active.
+         */
+        CLIENTEVENT_AUDIOINPUT = CLIENTEVENT_NONE + 1080,
     } ClientEvent;
 
     /* List of structures used internally by TeamTalk. */
@@ -3165,6 +3240,8 @@ extern "C" {
         __TTAUDIOPREPROCESSOR     = 36,
         __MEDIAFILEPLAYBACK       = 37,
         __CLIENTKEEPALIVE         = 38,
+        __UINT32                  = 39,
+        __AUDIOINPUTPROGRESS      = 40
     } TTType;
 
     /**
@@ -3223,6 +3300,8 @@ extern "C" {
             INT32 nPayloadSize;
             /** @brief Valid if @c ttType is #__STREAMTYPE. */
             StreamType nStreamType;
+            /** @brief Valid if @c ttType is #__AUDIOINPUTPROGRESS. */
+            AudioInputProgress audioinputprogress;
             /* brief First byte in union. */
             char data[1];
         };
@@ -3873,8 +3952,8 @@ extern "C" {
      * 
      * @param lpTTInstance Pointer to client instance created by
      * #TT_InitTeamTalk.
-     * @param nUserID The user ID to monitor for audio callback. Pass 0
-     * to monitor local audio.
+     * @param nUserID The user ID to monitor for audio callback. Pass #TT_LOCAL_USERID
+     * to monitor local recorded audio prior to encoding/processing.
      * @param nStreamType Either #STREAMTYPE_VOICE or 
      * #STREAMTYPE_MEDIAFILE_AUDIO.
      * @param bEnable Whether to enable the #CLIENTEVENT_USER_AUDIOBLOCK event.
@@ -3885,6 +3964,40 @@ extern "C" {
                                                     IN INT32 nUserID,
                                                     IN StreamType nStreamType,
                                                     IN TTBOOL bEnable);
+
+    /**
+     * @brief Transmit application provided raw audio in
+     * #AudioBlock-structs as #STREAMTYPE_VOICE, i.e. microphone
+     * input.
+     *
+     * Since #STREAMTYPE_VOICE is being replaced by audio input this
+     * means that while audio input is active then subsequent calls to
+     * TT_EnableVoiceTransmission() or TT_EnableVoiceActivation() will
+     * fail until the audio input has ended.
+     *
+     * If the flags #CLIENT_TX_VOICE or
+     * #CLIENT_SNDINPUT_VOICEACTIVATED are active then calling
+     * TT_InputAudioBlock() will fail because #STREAMTYPE_VOICE is
+     * already in use.
+     *
+     * TT_InsertAudioBlock() can be called multiple times until the
+     * client instance's internal queue is full. When the queue has
+     * been filled then monitor #CLIENTEVENT_AUDIOINPUT to see when
+     * more data can be queued.
+     *
+     * The member @c nStreamID of #AudioBlock is used to identify the
+     * audio input session which is currently in progress and is
+     * posted as the @c nSource of #CLIENTEVENT_AUDIOINPUT.
+     *
+     * The member @c uSampleIndex of #AudioBlock is ignored.
+     *
+     * To end raw audio input set @c lpAudioBlock to NULL and then
+     * TT_EnableVoiceTransmission() or
+     * TT_StartStreamingMediaFileToChannel() will be available again.
+     */
+    TEAMTALKDLL_API TTBOOL TT_InsertAudioBlock(IN TTInstance* lpTTInstance,
+                                               IN const AudioBlock* lpAudioBlock);
+    
     /** @} */
 
     /** @addtogroup transmission
@@ -3901,9 +4014,14 @@ extern "C" {
      * User rights required:
      * - #USERRIGHT_TRANSMIT_VOICE
      *
+     * Note that voice activation cannot be enabled when
+     * TT_InsertAudioBlock() is active.
+     *
      * @param lpTTInstance Pointer to client instance created by
      * #TT_InitTeamTalk. 
-     * @param bEnable Enable/disable transmission. */
+     * @param bEnable Enable/disable transmission.
+     * @return TRUE on success. FALSE if voice transmission could
+     * not be activated on the client instance. */
     TEAMTALKDLL_API TTBOOL TT_EnableVoiceTransmission(IN TTInstance* lpTTInstance,
                                                       IN TTBOOL bEnable);
 
@@ -3912,7 +4030,7 @@ extern "C" {
      *
      * The client instance will start transmitting audio if the
      * recorded audio level is above or equal to the voice activation
-     * level set by #TT_SetVoiceActivationLevel. Once the voice
+     * level set by TT_SetVoiceActivationLevel(). Once the voice
      * activation level is reached the event
      * #CLIENTEVENT_VOICE_ACTIVATION is posted.
      *
@@ -3924,9 +4042,15 @@ extern "C" {
      * User rights required:
      * - #USERRIGHT_TRANSMIT_VOICE
      *
+     * Note that voice activation cannot be enabled when
+     * TT_InsertAudioBlock() is active.
+     *
      * @param lpTTInstance Pointer to client instance created by 
      * #TT_InitTeamTalk.
      * @param bEnable TRUE to enable, otherwise FALSE.
+     * @return TRUE on success. FALSE if voice activation cannot 
+     * be enabled on the client instance.
+     *
      * @see CLIENT_SNDINPUT_VOICEACTIVATION
      * @see TT_SetVoiceActivationStopDelay */
     TEAMTALKDLL_API TTBOOL TT_EnableVoiceActivation(IN TTInstance* lpTTInstance, 

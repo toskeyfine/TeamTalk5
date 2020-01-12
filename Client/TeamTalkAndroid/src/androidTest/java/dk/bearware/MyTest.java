@@ -47,6 +47,9 @@ public class MyTest extends TeamTalkTestCase {
         this.IPADDR = "192.168.0.68";
         this.TCPPORT = 10333;
         this.UDPPORT = 10333;
+
+        this.INPUTDEVICEID = SoundDeviceConstants.TT_SOUNDDEVICE_ID_OPENSLES_DEFAULT | SoundDeviceConstants.TT_SOUNDDEVICE_SHARED_FLAG;
+        this.OUTPUTDEVICEID = SoundDeviceConstants.TT_SOUNDDEVICE_ID_OPENSLES_DEFAULT;
     }
 
     public void test_This() {
@@ -64,14 +67,14 @@ public class MyTest extends TeamTalkTestCase {
         connect(ttclient);
         login(ttclient, getCurrentMethod(), "guest", "guest");
         joinRoot(ttclient);
-        Assert.assertTrue("sub voice", ttclient.doSubscribe(ttclient.getMyUserID(), Subscription.SUBSCRIBE_VOICE)>0);
+        assertTrue("sub voice", ttclient.doSubscribe(ttclient.getMyUserID(), Subscription.SUBSCRIBE_VOICE)>0);
         ttclient.DBG_SetSoundInputTone(StreamType.STREAMTYPE_VOICE, 600);
-        Assert.assertTrue("tx voice", ttclient.enableVoiceTransmission(true));
+        assertTrue("tx voice", ttclient.enableVoiceTransmission(true));
         waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_STATECHANGE, DEF_WAIT);
         waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 5000);
-        Assert.assertTrue("close input devs", ttclient.closeSoundInputDevice());
-        Assert.assertTrue("close output devs", ttclient.closeSoundOutputDevice());
-        Assert.assertTrue("restart sound system", ttclient.restartSoundSystem());
+        assertTrue("close input devs", ttclient.closeSoundInputDevice());
+        assertTrue("close output devs", ttclient.closeSoundOutputDevice());
+        assertTrue("restart sound system", ttclient.restartSoundSystem());
         initSound(ttclient);
         waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_STATECHANGE, DEF_WAIT);
         waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 5000);
@@ -210,6 +213,7 @@ public class MyTest extends TeamTalkTestCase {
         Channel chan3 = buildDefaultChannel(ttclient1, "Opus Stereo - 20 msec");
         assertEquals("opus default", chan3.audiocodec.nCodec, Codec.OPUS_CODEC);
         chan3.audiocodec.opus.nChannels = 1;
+        chan3.audiocodec.opus.nFrameSizeMSec = 20;
         chan3.audiocodec.opus.nTxIntervalMSec = 20;
         assertTrue("ttclient1 create channel", waitCmdSuccess(ttclient1, ttclient1.doJoinChannel(chan3), DEF_WAIT));
         assertTrue("ttclient2 join ttclient1's channel", waitCmdSuccess(ttclient2, ttclient2.doJoinChannelByID(ttclient1.getMyChannelID(), chan3.szPassword), DEF_WAIT));
@@ -223,11 +227,38 @@ public class MyTest extends TeamTalkTestCase {
         }
     }
 
-    public void test_EnableAudioBlock() {
-        super.test_AudioBlock();
-    }
+    public void test_SpeexDSP() {
 
-    public void test_LocalEnableAudioBlock() {
-        super.test_LocalAudioBlock();
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        int USERRIGHTS = UserRight.USERRIGHT_VIEW_ALL_USERS;
+        makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
+
+        TeamTalkBase ttclient = newClientInstance();
+        initSound(ttclient);
+
+        // setup echo cancellation
+        SpeexDSP spxdsp = new SpeexDSP(true);
+        spxdsp.bEnableAGC = true;
+        spxdsp.bEnableDenoise = true;
+        spxdsp.nMaxNoiseSuppressDB = -30;
+        assertTrue("SpeexDSP", ttclient.setSoundInputPreprocess(spxdsp));
+
+        TTMessage msg = new TTMessage();
+
+        connect(ttclient);
+        login(ttclient, NICKNAME, USERNAME, PASSWORD);
+
+        assertTrue("join root", ttclient.doJoinChannelByID(ttclient.getRootChannelID(), "") > 0);
+
+        assertTrue("Wait for AGC error on ARMv7A", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_INTERNAL_ERROR, 1000));
+
+        assertTrue("Leave channel", waitCmdSuccess(ttclient, ttclient.doLeaveChannel(), DEF_WAIT));
+
+        spxdsp.bEnableAGC = false;
+        assertTrue("SpeexDSP", ttclient.setSoundInputPreprocess(spxdsp));
+
+        assertTrue("join root", ttclient.doJoinChannelByID(ttclient.getRootChannelID(), "") > 0);
+
+        assertFalse("No AGC error on ARMv7A", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_INTERNAL_ERROR, 1000));
     }
 }
