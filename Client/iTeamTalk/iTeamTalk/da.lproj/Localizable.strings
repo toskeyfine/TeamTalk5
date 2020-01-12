@@ -195,6 +195,9 @@
 /* Dialog message */
 "Facebook login was cancelled" = "Facebook login blev afbrudt";
 
+/* codec detail */
+"Frame Size" = "Frame Size";
+
 /* preferences
    user detail */
 "General" = "Generelt";
@@ -452,9 +455,6 @@
 /* Dialog message */
 "Save server to server list?" = "Gem server i serverlisten?";
 
-/* preferences */
-"Select the text-to-speech voice to use" = "Vælg den ønskede Tekst-til-tale-stemme";
-
 /* text message */
 "Send empty message to close keyboard" = "Send tom besked for at lukke tastaturet";
 
@@ -497,9 +497,6 @@
 
 /* preferences */
 "Speaker Output" = "Højtalerudgang";
-
-/* preferences */
-"Speech" = "Tale";
 
 /* preferences */
 "Speech Rate" = "Talehastighed";
@@ -606,6 +603,9 @@
 
 /* Web Login Controller */
 "Username or password incorrect" = "Forkert brugernavn eller adgangskode";
+
+/* codec detail */
+"Variable Bitrate" = "Variable Bitrate";
 
 /* preferences */
 "Version Information" = "Versions Information";
