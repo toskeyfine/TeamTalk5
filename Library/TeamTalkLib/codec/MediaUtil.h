@@ -68,10 +68,14 @@ namespace media
             width = height = fps_numerator = fps_denominator = 0;
             fourcc = FOURCC_NONE;
         }
-        bool operator==(const VideoFormat& fmt)
-            {
-                return memcmp(&fmt, this, sizeof(*this)) == 0;
-            }
+        bool operator==(const VideoFormat& fmt) const
+        {
+            return memcmp(&fmt, this, sizeof(*this)) == 0;
+        }
+        bool operator!=(const VideoFormat& fmt) const
+        {
+            return memcmp(&fmt, this, sizeof(*this)) != 0;
+        }
 
         bool IsValid() const { return width > 0 && height > 0; }
     };
@@ -85,6 +89,15 @@ namespace media
 
         AudioFormat(int sr, int chans) : samplerate(sr), channels(chans) {}
         AudioFormat() {}
+
+        bool operator==(const AudioFormat& fmt) const
+        {
+            return memcmp(&fmt, this, sizeof(*this)) == 0;
+        }
+        bool operator!=(const AudioFormat& fmt) const
+        {
+            return memcmp(&fmt, this, sizeof(*this)) != 0;
+        }
     };
 
     struct AudioFrame
@@ -95,11 +108,13 @@ namespace media
         int output_samples;
         AudioFormat inputfmt;
         AudioFormat outputfmt;
+        int streamid = 0;
         int soundgrpid;
         ACE_UINT32 userdata;
         bool force_enc; //force encoding of frame
         bool voiceact_enc; //encode if voice active
         ACE_UINT32 timestamp;
+        ACE_UINT32 sample_no = 0;
         AudioFrame()
         : input_buffer(NULL)
         , output_buffer(NULL)
@@ -111,18 +126,26 @@ namespace media
             timestamp = GETTIMESTAMP();
         }
 
-        AudioFrame(const AudioFormat& infmt, short* input_buf, int insamples)
+        AudioFrame(const AudioFormat& infmt, short* input_buf, int insamples, ACE_UINT32 sampleindex = 0)
         : AudioFrame()
         {
             inputfmt = infmt;
             input_buffer = input_buf;
             input_samples = insamples;
+            sample_no = sampleindex;
         }
 
         AudioFrame(ACE_Message_Block* mb)
         {
-            AudioFrame* frm = reinterpret_cast<AudioFrame*>(mb->rd_ptr());
+            AudioFrame* frm = reinterpret_cast<AudioFrame*>(mb->base());
             *this = *frm;
+        }
+
+        uint32_t InputDurationMSec() const
+        {
+            if (!inputfmt.IsValid())
+                return 0;
+            return (input_samples * 1000) / inputfmt.samplerate;
         }
     };
 
@@ -185,6 +208,7 @@ ACE_Message_Block* VideoFrameToMsgBlock(const media::VideoFrame& frm,
 media::VideoFrame* VideoFrameFromMsgBlock(ACE_Message_Block* mb);
 
 ACE_Message_Block* AudioFrameToMsgBlock(const media::AudioFrame& frame);
+media::AudioFrame* AudioFrameFromMsgBlock(ACE_Message_Block* mb);
 
 void SplitStereo(const short* input_buffer, int input_samples,
                  std::vector<short>& left_chan, std::vector<short>& right_chan);

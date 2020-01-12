@@ -182,6 +182,22 @@ struct ClientInstance
 
     ClientInstance(TTMsgQueue* eh)
     {
+#if defined(ENABLE_MEDIAFOUNDATION)
+        static class MFInit {
+        public:
+            MFInit()
+            {
+                HRESULT hr = MFStartup(MF_VERSION, MFSTARTUP_FULL);
+                assert(SUCCEEDED(hr));
+            }
+            ~MFInit()
+            {
+                //HRESULT hr = MFShutdown();
+                //assert(SUCCEEDED(hr));
+            }
+        } mfinit;
+#endif
+
         eventhandler.reset(eh);
         clientnode.reset(new ClientNode(ACE_TEXT( TEAMTALK_VERSION ), eh));
         
@@ -200,22 +216,6 @@ struct ClientInstance
         ACE_SSL_Context *context = ACE_SSL_Context::instance();
         if(context->get_mode() != ACE_SSL_Context::SSLv23)
             context->set_mode(ACE_SSL_Context::SSLv23);
-#endif
-
-#if defined(ENABLE_MEDIAFOUNDATION)
-        static class MFInit {
-        public:
-            MFInit()
-            {
-                HRESULT hr = MFStartup(MF_VERSION, MFSTARTUP_FULL);
-                assert(SUCCEEDED(hr));
-            }
-            ~MFInit()
-            {
-                //HRESULT hr = MFShutdown();
-                //assert(SUCCEEDED(hr));
-            }
-        } init;
 #endif
     }
 
@@ -265,8 +265,6 @@ BOOL APIENTRY DllMain(HANDLE hModule,
         }
     case DLL_PROCESS_DETACH:
         {
-            //while(clients.size())
-            //    TT_CloseTeamTalk(*clients.begin());
             ret = ACE::fini();
             TTASSERT(ret>=0);
             break;
@@ -714,8 +712,7 @@ TEAMTALKDLL_API TTBOOL TT_EnableVoiceTransmission(IN TTInstance* lpTTInstance,
 {
     clientnode_t clientnode;
     GET_CLIENTNODE_RET(clientnode, lpTTInstance, FALSE);
-    clientnode->EnableVoiceTransmission(bEnable);
-    return TRUE;
+    return clientnode->EnableVoiceTransmission(bEnable);
 }
 
 TEAMTALKDLL_API TTBOOL TT_EnableVoiceActivation(IN TTInstance* lpTTInstance,
@@ -723,8 +720,7 @@ TEAMTALKDLL_API TTBOOL TT_EnableVoiceActivation(IN TTInstance* lpTTInstance,
 {
     clientnode_t clientnode;
     GET_CLIENTNODE_RET(clientnode, lpTTInstance, FALSE);
-    clientnode->EnableVoiceActivation(bEnable);
-    return TRUE;
+    return clientnode->EnableVoiceActivation(bEnable);
 }
 
 TEAMTALKDLL_API TTBOOL TT_SetVoiceActivationLevel(IN TTInstance* lpTTInstance, 
@@ -787,8 +783,18 @@ TEAMTALKDLL_API TTBOOL TT_EnableAudioBlockEvent(IN TTInstance* lpTTInstance,
     clientnode_t clientnode;
     GET_CLIENTNODE_RET(clientnode, lpTTInstance, FALSE);
     
-    clientnode->EnableAudioBlockCallback(nUserID, (teamtalk::StreamType)nStreamType, bEnable);
-    return TRUE;
+    return clientnode->EnableAudioBlockCallback(nUserID, (teamtalk::StreamType)nStreamType, bEnable);
+}
+
+TEAMTALKDLL_API TTBOOL TT_InsertAudioBlock(IN TTInstance* lpTTInstance,
+                                           IN const AudioBlock* lpAudioBlock)
+{
+    clientnode_t clientnode;
+    GET_CLIENTNODE_RET(clientnode, lpTTInstance, FALSE);
+
+    media::AudioFrame frm(media::AudioFormat(lpAudioBlock->nSampleRate, lpAudioBlock->nChannels),
+                          reinterpret_cast<short*>(lpAudioBlock->lpRawAudio), lpAudioBlock->nSamples);
+    return clientnode->QueueAudioInput(frm, lpAudioBlock->nStreamID);
 }
 
 TEAMTALKDLL_API TTBOOL TT_StartRecordingMuxedAudioFile(IN TTInstance* lpTTInstance,
@@ -1569,24 +1575,21 @@ TEAMTALKDLL_API AudioBlock* TT_AcquireUserAudioBlock(IN TTInstance* lpTTInstance
     auto inst = GET_CLIENT(lpTTInstance);
     TTASSERT(inst);
     if(!inst)
-        return NULL;
+        return nullptr;
 
-    const SoundProperties& prop = clientnode->GetSoundProperties();
+    ACE_Message_Block* mb = clientnode->audiocontainer().AcquireAudioFrame(nUserID, nStreamType);
+    if (!mb)
+        return nullptr;
 
-    RawAudio aud;
-    ACE_Message_Block* mb = AUDIOCONTAINER::instance()->AcquireRawAudio(prop.soundgroupid,
-                                                                        nUserID, 
-                                                                        nStreamType, aud);
-    if(!mb)
-        return NULL;
-
+    media::AudioFrame frm(mb);
+    
     AudioBlock* lpAudioBlock = inst->PushAudioBlock(mb);
-    lpAudioBlock->nStreamID = aud.stream_id;
-    lpAudioBlock->nSampleRate = aud.samplerate;
-    lpAudioBlock->nChannels = aud.channels;
-    lpAudioBlock->lpRawAudio = aud.rawAudio;
-    lpAudioBlock->nSamples = aud.samples;
-    lpAudioBlock->uSampleIndex = aud.start_sample_no;
+    lpAudioBlock->nStreamID = frm.streamid;
+    lpAudioBlock->nSampleRate = frm.inputfmt.samplerate;
+    lpAudioBlock->nChannels = frm.inputfmt.channels;
+    lpAudioBlock->lpRawAudio = frm.input_buffer;
+    lpAudioBlock->nSamples = frm.input_samples;
+    lpAudioBlock->uSampleIndex = frm.sample_no;
 
     return lpAudioBlock;
 }
@@ -3151,6 +3154,8 @@ TEAMTALKDLL_API INT32 TT_DBG_SIZEOF(IN TTType nType)
         return sizeof(TTBOOL);
     case __INT32 :
         return sizeof(INT32);
+    case __UINT32 :
+        return sizeof(UINT32);
     case __MEDIAFILESTATUS :
         return sizeof(MediaFileStatus);
     case __SPEEXDSP :
@@ -3167,6 +3172,8 @@ TEAMTALKDLL_API INT32 TT_DBG_SIZEOF(IN TTType nType)
         return sizeof(MediaFilePlayback);
     case __CLIENTKEEPALIVE :
         return sizeof(ClientKeepAlive);
+    case __AUDIOINPUTPROGRESS :
+        return sizeof(AudioInputProgress);
     }
     return 0;
 }
@@ -3204,6 +3211,7 @@ TEAMTALKDLL_API TTBOOL TT_DBG_WriteAudioFileTone(IN MediaFileInfo* lpMediaFileIn
     {
     case AFF_WAVE_FORMAT :
         break;
+    case AFF_NONE :
     case AFF_CHANNELCODEC_FORMAT :
     case AFF_MP3_16KBIT_FORMAT :
     case AFF_MP3_32KBIT_FORMAT :

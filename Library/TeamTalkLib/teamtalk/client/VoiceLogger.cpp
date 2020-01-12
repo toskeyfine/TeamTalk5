@@ -62,12 +62,12 @@ VoiceLog::VoiceLog(int userid, const ACE_TString& filename,
 {
     int samplerate = GetAudioCodecSampleRate(m_codec);
     int channels = GetAudioCodecChannels(m_codec);
-    int framesize = GetAudioCodecCbSamples(m_codec);
+    int cbsamples = GetAudioCodecCbSamples(m_codec);
 
     switch(aff)
     {
-#if defined(ENABLE_OGG)
     case AFF_CHANNELCODEC_FORMAT :
+#if defined(ENABLE_OGG)
     {
         bool vbr = true;
         ACE_UNUSED_ARG(vbr);
@@ -88,7 +88,7 @@ VoiceLog::VoiceLog(int userid, const ACE_TString& filename,
                 m_active = false;
                 return;
             }
-#endif
+#endif /* ENABLE_SPEEX */
         }
         break;
 #if defined(ENABLE_OPUSTOOLS)
@@ -97,6 +97,7 @@ VoiceLog::VoiceLog(int userid, const ACE_TString& filename,
             OpusFile* opus_file;
             ACE_NEW(opus_file, OpusFile());
             m_opusfile = opusfile_t(opus_file);
+            int framesize = GetAudioCodecFrameSize(m_codec);
             if(!m_opusfile->Open(filename, channels, samplerate, framesize))
             {
                 ACE_TString error = ACE_TEXT("Failed to open OPUS file ") + filename;
@@ -108,14 +109,14 @@ VoiceLog::VoiceLog(int userid, const ACE_TString& filename,
         break;
 #else
         case CODEC_OPUS :
-#endif
+#endif /* ENABLE_OPUSTOOLS */
         case CODEC_NO_CODEC :
         case CODEC_WEBM_VP8 :
             break;
         }
     }
+#endif /* ENABLE_OGG */
     break;
-#endif
 
     case AFF_MP3_16KBIT_FORMAT :
     case AFF_MP3_32KBIT_FORMAT :
@@ -179,9 +180,9 @@ VoiceLog::VoiceLog(int userid, const ACE_TString& filename,
         break;
     }
 
-    if(framesize>0)
+    if (cbsamples > 0)
     {
-        m_samples_buf.resize(framesize*channels);
+        m_samples_buf.resize(cbsamples * channels);
         m_active = true;
     }
     MYTRACE(ACE_TEXT("VoiceLog started: %s\n"), this->GetFileName().c_str());
@@ -325,10 +326,9 @@ void VoiceLog::WritePacket(int packet_no)
     
     switch(m_codec.codec)
     {
-#if defined(ENABLE_OGG)
     case CODEC_SPEEX :
     case CODEC_SPEEX_VBR :
-#if defined(ENABLE_SPEEX)
+#if defined(ENABLE_OGG) && defined(ENABLE_SPEEX)
         TTASSERT(m_speexfile.get());
         if (m_speexfile)
         {
@@ -341,10 +341,10 @@ void VoiceLog::WritePacket(int packet_no)
                 pos += frame_sizes[i];
             }
         }
-#endif /* ENABLE_SPEEX */
+#endif /* ENABLE_OGG && ENABLE_SPEEX */
         break;
     case CODEC_OPUS :
-#if defined(ENABLE_OPUSTOOLS)
+#if defined(ENABLE_OGG) && defined(ENABLE_OPUSTOOLS)
         TTASSERT(m_opusfile.get());
         if (m_opusfile)
         {
@@ -358,9 +358,8 @@ void VoiceLog::WritePacket(int packet_no)
             }
             
         }
-#endif /* ENABLE_OPUSTOOLS */
+#endif /* ENABLE_OGG && ENABLE_OPUSTOOLS */
         break;
-#endif /* ENABLE_OGG */
     case CODEC_NO_CODEC :
     case CODEC_WEBM_VP8 :
         assert(0);
@@ -413,13 +412,18 @@ void VoiceLog::WriteAudio(int packet_no)
                 int sum_dec = 0;
                 int cb_samples = GetAudioCodecCbSamples(m_codec);
                 int channels = GetAudioCodecChannels(m_codec);
+                int framesize = GetAudioCodecFrameSize(m_codec);
+                int decsamples = 0, ret;
                 for(size_t i=0;i<frame_sizes.size();i++)
                 {
-                    m_opus->Decode(&enc_data[sum_dec], frame_sizes[i],
-                                   &m_samples_buf[cb_samples*channels*i],
-                                   cb_samples);
+                    ret = m_opus->Decode(&enc_data[sum_dec], frame_sizes[i],
+                                         &m_samples_buf[framesize * channels * i],
+                                         cb_samples);
+                    assert(ret > 0);
+                    decsamples += ret;
                     sum_dec += frame_sizes[i];
                 }
+                assert(decsamples == cb_samples);
             }
 #endif
             break;
@@ -551,6 +555,8 @@ VoiceLogger::~VoiceLogger()
         m_reactor.cancel_timer(m_timerid, 0, 0);
     m_reactor.end_reactor_event_loop();
     this->wait();
+
+    MYTRACE(ACE_TEXT("~VoiceLogger()\n"));
 }
 
 int VoiceLogger::TimerEvent(ACE_UINT32 timer_event_id, long userdata)
