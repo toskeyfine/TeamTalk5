@@ -195,6 +195,9 @@
 /* Dialog message */
 "Facebook login was cancelled" = "Вход через Facebook был отменён";
 
+/* codec detail */
+"Frame Size" = "Frame Size";
+
 /* preferences
    user detail */
 "General" = "Общее";
@@ -452,9 +455,6 @@
 /* Dialog message */
 "Save server to server list?" = "Сохранить сервер в списке?";
 
-/* preferences */
-"Select the text-to-speech voice to use" = "Выбрать голос для использования текст в речь";
-
 /* text message */
 "Send empty message to close keyboard" = "Отправьте пустое сообщение, чтобы закрыть клавиатуру";
 
@@ -497,9 +497,6 @@
 
 /* preferences */
 "Speaker Output" = "Выход На Динамик";
-
-/* preferences */
-"Speech" = "Речь";
 
 /* preferences */
 "Speech Rate" = "Скорость Речи";
@@ -606,6 +603,9 @@
 
 /* Web Login Controller */
 "Username or password incorrect" = "Username or password incorrect";
+
+/* codec detail */
+"Variable Bitrate" = "Variable Bitrate";
 
 /* preferences */
 "Version Information" = "Информация О Версии";
