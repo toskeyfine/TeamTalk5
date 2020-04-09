@@ -39,6 +39,7 @@ import dk.bearware.FileTransferStatus;
 import dk.bearware.MediaFileInfo;
 import dk.bearware.RemoteFile;
 import dk.bearware.ServerProperties;
+import dk.bearware.SoundDeviceConstants;
 import dk.bearware.StreamType;
 import dk.bearware.Subscription;
 import dk.bearware.TeamTalk5Pro;
@@ -255,6 +256,9 @@ implements CommandListener, UserListener, ConnectionListener, ClientListener {
             @Override
             public void onCallStateChanged(int state, String incomingNumber) {
                 User myself = users.get(ttclient.getMyUserID());
+                if (myself == null) // event may have been generated before ttclient.disconnect() was called
+                    return;
+
                 switch (state) {
                 case TelephonyManager.CALL_STATE_IDLE:
                     if (voxSuspended)
@@ -365,7 +369,9 @@ implements CommandListener, UserListener, ConnectionListener, ClientListener {
         if (enable) {
             txSuspended = false;
             voxSuspended = false;
-            if (((ttclient.getFlags() & ClientFlag.CLIENT_SNDINPUT_READY) != 0) || ttclient.initSoundInputDevice(0))
+            int indevid = SoundDeviceConstants.TT_SOUNDDEVICE_ID_OPENSLES_DEFAULT;
+            // indevid |= SoundDeviceConstants.TT_SOUNDDEVICE_ID_SHARED_FLAG;
+            if (((ttclient.getFlags() & ClientFlag.CLIENT_SNDINPUT_READY) != 0) || ttclient.initSoundInputDevice(indevid))
                 ttclient.enableVoiceTransmission(true);
         }
         else {
@@ -379,7 +385,8 @@ implements CommandListener, UserListener, ConnectionListener, ClientListener {
         if (enable) {
             txSuspended = false;
             voxSuspended = false;
-            if (((ttclient.getFlags() & ClientFlag.CLIENT_SNDINPUT_READY) != 0) || ttclient.initSoundInputDevice(0))
+            int indevid = SoundDeviceConstants.TT_SOUNDDEVICE_ID_OPENSLES_DEFAULT;
+            if (((ttclient.getFlags() & ClientFlag.CLIENT_SNDINPUT_READY) != 0) || ttclient.initSoundInputDevice(indevid))
                 ttclient.enableVoiceActivation(true);
         }
         else {
@@ -939,6 +946,9 @@ implements CommandListener, UserListener, ConnectionListener, ClientListener {
     @Override
     public void onStreamMediaFile(MediaFileInfo mediafileinfo) {
         User myself = users.get(ttclient.getMyUserID());
+        if (myself == null) // event may have been generated before ttclient.disconnect() was called
+            return;
+
         switch (mediafileinfo.nStatus) {
             case MediaFileStatus.MFS_STARTED :
                 ttclient.doChangeStatus(myself.nStatusMode | TeamTalkConstants.STATUSMODE_STREAM_MEDIAFILE, myself.szStatusMsg);
