@@ -36,7 +36,7 @@ HINSTANCE hInstance = NULL;
 #endif
 
 #if defined(ENABLE_MINIDUMP)
-#include "mdump.h"
+#include <win32/mdump.h>
 #endif
 
 
@@ -330,7 +330,7 @@ TEAMTALKDLL_API const TTCHAR* TT_GetVersion(void)
 }
 
 #if defined(WIN32)
-TEAMTALKDLL_API TTInstance* TT_InitTeamTalk(IN HWND hWnd, IN UINT uMsg)
+TEAMTALKDLL_API TTInstance* TT_InitTeamTalk(IN HWND hWnd, IN UINT32 uMsg)
 {
     clientinst_t inst(new ClientInstance(new TTMsgQueue(hWnd, uMsg)));
 
@@ -672,8 +672,7 @@ TEAMTALKDLL_API TTBOOL TT_SetSoundInputPreprocess(IN TTInstance* lpTTInstance,
     teamtalk::SpeexDSP spxdsp;
     Convert(*lpSpeexDSP, spxdsp);
 
-    clientnode->SetSoundPreprocess(spxdsp);
-    return TRUE;
+    return clientnode->SetSoundPreprocess(spxdsp);
 }
 
 TEAMTALKDLL_API TTBOOL TT_GetSoundInputPreprocess(IN TTInstance* lpTTInstance,
@@ -792,9 +791,17 @@ TEAMTALKDLL_API TTBOOL TT_InsertAudioBlock(IN TTInstance* lpTTInstance,
     clientnode_t clientnode;
     GET_CLIENTNODE_RET(clientnode, lpTTInstance, FALSE);
 
-    media::AudioFrame frm(media::AudioFormat(lpAudioBlock->nSampleRate, lpAudioBlock->nChannels),
-                          reinterpret_cast<short*>(lpAudioBlock->lpRawAudio), lpAudioBlock->nSamples);
-    return clientnode->QueueAudioInput(frm, lpAudioBlock->nStreamID);
+    if (lpAudioBlock)
+    {
+        media::AudioFrame frm(media::AudioFormat(lpAudioBlock->nSampleRate, lpAudioBlock->nChannels),
+                              reinterpret_cast<short*>(lpAudioBlock->lpRawAudio), lpAudioBlock->nSamples);
+        return clientnode->QueueAudioInput(frm, lpAudioBlock->nStreamID);
+    }
+    else
+    {
+        // end session
+        return clientnode->QueueAudioInput(media::AudioFrame(), 0);
+    }
 }
 
 TEAMTALKDLL_API TTBOOL TT_StartRecordingMuxedAudioFile(IN TTInstance* lpTTInstance,
@@ -810,7 +817,19 @@ TEAMTALKDLL_API TTBOOL TT_StartRecordingMuxedAudioFile(IN TTInstance* lpTTInstan
         return FALSE;
 
     return clientnode->StartRecordingMuxedAudioFile(codec, szAudioFileName, 
-                                                     (teamtalk::AudioFileFormat)uAFF);
+                                                    teamtalk::AudioFileFormat(uAFF));
+}
+
+TEAMTALKDLL_API TTBOOL TT_StartRecordingMuxedAudioFileEx(IN TTInstance* lpTTInstance,
+                                                         IN INT32 nChannelID,
+                                                         IN const TTCHAR* szAudioFileName,
+                                                         IN AudioFileFormat uAFF)
+{
+    clientnode_t clientnode;
+    GET_CLIENTNODE_RET(clientnode, lpTTInstance, FALSE);
+    
+    return clientnode->StartRecordingMuxedAudioFile(nChannelID, szAudioFileName, 
+                                                    teamtalk::AudioFileFormat(uAFF));
 }
 
 TEAMTALKDLL_API TTBOOL TT_StopRecordingMuxedAudioFile(IN TTInstance* lpTTInstance)
@@ -819,6 +838,16 @@ TEAMTALKDLL_API TTBOOL TT_StopRecordingMuxedAudioFile(IN TTInstance* lpTTInstanc
     GET_CLIENTNODE_RET(clientnode, lpTTInstance, FALSE);
     
     clientnode->StopRecordingMuxedAudioFile();
+    return TRUE;
+}
+
+TEAMTALKDLL_API TTBOOL TT_StopRecordingMuxedAudioFileEx(IN TTInstance* lpTTInstance,
+                                                        IN INT32 nChannelID)
+{
+    clientnode_t clientnode;
+    GET_CLIENTNODE_RET(clientnode, lpTTInstance, FALSE);
+    
+    clientnode->StopRecordingMuxedAudioFile(nChannelID);
     return TRUE;
 }
 
@@ -3046,7 +3075,7 @@ TEAMTALKDLL_API INT32 TT_HotKey_IsActive(IN TTInstance* lpTTInstance,
 }
 
 TEAMTALKDLL_API TTBOOL TT_HotKey_InstallTestHook(IN TTInstance* lpTTInstance,
-                                                 IN HWND hWnd, UINT uMsg)
+                                                 IN HWND hWnd, UINT32 uMsg)
 {
     auto inst = GET_CLIENT(lpTTInstance);
     if(!inst)
@@ -3080,7 +3109,7 @@ TEAMTALKDLL_API TTBOOL TT_HotKey_GetKeyString(IN TTInstance* lpTTInstance,
 #define MAPVK_VK_TO_VSC 0
 #endif
 
-    UINT scancode = MapVirtualKey(nVKCode, MAPVK_VK_TO_VSC);
+    UINT32 scancode = MapVirtualKey(nVKCode, MAPVK_VK_TO_VSC);
     return ::GetKeyNameText( scancode << 16 , szKeyName, TT_STRLEN)>0;
 }
 
