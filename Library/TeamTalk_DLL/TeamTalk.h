@@ -16,7 +16,7 @@
  * client's version can be seen in the @a szVersion member of the
  * #User-struct. */
 
-#define TEAMTALK_VERSION "5.5.0.4985"
+#define TEAMTALK_VERSION "5.5.0.4991"
 
 
 #if defined(WIN32)
@@ -261,7 +261,7 @@ extern "C" {
         SOUNDSYSTEM_OPENSLES_ANDROID = 7,
         /** @brief iOS sound API.
          *
-         * Two sound devices will appear when calling
+         * The following sound devices will appear when calling
          * TT_GetSoundDevices(). Sound device ID
          * #TT_SOUNDDEVICE_ID_REMOTEIO will be AudioUnit subtype
          * Remote I/O Unit and sound device ID
@@ -344,20 +344,21 @@ extern "C" {
         INT32 nDefaultSampleRate;
     } SoundDevice;
 
-/** @brief Flag/bit in @c nDeviceID telling if the #SoundDevice is a
+/**
+ * @brief Flag/bit in @c nDeviceID telling if the #SoundDevice is a
  * shared version of an existing sound device.
  *
  * On Android the recording device can only be used by one TeamTalk
  * instance. As a workaround for this issue a shared recording device
  * has been introduced. Internally TeamTalk initializes
  * #TT_SOUNDDEVICE_ID_OPENSLES_DEFAULT which then resample and
- * distribution the audio data to multiple TeamTalk instances.
+ * distribute the audio data to multiple TeamTalk instances.
  *
  * The shared audio device on Android will show up as
- * (TT_SOUNDDEVICE_ID_OPENSLES_DEFAULT | TT_SOUNDDEVICE_SHARED_FLAG),
+ * (TT_SOUNDDEVICE_ID_OPENSLES_DEFAULT | TT_SOUNDDEVICE_ID_SHARED_FLAG),
  * i.e. 2048.
  */
-#define TT_SOUNDDEVICE_SHARED_FLAG              0x00000800
+#define TT_SOUNDDEVICE_ID_SHARED_FLAG           0x00000800
 
 /** @brief Extract sound device ID of @c nDeviceID in #SoundDevice by
  * and'ing this value.
@@ -376,7 +377,7 @@ extern "C" {
 /** @brief Sound device ID for Android OpenSL ES default audio
  * device. Note that this sound device may also exist in the form
  * where the @c nDeviceID as been or'ed with
- * #TT_SOUNDDEVICE_SHARED_FLAG. @see SOUNDSYSTEM_OPENSLES_ANDROID */
+ * #TT_SOUNDDEVICE_ID_SHARED_FLAG. @see SOUNDSYSTEM_OPENSLES_ANDROID */
 #define TT_SOUNDDEVICE_ID_OPENSLES_DEFAULT      0
     
 /** @brief Sound device ID for virtual TeamTalk sound device.
@@ -3456,7 +3457,7 @@ extern "C" {
      * new event can be retrieved by TT_GetMessage().
      * @return A pointer to a new client instance. NULL if a failure occured.
      * @see TT_CloseTeamTalk */
-    TEAMTALKDLL_API TTInstance* TT_InitTeamTalk(IN HWND hWnd, IN UINT uMsg);
+    TEAMTALKDLL_API TTInstance* TT_InitTeamTalk(IN HWND hWnd, IN UINT32 uMsg);
 
     /**
      * @brief Replace the HWND passed as parameter to #TT_InitTeamTalk
@@ -3675,12 +3676,25 @@ extern "C" {
     TEAMTALKDLL_API TTBOOL TT_CloseSoundLoopbackTest(IN TTSoundLoop* lpTTSoundLoop);
 
     /**
-     * @brief Initialize the sound input devices (for recording audio).
+     * @brief Initialize the sound input device (for recording audio).
      *
      * The @a nDeviceID of the #SoundDevice should be used as @a 
      * nInputDeviceID.
      *
-     * Callling this function will set the flag #CLIENT_SNDINPUT_READY.
+     * The @c nInputDeviceID can be or'ed with
+     * #TT_SOUNDDEVICE_ID_SHARED_FLAG if the #TTInstance should share
+     * recording device with other instances.
+     *
+     * Notice fixed sound device ID for some platforms:
+     * - iOS
+     *   - #TT_SOUNDDEVICE_ID_REMOTEIO
+     *   - #TT_SOUNDDEVICE_ID_VOICEPREPROCESSINGIO
+     * - Android
+     *   - #TT_SOUNDDEVICE_ID_OPENSLES_DEFAULT
+     * - All platforms
+     *   - #TT_SOUNDDEVICE_ID_TEAMTALK_VIRTUAL
+     *
+     * Calling this function will set the flag #CLIENT_SNDINPUT_READY.
      *
      * @param lpTTInstance Pointer to client instance created by 
      * #TT_InitTeamTalk.
@@ -3695,10 +3709,23 @@ extern "C" {
                                                    IN INT32 nInputDeviceID);
 
     /** 
-     * @brief Initialize the sound output devices (for sound playback).
+     * @brief Initialize the sound output device (for audio playback).
      *
      * The @a nDeviceID of the #SoundDevice should be used as @a 
      * nOutputDeviceID.
+     *
+     * The @c nOutputDeviceID can be or'ed with
+     * #TT_SOUNDDEVICE_ID_SHARED_FLAG if the #TTInstance should share
+     * output device with other instances.
+     *
+     * Notice fixed sound device ID for some platforms:
+     * - iOS
+     *   - #TT_SOUNDDEVICE_ID_REMOTEIO
+     *   - #TT_SOUNDDEVICE_ID_VOICEPREPROCESSINGIO
+     * - Android
+     *   - #TT_SOUNDDEVICE_ID_OPENSLES_DEFAULT
+     * - All platforms
+     *   - #TT_SOUNDDEVICE_ID_TEAMTALK_VIRTUAL
      *
      * Callling this function will set the flag
      * #CLIENT_SNDOUTPUT_READY.
@@ -3943,7 +3970,8 @@ extern "C" {
     TEAMTALKDLL_API TTBOOL TT_AutoPositionUsers(IN TTInstance* lpTTInstance);
 
     /**
-     * @brief Enable/disable access to user's raw audio.
+     * @brief Enable/disable access to raw audio from individual
+     * users, local microphone input or muxed stream of all users.
      *
      * With audio block event enabled all audio which has been played
      * will be accessible by calling TT_AcquireUserAudioBlock(). Every
@@ -3952,8 +3980,11 @@ extern "C" {
      * 
      * @param lpTTInstance Pointer to client instance created by
      * #TT_InitTeamTalk.
-     * @param nUserID The user ID to monitor for audio callback. Pass #TT_LOCAL_USERID
-     * to monitor local recorded audio prior to encoding/processing.
+     * @param nUserID The user ID to monitor for audio callback. Pass
+     * special user ID #TT_LOCAL_USERID to monitor local recorded
+     * audio prior to encoding/processing. Pass special user ID
+     * #TT_MUXED_USERID to get a single audio stream of all audio that
+     * is being played from users.
      * @param nStreamType Either #STREAMTYPE_VOICE or 
      * #STREAMTYPE_MEDIAFILE_AUDIO.
      * @param bEnable Whether to enable the #CLIENTEVENT_USER_AUDIOBLOCK event.
@@ -3985,16 +4016,17 @@ extern "C" {
      * been filled then monitor #CLIENTEVENT_AUDIOINPUT to see when
      * more data can be queued.
      *
+     * To end raw audio input set parameter @c lpAudioBlock to NULL
+     * and then TT_EnableVoiceTransmission() or
+     * TT_StartStreamingMediaFileToChannel() will be available again.
+     *
+     * @param lpTTInstance Pointer to client instance created by
+     * #TT_InitTeamTalk.
+     * @param lpAudioBlock The audio to submit as audio input.
      * The member @c nStreamID of #AudioBlock is used to identify the
      * audio input session which is currently in progress and is
      * posted as the @c nSource of #CLIENTEVENT_AUDIOINPUT.
-     *
-     * The member @c uSampleIndex of #AudioBlock is ignored.
-     *
-     * To end raw audio input set @c lpAudioBlock to NULL and then
-     * TT_EnableVoiceTransmission() or
-     * TT_StartStreamingMediaFileToChannel() will be available again.
-     */
+     * The member @c uSampleIndex of #AudioBlock is ignored. */
     TEAMTALKDLL_API TTBOOL TT_InsertAudioBlock(IN TTInstance* lpTTInstance,
                                                IN const AudioBlock* lpAudioBlock);
     
@@ -4108,16 +4140,17 @@ extern "C" {
     TEAMTALKDLL_API INT32 TT_GetVoiceActivationStopDelay(IN TTInstance* lpTTInstance);
 
     /**
-     * @brief Store audio conversations to a single file.
+     * @brief Store all audio conversations with specific #AudioCodec
+     * settings to a single file.
      *
-     * Unlike TT_SetUserMediaStorageDir(), which stores users' audio
-     * streams in separate files, TT_StartRecordingMuxedAudioFile()
-     * muxes the audio streams into a single file.
+     * To record conversations from a specific channel to a single
+     * file call TT_StartRecordingMuxedAudioFileEx().
      *
-     * The audio streams, which should be muxed together, are
-     * required to use the same audio codec. In most cases this is
-     * the audio codec of the channel where the user is currently
-     * participating (i.e. @c audiocodec member of #Channel).
+     * TT_StartRecordingMuxedAudioFile() can be used to record
+     * conversations "across" channels given that the channels use the
+     * same #AudioCodec properties (i.e. @c audiocodec member of
+     * #Channel). To receive audio outside the TeamTalk instance's
+     * channel use TT_DoSubscribe() and #SUBSCRIBE_INTERCEPT_VOICE.
      *
      * If the user changes to a channel which uses a different audio
      * codec then the recording will continue but simply be silent
@@ -4131,6 +4164,12 @@ extern "C" {
      * that only one muxed audio recording can be active at the same
      * time.
      *
+     * Only #STREAMTYPE_VOICE is stored into the audio file, not
+     * #STREAMTYPE_MEDIAFILE_AUDIO.
+     *
+     * Use TT_SetUserMediaStorageDir() to store users' audio streams
+     * in separate files.
+     *
      * @param lpTTInstance Pointer to client instance created by
      * #TT_InitTeamTalk.
      * @param lpAudioCodec The audio codec which should be used as
@@ -4143,12 +4182,37 @@ extern "C" {
      * file. The muxer will convert to this format.
      *
      * @see TT_SetUserMediaStorageDir()
+     * @see TT_StartRecordingMuxedAudioFileEx()
      * @see TT_StopRecordingMuxedAudioFile() */
     TEAMTALKDLL_API TTBOOL TT_StartRecordingMuxedAudioFile(IN TTInstance* lpTTInstance,
                                                            IN const AudioCodec* lpAudioCodec,
                                                            IN const TTCHAR* szAudioFileName,
                                                            IN AudioFileFormat uAFF);
 
+    /**
+     * @brief Store audio conversations from a specific channel into a
+     * single file.
+     *
+     * To record audio outside the #TTInstance's current channel use
+     * the TT_DoSubscribe() with the #SUBSCRIBE_INTERCEPT_VOICE on all
+     * the user's in the channel.
+     *
+     * Unlike TT_StartRecordingMuxedAudioFile() this function does not
+     * toggle the flag #CLIENT_MUX_AUDIOFILE.
+     *
+     * Use TT_StartRecordingMuxedAudioFile() to record conversations
+     * from many different channels with the same #AudioCodec
+     * settings.
+     *
+     * Only #STREAMTYPE_VOICE is stored into the audio file, not
+     * #STREAMTYPE_MEDIAFILE_AUDIO.
+     *
+     * @see TT_StopRecordingMuxedAudioFileEx() */
+    TEAMTALKDLL_API TTBOOL TT_StartRecordingMuxedAudioFileEx(IN TTInstance* lpTTInstance,
+                                                             IN INT32 nChannelID,
+                                                             IN const TTCHAR* szAudioFileName,
+                                                             IN AudioFileFormat uAFF);
+    
     /**
      * @brief Stop an active muxed audio recording.
      *
@@ -4165,6 +4229,15 @@ extern "C" {
      * @see TT_StartRecordingMuxedAudioFile() */
     TEAMTALKDLL_API TTBOOL TT_StopRecordingMuxedAudioFile(IN TTInstance* lpTTInstance);
 
+    /**
+     * @brief Stop recording conversations from a channel to a single file.
+     *
+     * Stop a recording initiated by TT_StartRecordingMuxedAudioFileEx().
+     *
+     * @see TT_StopRecordingMuxedAudioFile() */
+    TEAMTALKDLL_API TTBOOL TT_StopRecordingMuxedAudioFileEx(IN TTInstance* lpTTInstance,
+                                                            IN INT32 nChannelID);
+    
     /** 
      * @brief Start transmitting from video capture device.
      *
@@ -6400,12 +6473,15 @@ extern "C" {
                                                            IN StreamTypes uStreamType,
                                                            IN INT32 nMSec);
 
-    /** @brief Extract the raw audio from a user who has been talking.
+    /**
+     * @brief Extract the raw audio associated with the event
+     * #CLIENTEVENT_USER_AUDIOBLOCK.
      *
-     * To enable access to user's raw audio first call
+     * To enable access to raw audio first call
      * TT_EnableAudioBlockEvent(). Whenever new audio becomes
-     * available the event #CLIENTEVENT_USER_AUDIOBLOCK is generated and 
-     * TT_AcquireUserAudioBlock() can be called to extract the audio.
+     * available the event #CLIENTEVENT_USER_AUDIOBLOCK is generated
+     * and TT_AcquireUserAudioBlock() can be called to extract the
+     * audio.
      *
      * The #AudioBlock contains shared memory with the local client
      * instance therefore always remember to call
@@ -6416,6 +6492,7 @@ extern "C" {
      * @param nStreamType The stream type to extract, either ::STREAMTYPE_VOICE
      * ::STREAMTYPE_MEDIAFILE_AUDIO.
      * @param nUserID The ID of the user to retrieve the #AudioBlock from.
+     * Basically #TTMessage's @c nSource from #CLIENTEVENT_USER_AUDIOBLOCK.
      * @see TT_ReleaseUserAudioBlock()
      * @see TT_EnableAudioBlockEvent()
      * @see CLIENTEVENT_USER_AUDIOBLOCK */
@@ -6635,7 +6712,7 @@ extern "C" {
      * @see TT_HotKey_RemoveTestHook
      * @see CLIENTEVENT_HOTKEY_TEST */
     TEAMTALKDLL_API TTBOOL TT_HotKey_InstallTestHook(IN TTInstance* lpTTInstance,
-                                                     IN HWND hWnd, UINT uMsg);
+                                                     IN HWND hWnd, UINT32 uMsg);
 
     /**
      * @brief Remove the test hook again so the @a hWnd in
