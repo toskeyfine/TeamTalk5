@@ -11,6 +11,8 @@ Default Qt client
 - Pause media file while streaming to channel
 - Test media file playback before streaming to channel
 - Restored compatibility with Windows 7 (api-ms-win-core-winrt-l1-1-0.dll)
+- Fixed bug where audio recording to single file contained audio from media files
+- Fixed bug in .ogg file header for OPUS codec
 Accessible Windows client
 - VBR/CBR selection for OPUS codec 
 - Frame size selection for OPUS codec
@@ -18,7 +20,18 @@ Accessible Windows client
 - Audio preprocessor for media file streaming
 - Control media file offset before streaming to channel
 - Test media file playback before streaming to channel
+- Option to repeat media file playback
+- Fixed bug where audio recording to single file contained audio from media files
+- Fixed bug in .ogg file header for OPUS codec
+Android client
+- VBR/CBR selection for OPUS codec 
+- Frame size selection for OPUS codec
+- Max transmission interval increased to 500 msec
+- Portuguese translation
 iOS client
+- VBR/CBR selection for OPUS codec 
+- Frame size selection for OPUS codec
+- Max transmission interval increased to 500 msec
 - Support for Dark Theme
 
 Version 5.4.1, 2019/10/16
