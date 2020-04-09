@@ -414,8 +414,8 @@
     </message>
     <message>
         <location filename="../channel.ui" line="679"/>
-        <source>Variable Bit Rate</source>
-        <translation>Değişken Bit Hızı</translation>
+        <source>Variable bitrate</source>
+        <translation>Değişken bit hızı</translation>
     </message>
     <message>
         <location filename="../channel.ui" line="733"/>
@@ -2078,12 +2078,12 @@
     <message>
         <location filename="../mainwindow.cpp" line="1651"/>
         <source>Invalid user account. Type username:</source>
-        <translation>Geçersiz kullanıcı hesabı. Kullanıcı adını yazın:</translation>
+        <translation>Geçersiz kullanıcı hesabı. Kullanıcı adı yazın:</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1656"/>
         <source>Invalid user account. Type password:</source>
-        <translation>Geçersiz kullanıcı hesabı. Parolayı yazın:</translation>
+        <translation>Geçersiz kullanıcı hesabı. Parola yazın:</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1673"/>
@@ -2588,9 +2588,9 @@
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="5415"/>
-        <source>The file %1 contains %2 setup information.
+        <source>The file %1 contains %2 setup information.<byte value="xd"/>
 Should these settings be applied?</source>
-        <translation>%1 dosyası %2 ayarlama bilgisi içeriyor.
+        <translation>%1 dosyası %2 ayarlama bilgisi içeriyor.&lt;byte value=&quot;xd&quot;/&gt;
 Bu ayarlar uygulansın mı?</translation>
     </message>
     <message>
@@ -4770,7 +4770,7 @@ Bu ayarlar uygulansın mı?</translation>
     <message>
         <location filename="../videotext.ui" line="128"/>
         <source>Background color</source>
-        <translation>Artalan rengi</translation>
+        <translation>Arka plan rengi</translation>
     </message>
     <message>
         <location filename="../videotext.ui" line="145"/>
