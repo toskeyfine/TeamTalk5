@@ -7,19 +7,19 @@ from ctypes import *
 from ctypes.util import find_library
 
 if sys.platform == "win32":
-    dll = cdll.TeamTalk5
+    dll = cdll.TeamTalk5Pro
     TTCHAR = c_wchar
     TTCHAR_P = c_wchar_p
     from ctypes.wintypes import BOOL
 elif sys.platform == "darwin":
     # Darwin is not supported. Seems SIP is preventing this from
     # working. Setting DYLD_LIBRARY_PATH doesn't help.
-    dll = cdll.LoadLibrary("libTeamTalk5.dylib")
+    dll = cdll.LoadLibrary("libTeamTalk5Pro.dylib")
     TTCHAR = c_char
     TTCHAR_P = c_char_p
     BOOL = c_int
 else:
-    dll = cdll.LoadLibrary("libTeamTalk5.so")
+    dll = cdll.LoadLibrary("libTeamTalk5Pro.so")
     TTCHAR = c_char
     TTCHAR_P = c_char_p
     BOOL = c_int
