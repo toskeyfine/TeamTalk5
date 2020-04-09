@@ -27,6 +27,7 @@ import java.util.Vector;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import junit.framework.TestCase;
 
@@ -457,10 +458,11 @@ public abstract class TeamTalkTestCaseBase extends TestCase {
         System.out.print("\tInput sample rates: ");
         for(int j=0;j<dev.inputSampleRates.length;j++)
             System.out.print(Integer.toString(dev.inputSampleRates[j]) + ", ");
+        System.out.println();
         System.out.print("\tOutput sample rates: ");
         for(int j=0;j<dev.outputSampleRates.length;j++)
             System.out.print(Integer.toString(dev.outputSampleRates[j]) + ", ");
-        System.out.println("");
+        System.out.println();
         System.out.println("\tDefault sample rate: " + Integer.toString(dev.nDefaultSampleRate));
     }
 
@@ -493,6 +495,12 @@ public abstract class TeamTalkTestCaseBase extends TestCase {
             buf.putShort(audio[i]);
         }
         return buf.array();
+    }
+
+    static short[] audioToShortArray(byte[] audio) {
+        short[] converted = new short[audio.length / 2];
+        ByteBuffer.wrap(audio).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().get(converted);
+        return converted;
     }
 
     static short[] generateTone(int freq, int samplerate, int channels, int durationMSec) {

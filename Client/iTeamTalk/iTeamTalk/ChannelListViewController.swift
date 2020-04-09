@@ -50,8 +50,7 @@ fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
 
 class ChannelListViewController :
     UIViewController, UITableViewDataSource,
-    UITableViewDelegate, UIAlertViewDelegate,
-    MyTextMessageDelegate, TeamTalkEvent  {
+    UITableViewDelegate, MyTextMessageDelegate, TeamTalkEvent  {
 
     // all channels on server
     var channels = [INT32 : Channel]()
@@ -123,27 +122,44 @@ class ChannelListViewController :
     }
     
     func joinNewChannel(_ channel: Channel) {
-        if channel.bPassword != 0 {
-            let alertView = UIAlertView(title: NSLocalizedString("Enter Password", comment: "Dialog message"), message: NSLocalizedString("Password", comment: "Dialog message"), delegate: self, cancelButtonTitle: NSLocalizedString("Join", comment: "Dialog message"))
-            alertView.alertViewStyle = .secureTextInput
-            alertView.tag = Int(channel.nChannelID)
-            if let passwd = chanpasswds[channel.nChannelID] {
-                alertView.textField(at: 0)?.text = passwd
+        if channel.bPassword == TRUE {
+            
+            var passwdField : UITextField?
+            
+            let passwdAlert = UIAlertController(title: NSLocalizedString("Enter Password", comment: "Dialog message"),
+                                                message: NSLocalizedString("Password", comment: "Dialog message"),
+                                                preferredStyle: .alert)
+            passwdAlert.addTextField {(textField) in
+                passwdField = textField
+                passwdField?.autocorrectionType = .no
+                passwdField?.spellCheckingType = .no
+                passwdField?.autocapitalizationType = .none
+                let passwd = withUnsafePointer(to: channel) { getChannelString(PASSWORD, $0) }
+                passwdField?.text = String(cString: passwd!)
             }
-            alertView.show()
+            
+            passwdAlert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: "Dialog message"), style: .cancel, handler: { (pAction) in
+                passwdAlert.dismiss(animated: true, completion: nil)
+            }))
+            
+            passwdAlert.addAction(UIAlertAction(title: NSLocalizedString("Join", comment: "Dialog message"),
+                                                style: .default, handler: { (pAction) in
+
+                                                    let passwd = passwdField?.text
+                                                    self.chanpasswds[channel.nChannelID] = passwd
+                                                    self.cmdid = TT_DoJoinChannelByID(ttInst, channel.nChannelID, passwd)
+                                                    self.activeCommands[self.cmdid] = .joinCmd
+
+                                                    passwdAlert.dismiss(animated: true, completion: nil)
+            }))
+            
+            self.present(passwdAlert, animated: true, completion: nil)
         }
         else {
             cmdid = TT_DoJoinChannelByID(ttInst, channel.nChannelID, "")
             activeCommands[cmdid] = .joinCmd
         }
         
-    }
-    
-    func alertView(_ alertView: UIAlertView, clickedButtonAt buttonIndex: Int) {
-        let passwd = (alertView.textField(at: 0)?.text)!
-        chanpasswds[INT32(alertView.tag)] = passwd
-        cmdid = TT_DoJoinChannelByID(ttInst, INT32(alertView.tag), passwd)
-        activeCommands[cmdid] = .joinCmd
     }
     
     func appendTextMessage(_ userid: INT32, txtmsg: MyTextMessage) {
@@ -178,16 +194,20 @@ class ChannelListViewController :
                 let bid = $1.nChannelID
                 let au = users.values.filter({$0.nChannelID == aid})
                 let bu = users.values.filter({$0.nChannelID == bid})
+                let aname = withUnsafePointer(to: $0) { getChannelString(NAME, $0) }
+                let bname = withUnsafePointer(to: $1) { getChannelString(NAME, $0) }
                 return au.count == bu.count ?
-                    String(cString: UnsafeRawPointer([$0.szName]).assumingMemoryBound(to: CChar.self))
-                .caseInsensitiveCompare(String(cString: UnsafeRawPointer([$1.szName]).assumingMemoryBound(to: CChar.self))) == ComparisonResult.orderedAscending : au.count > bu.count
+                    String(cString: aname!)
+                .caseInsensitiveCompare(String(cString: bname!)) == ComparisonResult.orderedAscending : au.count > bu.count
             }
         case ChanSort.ASCENDING.rawValue :
             fallthrough
         default :
             displayChans = subchans.sorted() {
-                String(cString: UnsafeRawPointer([$0.szName]).assumingMemoryBound(to: CChar.self))
-                    .caseInsensitiveCompare(String(cString: UnsafeRawPointer([$1.szName]).assumingMemoryBound(to: CChar.self))) == ComparisonResult.orderedAscending
+                let aname = withUnsafePointer(to: $0) { getChannelString(NAME, $0) }
+                let bname = withUnsafePointer(to: $1) { getChannelString(NAME, $0) }
+                return String(cString: aname!)
+                    .caseInsensitiveCompare(String(cString: bname!)) == ComparisonResult.orderedAscending
             }
         }
         displayUsers = chanusers.sorted() {
