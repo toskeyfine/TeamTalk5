@@ -41,7 +41,28 @@ transmitusers_t& GetTransmitUsers(const Channel& chan, transmitusers_t& transmit
 BOOL ToggleTransmitUser(Channel& chan, int nUserID, StreamTypes streams);
 BOOL CanToggleTransmitUsers(int nChannelID);
 
-typedef std::vector< TextMessage > messages_t;
+struct MyTextMessage : public TextMessage
+{
+    CTime receiveTime;
+    
+    MyTextMessage()
+    {
+        receiveTime = CTime::GetCurrentTime();
+    }
+    
+    MyTextMessage(const TextMessage& msg)
+    : MyTextMessage()
+    {
+        this->nChannelID = msg.nChannelID;
+        this->nFromUserID = msg.nFromUserID;
+        this->nMsgType = msg.nMsgType;
+        this->nToUserID = msg.nToUserID;
+        _tcsncpy_s(this->szFromUsername, msg.szFromUsername, TT_STRLEN);
+        _tcsncpy_s(this->szMessage, msg.szMessage, TT_STRLEN);
+    }
+};
+
+typedef std::vector< MyTextMessage > messages_t;
 typedef std::map< int, messages_t > msgmap_t;
 messages_t GetMessages(int nFromUserID, const messages_t& messages);
 
@@ -87,11 +108,14 @@ void InitDefaultAudioCodec(AudioCodec& audiocodec);
 #define DEFAULT_AUDIOCODEC              OPUS_CODEC
 #define DEFAULT_MSEC_PER_PACKET         40
 
-#define SPEEX_MIN_MSEC_PER_PACKET       20
-#define SPEEX_MAX_MSEC_PER_PACKET       100
+#define AUDIOCODEC_MIN_TXINTERVALMSEC   20
+#define AUDIOCODEC_MAX_TXINTERVALMSEC   500
 
-#define OPUS_MIN_MSEC_PER_PACKET        20
-#define OPUS_MAX_MSEC_PER_PACKET        60
+#define SPEEX_MIN_TXINTERVALMSEC        AUDIOCODEC_MIN_TXINTERVALMSEC
+#define SPEEX_MAX_TXINTERVALMSEC        AUDIOCODEC_MAX_TXINTERVALMSEC
+
+#define OPUS_MIN_TXINTERVALMSEC         AUDIOCODEC_MIN_TXINTERVALMSEC
+#define OPUS_MAX_TXINTERVALMSEC         AUDIOCODEC_MAX_TXINTERVALMSEC
 
 //Default Speex codec settings
 #define DEFAULT_SPEEX_BANDMODE          SPEEX_MODEID_WB
