@@ -421,6 +421,26 @@ void CTeamTalkDlg::CloseDesktopSession(int nUserID)
     }
 }
 
+void CTeamTalkDlg::StartMediaStream()
+{
+    if (m_xmlSettings.GetLastMediaFiles().empty())
+        return;
+
+    CString szFileName = STR_UTF8(m_xmlSettings.GetLastMediaFiles().front());
+    VideoCodec vidcodec = m_xmlSettings.GetVideoCodec();
+    MediaFilePlayback mfp = m_xmlSettings.GetMediaFilePlayback();
+
+    if (!TT_StartStreamingMediaFileToChannelEx(ttInst, szFileName, &mfp, &vidcodec))
+    {
+        MessageBox(_T("Failed to stream media file."),
+            LoadText(IDD_DIALOG_STREAMMEDIA, _T("Stream Media File")), MB_OK);
+        return;
+    }
+
+    m_nStatusMode |= STATUSMODE_STREAM_MEDIAFILE;
+    TT_DoChangeStatus(ttInst, m_nStatusMode, m_szAwayMessage);
+}
+
 void CTeamTalkDlg::StopMediaStream()
 {
     TT_StopStreamingMediaFileToChannel(ttInst);
@@ -1796,7 +1816,7 @@ void CTeamTalkDlg::OnUserMessage(const TTMessage& msg)
         {
             if(!bNew)
             {
-                TextMessage msg;
+                MyTextMessage msg;
                 if(m_wndTree.GetLastUserMessage(textmsg.nFromUserID, msg))
                     pMsgDlg->AppendMessage(msg, TRUE);
             }
@@ -2148,6 +2168,9 @@ void CTeamTalkDlg::OnStreamMediaFile(const TTMessage& msg)
     case MFS_FINISHED :
         AddStatusText(_T("Finished streaming media file to channel"));
         StopMediaStream();
+
+        if (m_xmlSettings.GetMediaFileRepeat(false))
+            StartMediaStream();
         break;
     case MFS_ABORTED :
         AddStatusText(_T("Aborted streaming media file to channel"));
@@ -2874,7 +2897,7 @@ void CTeamTalkDlg::OnOK()
         m_tabChat.m_wndChanMessage.SetWindowText(_T(""));
         if(!s.IsEmpty())
         {
-            TextMessage msg;
+            TextMessage msg = {};
             msg.nMsgType = MSGTYPE_CHANNEL;
             msg.nFromUserID = TT_GetMyUserID(ttInst);
             msg.nChannelID = TT_GetMyChannelID(ttInst);
@@ -5556,8 +5579,7 @@ void CTeamTalkDlg::OnChannelsStreamMediaFileToChannel()
                 files.push_back(STR_UTF8(m_pStreamMediaDlg->m_fileList.GetNext(pos)));
             m_xmlSettings.SetLastMediaFiles(files);
 
-            m_nStatusMode |= STATUSMODE_STREAM_MEDIAFILE;
-            TT_DoChangeStatus(ttInst, m_nStatusMode, m_szAwayMessage);
+            StartMediaStream();
         }
         m_pStreamMediaDlg.reset();
     }
@@ -6316,8 +6338,7 @@ void CTeamTalkDlg::OnServerBroadcastmessage()
     CInputDlg dlg(_T("Broadcast Message"), _T("Message to broadcast"), 0, this);
     if(dlg.DoModal() == IDOK)
     {
-        TextMessage msg;
-        ZERO_STRUCT(msg);
+        TextMessage msg = {};
         msg.nMsgType = MSGTYPE_BROADCAST;
         COPYTTSTR(msg.szMessage, dlg.m_szInput);
         TT_DoTextMessage(ttInst, &msg);
