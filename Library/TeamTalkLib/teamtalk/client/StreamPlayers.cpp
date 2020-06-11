@@ -340,6 +340,9 @@ void AudioPlayer::AddPacket(const teamtalk::AudioPacket& packet)
                  ACE_TEXT("User #%d buffer size is foobar, msec: %d\n"),
                  m_userid, GetBufferedAudioMSec());
 
+    MYTRACE_COND(DEBUG_PLAYBACK, ACE_TEXT("User #%d, stream type %d, stream id %d, submit packet %d\n"),
+                 m_userid, m_streamtype, m_stream_id, pkt_no);
+    
     if (m_stream_id == 0)
     {
         m_play_pkt_no = pkt_no;
@@ -374,9 +377,11 @@ bool AudioPlayer::PlayBuffer(short* output_buffer, int n_samples)
         }
 
         MYTRACE_COND(DEBUG_PLAYBACK,
-                     ACE_TEXT("User #%d, streamtype %u, stream id %d, cur_pkt %d, max pkt %d, tm: %u\n"),
+                     ACE_TEXT("User #%d, streamtype %u, stream id %d, cur/max-pkt %d/%d, duration: %d, delay: %d, tm: %u\n"),
                      m_userid, m_streamtype, m_stream_id, m_play_pkt_no, m_buffer.rbegin()->first,
-                     GETTIMESTAMP());
+                     PCM16_SAMPLES_DURATION(GetAudioCodecCbSamples(m_codec) * (m_buffer.rbegin()->first - m_play_pkt_no + 1),
+                                            GetAudioCodecSampleRate(m_codec)),
+                     GETTIMESTAMP() - m_last_playback, GETTIMESTAMP());
 
         if(DecodeFrame(m_buffer[m_play_pkt_no], output_buffer, n_samples))
         {
