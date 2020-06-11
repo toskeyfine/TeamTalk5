@@ -85,7 +85,7 @@ audiopacket_t AudioPlayer::QueuePacket(const AudioPacket& new_audpkt)
         audpkt = &new_audpkt;
     else
     {
-        wguard_t g(m_mutex);
+        std::lock_guard<std::recursive_mutex> g(m_mutex);
 
         uint8_t fragno = 0, frag_cnt = 0;
         uint16_t packetno = new_audpkt.GetPacketNumberAndFragNo(fragno, &frag_cnt);
@@ -150,7 +150,7 @@ void AudioPlayer::CleanUpAudioFragments(uint16_t too_old_packet_no)
 
 void AudioPlayer::Reset()
 {
-    wguard_t g(m_mutex);
+    std::lock_guard<std::recursive_mutex> g(m_mutex);
     m_audfragments.clear();
 
     m_buffer.clear();
@@ -252,7 +252,7 @@ void AudioPlayer::SetAudioBufferSize(int msec)
 
 int AudioPlayer::GetBufferedAudioMSec()
 {
-    wguard_t g(m_mutex);
+    std::lock_guard<std::recursive_mutex> g(m_mutex);
 
     int codec_msec = GetAudioCodecCbMillis(m_codec);
     if (m_stream_id && m_buffer.size() && codec_msec)
@@ -271,7 +271,7 @@ void AudioPlayer::AddPacket(const teamtalk::AudioPacket& packet)
     if(!enc_data || !enc_len)
         return;
 
-    wguard_t g(m_mutex);
+    std::lock_guard<std::recursive_mutex> g(m_mutex);
     m_audiopackets_recv++;
 
     uint16_t pkt_no = packet.GetPacketNumber();
@@ -354,7 +354,7 @@ void AudioPlayer::AddPacket(const teamtalk::AudioPacket& packet)
 
 bool AudioPlayer::PlayBuffer(short* output_buffer, int n_samples)
 {
-    wguard_t g(m_mutex);
+    std::lock_guard<std::recursive_mutex> g(m_mutex);
     bool played = false;
 
     //play until last packet arrived
@@ -654,7 +654,7 @@ bool WebMPlayer::AddPacket(const VideoPacket& packet,
 
 void WebMPlayer::ProcessVideoPacket(const VideoPacket& packet)
 {
-    wguard_t g(m_mutex);
+    std::lock_guard<std::recursive_mutex> g(m_mutex);
 
     uint32_t packet_no = packet.GetPacketNo();
     MYTRACE_COND(W32_LT(packet_no, m_packet_no),
@@ -742,7 +742,7 @@ void WebMPlayer::ProcessVideoPacket(const VideoPacket& packet)
 
 ACE_Message_Block* WebMPlayer::GetNextFrame(uint32_t* timestamp)
 {
-    wguard_t g(m_mutex);
+    std::lock_guard<std::recursive_mutex> g(m_mutex);
 
     dumpFragments();
 
@@ -808,7 +808,7 @@ ACE_Message_Block* WebMPlayer::GetNextFrame(uint32_t* timestamp)
 
 bool WebMPlayer::GetNextFrameTime(uint32_t* tm)
 {
-    wguard_t g(m_mutex);
+    std::lock_guard<std::recursive_mutex> g(m_mutex);
 
     if(tm && m_video_frames.size())
     {

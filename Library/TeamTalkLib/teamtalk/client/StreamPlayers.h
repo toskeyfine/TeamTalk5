@@ -47,6 +47,7 @@
 #include "VideoThread.h"
 
 #include <memory>
+#include <mutex>
 
 #define STOPPED_TALKING_DELAY 500 //msec
 
@@ -148,7 +149,7 @@ namespace teamtalk {
         //packet no -> fragments
         typedef std::map<uint16_t, audiofragments_t> fragments_queue_t;
         fragments_queue_t m_audfragments;
-        ACE_Recursive_Thread_Mutex m_mutex;
+        std::recursive_mutex m_mutex;
     };
 
     typedef std::shared_ptr< AudioPlayer > audio_player_t;
@@ -250,7 +251,7 @@ namespace teamtalk {
         VpxDecoder m_decoder;
         bool m_decoder_ready;
 
-        ACE_Recursive_Thread_Mutex m_mutex;
+        std::recursive_mutex m_mutex;
     };
 
     typedef std::shared_ptr< WebMPlayer > webm_player_t;
