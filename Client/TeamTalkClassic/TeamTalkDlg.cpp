@@ -2062,7 +2062,7 @@ void CTeamTalkDlg::OnUserDesktopInput(const TTMessage& msg)
         else if(TT_DesktopInput_KeyTranslate(key_trans, &inputs[i], &trans_input, 1))
             executeInputs.push_back(trans_input);
         else
-            TRACE(LoadText(IDS_FAILEDTOTRANSLATEDESKTOP, _T("Failed to translate received desktop input. KeyCode: 0x%X")), inputs[i].uKeyCode);
+            TRACE(_T("Failed to translate received desktop input. KeyCode: 0x%X"), inputs[i].uKeyCode);
     }
 
     if(executeInputs.size())
@@ -4253,7 +4253,7 @@ void CTeamTalkDlg::OnChannelsJoinchannel()
 
             int nCmdID = TT_DoJoinChannelByID(ttInst, nChannelID, _T(""));
             m_commands[nCmdID] = CMD_COMPLETE_JOIN;
-            TRACE(LoadText(IDS_JOININGCHAN, _T("Joining %s\r\n")), szChannelPath);
+            TRACE(_T("Joining %s\r\n"), szChannelPath);
         }
     }
 }
@@ -4647,7 +4647,7 @@ LRESULT CTeamTalkDlg::OnTeamTalkFile(WPARAM wParam, LPARAM lParam)
 
         CString szText, szCaption;
         szText.Format(LoadText(IDS_CLIENTSETTINGS), m_szTTLink, APPTITLE_SHORT);
-        szCaption.Format(_T("Load %s File"), _T(TTFILE_EXT));
+        szCaption.Format(LoadText(IDS_LOADFILECLIENTSET, _T("Load %s File")), _T(TTFILE_EXT));
         if(tt.HasClientSetup() && MessageBox(szText, szCaption, MB_YESNO) == IDYES)
         {
             //override nickname if set in .tt file and not set in settings
@@ -5047,7 +5047,7 @@ void CTeamTalkDlg::FirewallInstall()
     if(!TT_Firewall_AppExceptionExists(szPath))
     {
         CString szText;
-        szText.Format(_T("Add %s to Windows Firewall exceptions?"), APPNAME);
+        szText.Format(LoadText(IDS_ADDTOFWEXCEP, _T("Add %s to Windows Firewall exceptions?")), APPNAME);
         int nAnswer = MessageBox(szText, APPNAME, MB_YESNO);
         if(nAnswer == IDYES && !TT_Firewall_AddAppException(APPNAME, szPath))
             MessageBox(LoadText(IDS_FWFAILEDTOADD, _T("Failed to add application to Windows Firewall exceptions.")));
