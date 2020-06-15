@@ -2874,49 +2874,6 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue(waitCmdSuccess(ttadmin, ttadmin.doUpdateServer(srvprop), DEF_WAIT));
     }
 
-    public void testLoginAttempts() {
-
-        TeamTalkBase ttadmin = newClientInstance();
-        connect(ttadmin);
-        login(ttadmin, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
-
-        ServerProperties srvprop = new ServerProperties();
-        assertTrue("get srvprop", ttadmin.getServerProperties(srvprop));
-
-        int oldValue = srvprop.nMaxLoginAttempts;
-
-        srvprop.nMaxLoginAttempts = 2;
-
-        assertTrue("update server", waitCmdSuccess(ttadmin, ttadmin.doUpdateServer(srvprop), DEF_WAIT));
-
-        User user = new User();
-        assertTrue("get user", ttadmin.getUser(ttadmin.getMyUserID(), user));
-
-        TeamTalkBase ttclient = newClientInstance();
-
-        connect(ttclient);
-
-        TTMessage msg = new TTMessage();
-        int cmdid = ttclient.doLogin(ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, "wrongpassword1");
-        assertTrue("wait login error", waitCmdError(ttclient, cmdid, DEF_WAIT, msg));
-        assertEquals("invalid account", ClientError.CMDERR_INVALID_ACCOUNT, msg.clienterrormsg.nErrorNo);
-
-        cmdid = ttclient.doLogin(ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, "wrongpassword2");
-        assertTrue("wait login error", waitCmdError(ttclient, cmdid, DEF_WAIT, msg));
-        assertEquals("invalid account", ClientError.CMDERR_INVALID_ACCOUNT, msg.clienterrormsg.nErrorNo);
-
-        cmdid = ttclient.doLogin(ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, "wrongpassword3");
-        assertTrue("wait login error", waitCmdError(ttclient, cmdid, DEF_WAIT, msg));
-        assertEquals("banned account", ClientError.CMDERR_SERVER_BANNED, msg.clienterrormsg.nErrorNo);
-
-        assertTrue("unban success", waitCmdSuccess(ttadmin, ttadmin.doUnBanUser(user.szIPAddress, 0), DEF_WAIT));
-
-        srvprop.nMaxLoginAttempts = 0;
-        assertTrue("update server", waitCmdSuccess(ttadmin, ttadmin.doUpdateServer(srvprop), DEF_WAIT));
-
-        login(ttclient, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
-    }
-
     public void testDisconnect() throws IOException {
 
         TeamTalkBase ttadmin = newClientInstance();
@@ -2974,6 +2931,49 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
             srvprop.nUserTimeout = orgValue;
             assertTrue("update server", waitCmdSuccess(ttadmin, ttadmin.doUpdateServer(srvprop), DEF_WAIT));
         }
+    }
+
+    public void testLoginAttempts() {
+
+        TeamTalkBase ttadmin = newClientInstance();
+        connect(ttadmin);
+        login(ttadmin, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
+
+        ServerProperties srvprop = new ServerProperties();
+        assertTrue("get srvprop", ttadmin.getServerProperties(srvprop));
+
+        int oldValue = srvprop.nMaxLoginAttempts;
+
+        srvprop.nMaxLoginAttempts = 2;
+
+        assertTrue("update server", waitCmdSuccess(ttadmin, ttadmin.doUpdateServer(srvprop), DEF_WAIT));
+
+        User user = new User();
+        assertTrue("get user", ttadmin.getUser(ttadmin.getMyUserID(), user));
+
+        TeamTalkBase ttclient = newClientInstance();
+
+        connect(ttclient);
+
+        TTMessage msg = new TTMessage();
+        int cmdid = ttclient.doLogin(ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, "wrongpassword1");
+        assertTrue("wait login error", waitCmdError(ttclient, cmdid, DEF_WAIT, msg));
+        assertEquals("invalid account", ClientError.CMDERR_INVALID_ACCOUNT, msg.clienterrormsg.nErrorNo);
+
+        cmdid = ttclient.doLogin(ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, "wrongpassword2");
+        assertTrue("wait login error", waitCmdError(ttclient, cmdid, DEF_WAIT, msg));
+        assertEquals("invalid account", ClientError.CMDERR_INVALID_ACCOUNT, msg.clienterrormsg.nErrorNo);
+
+        cmdid = ttclient.doLogin(ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, "wrongpassword3");
+        assertTrue("wait login error", waitCmdError(ttclient, cmdid, DEF_WAIT, msg));
+        assertEquals("banned account", ClientError.CMDERR_SERVER_BANNED, msg.clienterrormsg.nErrorNo);
+
+        assertTrue("unban success", waitCmdSuccess(ttadmin, ttadmin.doUnBanUser(user.szIPAddress, 0), DEF_WAIT));
+
+        srvprop.nMaxLoginAttempts = 0;
+        assertTrue("update server", waitCmdSuccess(ttadmin, ttadmin.doUpdateServer(srvprop), DEF_WAIT));
+
+        login(ttclient, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
     }
 
     public void testKeyTranslate() {
