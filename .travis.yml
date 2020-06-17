@@ -66,7 +66,7 @@ script:
 # Start TeamTalk Standard Server non-encrypted mode for JUnit and Catch
   - cd $TRAVIS_BUILD_DIR
   - cp Library/TeamTalkLib/test/tt5srv.xml_template Server/tt5srv.xml
-  - Server/tt5srv -d -c Server/tt5srv.xml
+  - Server/tt5srv -d -c Server/tt5srv.xml > /dev/null
 # Run Catch unit-tests
   - cd $TRAVIS_BUILD_DIR
   - Library/TeamTalkLib/test/catchtt
@@ -80,7 +80,7 @@ script:
 # and use shared audio device
   - cd $TRAVIS_BUILD_DIR
   - cp -f Library/TeamTalkLib/test/tt5srv.xml_template Server/tt5srv.xml
-  - Server/tt5prosrv -d -c Server/tt5srv.xml
+  - Server/tt5prosrv -d -c Server/tt5srv.xml > /dev/null
 # Run JUnit suite TeamTalkProTestSuite.java
   - cd $TRAVIS_BUILD_DIR
   - cd Library/TeamTalkJNI
@@ -95,7 +95,7 @@ script:
   - cp Library/TeamTalkLib/test/tt5prosrv.xml_template Server/tt5prosrv.xml
   - cp Library/TeamTalkLib/test/ttservercert.pem Server/
   - cp Library/TeamTalkLib/test/ttserverkey.pem Server/
-  - Server/tt5prosrv -d -wd Server/
+  - Server/tt5prosrv -d -wd Server/ > /dev/null
 # Start Python client example and ensure it connects
   - cd $TRAVIS_BUILD_DIR
   - make -C Client/ttserverlogpy
