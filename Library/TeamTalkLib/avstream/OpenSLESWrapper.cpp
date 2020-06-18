@@ -576,8 +576,8 @@ inputstreamer_t OpenSLESWrapper::NewStream(StreamCapture* capture,
             goto failure;
     }
 
-    MYTRACE(ACE_TEXT("Opened capture stream %p, samplerate %d, channels %d\n"),
-            capture, samplerate, channels);
+    MYTRACE(ACE_TEXT("Opened capture stream %p, samplerate %d, channels %d, framesize %d\n"),
+            capture, samplerate, channels, framesize);
 
     return streamer;
 
@@ -831,7 +831,7 @@ outputstreamer_t OpenSLESWrapper::NewStream(soundsystem::StreamPlayer* player,
 
     // MYTRACE(ACE_TEXT("Volume %d, Max volume %d\n"), vol, max_vol);
 
-    MYTRACE(ACE_TEXT("Opened playback, samplerate %d, channels %d, framesize %d\n"),
+    MYTRACE(ACE_TEXT("Opened playback stream, samplerate %d, channels %d, framesize %d\n"),
             samplerate, channels, framesize);
 
     return streamer;
