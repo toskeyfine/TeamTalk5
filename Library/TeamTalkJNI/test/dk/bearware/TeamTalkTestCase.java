@@ -2876,65 +2876,6 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue(waitCmdSuccess(ttadmin, ttadmin.doUpdateServer(srvprop), DEF_WAIT));
     }
 
-    public void testDisconnect() throws IOException {
-
-        TeamTalkBase ttadmin = newClientInstance();
-        connect(ttadmin);
-        login(ttadmin, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
-
-        ServerProperties srvprop = new ServerProperties();
-        assertTrue("get srvprop", ttadmin.getServerProperties(srvprop));
-        int orgValue = srvprop.nUserTimeout;
-        srvprop.nUserTimeout = 60;
-        assertTrue("update server", waitCmdSuccess(ttadmin, ttadmin.doUpdateServer(srvprop), DEF_WAIT));
-
-        assertTrue("Disconnect hard", ttadmin.disconnect());
-
-        connect(ttadmin);
-        login(ttadmin, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
-
-        assertTrue("DoQuit", ttadmin.doQuit()>0);
-
-        assertTrue("Wait con lost", waitForEvent(ttadmin, ClientEvent.CLIENTEVENT_CON_LOST, DEF_WAIT));
-
-        assertTrue("Disconnect quit", ttadmin.disconnect());
-
-        connect(ttadmin);
-        login(ttadmin, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
-
-        srvprop.nUserTimeout = 1;
-
-        assertTrue("update server", waitCmdSuccess(ttadmin, ttadmin.doUpdateServer(srvprop), DEF_WAIT));
-
-        assertTrue("Disconnect after tmo", ttadmin.disconnect());
-
-        try (Socket s = new Socket(IPADDR, TCPPORT);
-             BufferedReader stream = new BufferedReader(new InputStreamReader(s.getInputStream()));) {
-
-            if(!ENCRYPTED)
-            {
-                String welcome = stream.readLine();
-                assertTrue("welcome msg", welcome.startsWith(SYSTEMID));
-            }
-
-            boolean closed = false;
-            try {
-                closed = stream.readLine() == null;
-            }
-            catch(IOException e) {
-                closed = true;
-            }
-            assertTrue("Closed socket", closed);
-
-            assertTrue("Disconnect quit", ttadmin.disconnect());
-
-            connect(ttadmin);
-            login(ttadmin, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
-            srvprop.nUserTimeout = orgValue;
-            assertTrue("update server", waitCmdSuccess(ttadmin, ttadmin.doUpdateServer(srvprop), DEF_WAIT));
-        }
-    }
-
     public void testLoginAttempts() {
 
         TeamTalkBase ttadmin = newClientInstance();
@@ -3781,6 +3722,65 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
             assertTrue("reset shared output settings", TeamTalkBase.initSoundOutputSharedDevice(0, 0, 0));
 
             assertTrue(String.format("next output %d callback was %d msec later but should be ~1 sec", samplerate, nextTS - initialTS), nextTS - initialTS > 900);
+        }
+    }
+
+    public void testDisconnect() throws IOException {
+
+        TeamTalkBase ttadmin = newClientInstance();
+        connect(ttadmin);
+        login(ttadmin, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
+
+        ServerProperties srvprop = new ServerProperties();
+        assertTrue("get srvprop", ttadmin.getServerProperties(srvprop));
+        int orgValue = srvprop.nUserTimeout;
+        srvprop.nUserTimeout = 60;
+        assertTrue("update server", waitCmdSuccess(ttadmin, ttadmin.doUpdateServer(srvprop), DEF_WAIT));
+
+        assertTrue("Disconnect hard", ttadmin.disconnect());
+
+        connect(ttadmin);
+        login(ttadmin, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
+
+        assertTrue("DoQuit", ttadmin.doQuit()>0);
+
+        assertTrue("Wait con lost", waitForEvent(ttadmin, ClientEvent.CLIENTEVENT_CON_LOST, DEF_WAIT));
+
+        assertTrue("Disconnect quit", ttadmin.disconnect());
+
+        connect(ttadmin);
+        login(ttadmin, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
+
+        srvprop.nUserTimeout = 1;
+
+        assertTrue("update server", waitCmdSuccess(ttadmin, ttadmin.doUpdateServer(srvprop), DEF_WAIT));
+
+        assertTrue("Disconnect after tmo", ttadmin.disconnect());
+
+        try (Socket s = new Socket(IPADDR, TCPPORT);
+             BufferedReader stream = new BufferedReader(new InputStreamReader(s.getInputStream()));) {
+
+            if(!ENCRYPTED)
+            {
+                String welcome = stream.readLine();
+                assertTrue("welcome msg", welcome.startsWith(SYSTEMID));
+            }
+
+            boolean closed = false;
+            try {
+                closed = stream.readLine() == null;
+            }
+            catch(IOException e) {
+                closed = true;
+            }
+            assertTrue("Closed socket", closed);
+
+            assertTrue("Disconnect quit", ttadmin.disconnect());
+
+            connect(ttadmin);
+            login(ttadmin, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
+            srvprop.nUserTimeout = orgValue;
+            assertTrue("update server", waitCmdSuccess(ttadmin, ttadmin.doUpdateServer(srvprop), DEF_WAIT));
         }
     }
 
