@@ -340,8 +340,8 @@ void AudioPlayer::AddPacket(const teamtalk::AudioPacket& packet)
                  ACE_TEXT("User #%d buffer size is foobar, msec: %d\n"),
                  m_userid, GetBufferedAudioMSec());
 
-    MYTRACE_COND(DEBUG_PLAYBACK, ACE_TEXT("User #%d, stream type %d, stream id %d, submit packet %d\n"),
-                 m_userid, m_streamtype, m_stream_id, pkt_no);
+    MYTRACE_COND(DEBUG_PLAYBACK, ACE_TEXT("User #%d, stream type %d, stream id %d, submit packet %d, %u\n"),
+                 m_userid, m_streamtype, m_stream_id, pkt_no, GETTIMESTAMP());
     
     if (m_stream_id == 0)
     {
