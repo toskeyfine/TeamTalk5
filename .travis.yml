@@ -57,12 +57,12 @@ script:
 # Build libraries, server binaries and examples
   - mkdir build
   - cd build
-  - cmake -DBUILD_TEAMTALK_CORE=ON -DBUILD_TEAMTALK_STATIC=OFF -DBUILD_TEAMTALK_ACE=OFF -DSPEEXDSP_STATIC=OFF -DFFMPEG_STATIC=OFF -DAVF=OFF -DMSDMO=OFF -DDSHOW=OFF -DVIDCAP=OFF -DMEDIAFOUNDATION=OFF -DOPUS_STATIC=OFF -DLIBVPX_STATIC=OFF -DSPEEX_STATIC=OFF -DOGG_STATIC=OFF -DOPUSTOOLS=OFF -DLAMEMP3=OFF -DMSVS_UNITTEST=OFF -DACE_STATIC=OFF -DTINYXML_STATIC=OFF -DPORTAUDIO=OFF -DZLIB_STATIC=OFF -DCATCH_UNITTEST=ON -DCMAKE_BUILD_TYPE=debug ..
-  - make -j4 > /dev/null
+  - cmake -DBUILD_TEAMTALK_CORE=ON -DBUILD_TEAMTALK_STATIC=OFF -DBUILD_TEAMTALK_ACE=OFF -DSPEEXDSP_STATIC=OFF -DFFMPEG_STATIC=OFF -DAVF=OFF -DMSDMO=OFF -DDSHOW=OFF -DVIDCAP=OFF -DMEDIAFOUNDATION=OFF -DOPUS_STATIC=OFF -DLIBVPX_STATIC=OFF -DSPEEX_STATIC=OFF -DOGG_STATIC=OFF -DOPUSTOOLS=OFF -DLAMEMP3=OFF -DMSVS_UNITTEST=OFF -DACE_STATIC=OFF -DTINYXML_STATIC=OFF -DPORTAUDIO=OFF -DZLIB_STATIC=OFF -DCATCH_UNITTEST=ON ..
+  - make -j4
 # Run JUnit suite TeamTalkServerTestSuite.java
   - cd $TRAVIS_BUILD_DIR
   - cd Library/TeamTalkJNI
-  - make runjunitsrv  > /dev/null
+  - make runjunitsrv
 # Start TeamTalk Standard Server non-encrypted mode for JUnit and Catch
   - cd $TRAVIS_BUILD_DIR
   - cp Library/TeamTalkLib/test/tt5srv.xml_template Server/tt5srv.xml
@@ -73,7 +73,7 @@ script:
 # Run JUnit suite TeamTalkStdTestSuite.java
   - cd $TRAVIS_BUILD_DIR
   - cd Library/TeamTalkJNI
-  - make runjunit  > /dev/null
+  - make runjunit
 # Kill TeamTalk Standard Server non-encrypted mode
   - killall tt5srv
 # Start TeamTalk Pro Server non-encrypted mode for JUnit
@@ -87,7 +87,7 @@ script:
   - export ENCRYPTED=0
   - export INPUTDEVICEID=4026
   - export OUTPUTDEVICEID=4026
-  - make runjunitpro > /dev/null
+  - make runjunitpro
   - killall tt5prosrv
 # Start TeamTalk Pro Server in encrypted mode for JUnit
 # and switch back to default sound device
@@ -104,7 +104,7 @@ script:
   - export ENCRYPTED=1
   - export INPUTDEVICEID=1978
   - export OUTPUTDEVICEID=1978
-  - make runjunitpro > /dev/null
+  - make runjunitpro
   - killall tt5prosrv
 # Run JUnit suite TeamTalkServerTestSuite.java in encrypted mode
   - cd $TRAVIS_BUILD_DIR
