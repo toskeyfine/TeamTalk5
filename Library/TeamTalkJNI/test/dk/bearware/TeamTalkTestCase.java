@@ -3727,6 +3727,8 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
     public void testDisconnect() throws IOException {
 
+        DEBUG_OUTPUT = true;
+        
         TeamTalkBase ttadmin = newClientInstance();
         connect(ttadmin);
         login(ttadmin, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);

@@ -134,6 +134,7 @@ public abstract class TeamTalkTestCaseBase extends TestCase {
             ttclient.closeTeamTalk();
         }
         ttclients.clear();
+        DEBUG_OUTPUT = false;
     }
 
     protected void initSound(TeamTalkBase ttclient) {
