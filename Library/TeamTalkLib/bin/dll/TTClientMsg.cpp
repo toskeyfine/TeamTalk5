@@ -116,8 +116,7 @@ void TTMsgQueue::EnqueueMsg(ACE_Message_Block* mb)
     ACE_Time_Value tv;
     int ret = m_event_queue.enqueue(mb, &tv);
     TTASSERT(ret >= 0);
-    if(m_suspender &&
-       old_size < INTMSG_SUSPEND_SIZE &&
+    if(m_suspender && old_size < INTMSG_SUSPEND_SIZE &&
        m_event_queue.message_bytes() >= INTMSG_SUSPEND_SIZE)
     {
         m_suspender->SuspendEventHandling();
