@@ -112,6 +112,8 @@ void TTMsgQueue::InitMsgQueue()
 
 void TTMsgQueue::EnqueueMsg(ACE_Message_Block* mb)
 {
+    std::lock_guard<std::mutex> g(m_mutex);
+    
     size_t old_size = m_event_queue.message_bytes();
     ACE_Time_Value tv;
     int ret = m_event_queue.enqueue(mb, &tv);
@@ -140,6 +142,8 @@ void TTMsgQueue::EnqueueMsg(ACE_Message_Block* mb)
 
 TTBOOL TTMsgQueue::GetMessage(TTMessage& msg, ACE_Time_Value* tv)
 {
+    std::lock_guard<std::mutex> g(m_mutex);
+    
     size_t old_size = m_event_queue.message_bytes();
     ACE_Message_Block* mb;
 
