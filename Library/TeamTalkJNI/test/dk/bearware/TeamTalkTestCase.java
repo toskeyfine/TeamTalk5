@@ -3725,7 +3725,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         }
     }
 
-    public void testDisconnect() throws IOException {
+    public void testUserTimeout() throws IOException {
 
         DEBUG_OUTPUT = true;
         
