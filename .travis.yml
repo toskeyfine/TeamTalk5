@@ -59,10 +59,17 @@ script:
   - cd build
   - cmake -DBUILD_TEAMTALK_CORE=ON -DBUILD_TEAMTALK_STATIC=OFF -DBUILD_TEAMTALK_ACE=OFF -DSPEEXDSP_STATIC=OFF -DFFMPEG_STATIC=OFF -DAVF=OFF -DMSDMO=OFF -DDSHOW=OFF -DVIDCAP=OFF -DMEDIAFOUNDATION=OFF -DOPUS_STATIC=OFF -DLIBVPX_STATIC=OFF -DSPEEX_STATIC=OFF -DOGG_STATIC=OFF -DOPUSTOOLS=OFF -DLAMEMP3=OFF -DMSVS_UNITTEST=OFF -DACE_STATIC=OFF -DTINYXML_STATIC=OFF -DPORTAUDIO=OFF -DZLIB_STATIC=OFF -DCATCH_UNITTEST=ON ..
   - make -j4 > /dev/null
+# Run JUnit suite TeamTalkServerTestSuite.java
+  - cd $TRAVIS_BUILD_DIR
+  - cd Library/TeamTalkJNI
+  - make runjunitsrv
 # Start TeamTalk Standard Server non-encrypted mode for JUnit and Catch
   - cd $TRAVIS_BUILD_DIR
   - cp Library/TeamTalkLib/test/tt5srv.xml_template Server/tt5srv.xml
   - Server/tt5srv -d -c Server/tt5srv.xml -verbose
+# Run Catch unit-tests
+  - cd $TRAVIS_BUILD_DIR
+  - Library/TeamTalkLib/test/catchtt
 # Run JUnit suite TeamTalkStdTestSuite.java
   - cd $TRAVIS_BUILD_DIR
   - cd Library/TeamTalkJNI
