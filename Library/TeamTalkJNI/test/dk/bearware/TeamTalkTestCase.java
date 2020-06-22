@@ -2915,9 +2915,8 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         srvprop.nMaxLoginAttempts = 0;
         assertTrue("update server", waitCmdSuccess(ttadmin, ttadmin.doUpdateServer(srvprop), DEF_WAIT));
-
-        login(ttclient, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
     }
+
 
     public void testKeyTranslate() {
         TeamTalkBase ttadmin = newClientInstance();

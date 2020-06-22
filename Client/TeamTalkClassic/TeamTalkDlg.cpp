@@ -1082,30 +1082,135 @@ void CTeamTalkDlg::OnServerStatistics(const TTMessage& msg)
 
 void CTeamTalkDlg::OnCommandError(const TTMessage& msg)
 {
+    CString szError = LoadText(IDS_ERROROCCURREDCOMMAND, _T("An error occurred while perform a requested command:\r\n"));
+
     switch(msg.clienterrormsg.nErrorNo)
     {
+    case CMDERR_SYNTAX_ERROR :
+        szError += LoadText(IDS_CMDERR_SYNTAX_ERROR, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_UNKNOWN_COMMAND :
+        szError += LoadText(IDS_CMDERR_UNKNOWN_COMMAND, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_MISSING_PARAMETER :
+        szError += LoadText(IDS_CMDERR_MISSING_PARAMETER, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_INCOMPATIBLE_PROTOCOLS :
+        szError += LoadText(IDS_CMDERR_INCOMPATIBLE_PROTOCOLS, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_UNKNOWN_AUDIOCODEC :
+        szError += LoadText(IDS_CMDERR_UNKNOWN_AUDIOCODEC, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_INVALID_USERNAME :
+        szError += LoadText(IDS_CMDERR_INVALID_USERNAME, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_INCORRECT_CHANNEL_PASSWORD :
+        szError += LoadText(IDS_CMDERR_INCORRECT_CHANNEL_PASSWORD, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_INVALID_ACCOUNT :
+        szError += LoadText(IDS_CMDERR_INVALID_ACCOUNT, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_MAX_SERVER_USERS_EXCEEDED :
+        szError += LoadText(IDS_CMDERR_MAX_SERVER_USERS_EXCEEDED, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_MAX_CHANNEL_USERS_EXCEEDED :
+        szError += LoadText(IDS_CMDERR_MAX_CHANNEL_USERS_EXCEEDED, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_SERVER_BANNED :
+        szError += LoadText(IDS_CMDERR_SERVER_BANNED, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_NOT_AUTHORIZED :
+        szError += LoadText(IDS_CMDERR_NOT_AUTHORIZED, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_MAX_DISKUSAGE_EXCEEDED :
+        szError += LoadText(IDS_CMDERR_MAX_DISKUSAGE_EXCEEDED, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_INCORRECT_OP_PASSWORD :
+        szError += LoadText(IDS_CMDERR_INCORRECT_OP_PASSWORD, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_AUDIOCODEC_BITRATE_LIMIT_EXCEEDED :
+        szError += LoadText(IDS_CMDERR_AUDIOCODEC_BITRATE_LIMIT_EXCEEDED, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_MAX_LOGINS_PER_IPADDRESS_EXCEEDED :
+        szError += LoadText(IDS_CMDERR_MAX_LOGINS_PER_IPADDRESS_EXCEEDED, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_MAX_CHANNELS_EXCEEDED :
+        szError += LoadText(IDS_CMDERR_MAX_CHANNELS_EXCEEDED, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_COMMAND_FLOOD :
+        szError += LoadText(IDS_CMDERR_COMMAND_FLOOD, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_CHANNEL_BANNED :
+        szError += LoadText(IDS_CMDERR_CHANNEL_BANNED, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_NOT_LOGGEDIN :
+        szError += LoadText(IDS_CMDERR_NOT_LOGGEDIN, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_ALREADY_LOGGEDIN :
+        szError += LoadText(IDS_CMDERR_ALREADY_LOGGEDIN, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_NOT_IN_CHANNEL :
+        szError += LoadText(IDS_CMDERR_NOT_IN_CHANNEL, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_ALREADY_IN_CHANNEL :
+        szError += LoadText(IDS_CMDERR_ALREADY_IN_CHANNEL, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_CHANNEL_ALREADY_EXISTS :
+        szError += LoadText(IDS_CMDERR_CHANNEL_ALREADY_EXISTS, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_CHANNEL_NOT_FOUND :
+        szError += LoadText(IDS_CMDERR_CHANNEL_NOT_FOUND, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_BAN_NOT_FOUND :
+        szError += LoadText(IDS_CMDERR_BAN_NOT_FOUND, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_FILETRANSFER_NOT_FOUND :
+        szError += LoadText(IDS_CMDERR_FILETRANSFER_NOT_FOUND, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_OPENFILE_FAILED :
+        szError += LoadText(IDS_CMDERR_OPENFILE_FAILED, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_ACCOUNT_NOT_FOUND :
+        szError += LoadText(IDS_CMDERR_ACCOUNT_NOT_FOUND, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_FILE_NOT_FOUND :
+        szError += LoadText(IDS_CMDERR_FILE_NOT_FOUND, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_FILE_ALREADY_EXISTS :
+        szError += LoadText(IDS_CMDERR_FILE_ALREADY_EXISTS, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_FILESHARING_DISABLED :
+        szError += LoadText(IDS_CMDERR_FILESHARING_DISABLED, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_CHANNEL_HAS_USERS :
+        szError += LoadText(IDS_CMDERR_CHANNEL_HAS_USERS, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_LOGINSERVICE_UNAVAILABLE :
+        szError += LoadText(IDS_CMDERR_LOGINSERVICE_UNAVAILABLE, msg.clienterrormsg.szErrorMsg);
+        break;
     case CMDERR_USER_NOT_FOUND :
-        //just ignore if reply to unsubscribe. It's use for closing streams
+        //just ignore if reply to unsubscribe. It's used for closing streams
         if(m_commands[m_nCurrentCmdID] == CMD_COMPLETE_UNSUBSCRIBE)
+        {
+            szError.Empty();
             break;
+        }
+        szError += LoadText(IDS_CMDERR_USER_NOT_FOUND, msg.clienterrormsg.szErrorMsg);
+        break;
     default :
-    {
-        // remove command complete notification, since the command failed
-        m_commands.erase(msg.nSource);
+        //unknown error occured
+        szError = LoadText(IDS_UNKNOWNERROR, _T("An unknown error occurred. Check that the action you\r\nperformed is supported by the server. This error is most\r\nlikely caused by an incompability issue between the server\r\nand your client:\r\n"));
+        szError += msg.clienterrormsg.szErrorMsg;
+        break;
+    }
 
-        if(_tcslen(msg.clienterrormsg.szErrorMsg))
-        {
-            CString szError =LoadText(IDS_ERROROCCURREDCOMMAND, _T("An error occurred while perform a requested command:\r\n"));
-            szError += msg.clienterrormsg.szErrorMsg;
-            AfxMessageBox(szError);
-        }
-        else
-        {
-            //unknown error occured
-            AfxMessageBox(LoadText(IDS_UNKNOWNERROR, _T("An unknown error occurred. Check that the action you\r\nperformed is supported by the server. This error is most\r\nlikely caused by an incompability issue between the server\r\nand your client.")));
-        }
+    if (szError.GetLength())
+    {
+        AfxMessageBox(szError);
     }
-    }
+
+    // remove command complete notification, since the command failed
+    m_commands.erase(msg.nSource);
 }
 
 void CTeamTalkDlg::OnCommandProc(const TTMessage& msg)
