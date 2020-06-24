@@ -45,10 +45,6 @@ static OSStatus AudioOutputCallback(void *userData, AudioUnitRenderActionFlags *
                                     const AudioTimeStamp *audioTimeStamp, UInt32 busNumber,
                                     UInt32 numFrames, AudioBufferList *buffers);
 
-static OSStatus AudioMuxedCallback(void *userData, AudioUnitRenderActionFlags *actionFlags,
-                                   const AudioTimeStamp *audioTimeStamp, UInt32 busNumber,
-                                   UInt32 numFrames, AudioBufferList *buffers);
-
 namespace soundsystem {
 
     enum iOSSoundDevice
@@ -70,6 +66,8 @@ namespace soundsystem {
         msg_queue_t samples_queue;
 
         AudioUnit audunit;
+        bool recording = false;
+        
         AUInputStreamer(StreamCapture* r, int sg, int fs, int sr, int chs, SoundAPI sndsys, int devid)
             : InputStreamer(r, sg, fs, sr, chs, sndsys, devid)
         , audunit(nil)
@@ -86,9 +84,6 @@ namespace soundsystem {
         
         msg_queue_t samples_queue;
 
-        std::vector<AudUnitBase::outputstreamer_t> streamers;
-        std::recursive_mutex streamers_mtx;
-
         AUOutputStreamer(StreamPlayer* p, int sg, int fs, int sr, int chs, SoundAPI sndsys, int devid)
             : OutputStreamer(p, sg, fs, sr, chs, sndsys, devid)
             , audunit(nil), playing(false)
@@ -99,7 +94,6 @@ namespace soundsystem {
 
         ~AUOutputStreamer()
         {
-            assert(streamers.empty());
         }
         
         UInt32 FillBuffer(AudioBuffer& buf, UInt32 buf_usage)
@@ -178,10 +172,6 @@ bool EnableSpeakerOutput(bool enable)
 
     class AudUnit : public AudUnitBase
     {
-        typedef std::vector<outputstreamer_t> muxed_streamers_t;
-        muxed_streamers_t m_muxed_streamers;
-        std::recursive_mutex m_mux_lock;
-
     public:
         AudUnit()
         {
@@ -539,6 +529,7 @@ assert(status == noErr);
             assert(streamer->audunit);
             status = AudioOutputUnitStart(streamer->audunit);
             assert(status == noErr);
+            streamer->recording = (status == noErr);
             return status == noErr;
         }
 
@@ -555,6 +546,12 @@ assert(status == noErr);
             assert(status == noErr);
         }
 
+        bool IsStreamStopped(inputstreamer_t streamer)
+        {
+            assert(streamer->audunit);
+            return !streamer->recording;
+        }
+
         outputstreamer_t NewStream(StreamPlayer* player, int outputdeviceid,
                                    int sndgrpid, int samplerate, int channels, 
                                    int framesize)
@@ -565,97 +562,10 @@ assert(status == noErr);
                                                            outputdeviceid));
             streamer->playing = false;
 
-            if (outputdeviceid == VOICEPROCESSINGIO_DEVICE_ID)
-            {
-                if (!NewMuxedStreamer(streamer))
-                    return outputstreamer_t();
-            }
-            else
-            {
-                if (!NewStreamer(outputdeviceid, streamer))
-                    return outputstreamer_t();
-            }
+            if (!NewStreamer(outputdeviceid, streamer))
+                return outputstreamer_t();
 
             return streamer;
-        }
-
-        bool NewMuxedStreamer(outputstreamer_t streamer)
-        {
-            // retrieve shared player among all streams
-            std::lock_guard<std::recursive_mutex> g(m_mux_lock);
-            outputstreamer_t muxed = GetMuxedStreamer(streamer);
-            if (muxed)
-            {
-                std::lock_guard<std::recursive_mutex> g(muxed->streamers_mtx);
-                // add to muxed playback
-                muxed->streamers.push_back(streamer);
-
-                MYTRACE(ACE_TEXT("Added new stream to muxed output device with samplerate %d and channels %d\n"),
-                        streamer->samplerate, streamer->channels);
-
-                return true;
-            }
-
-            AudioUnit audioUnit = NewOutput(VOICEPROCESSINGIO_DEVICE_ID,
-                                            streamer->samplerate, 
-                                            streamer->channels);
-
-            if (audioUnit == nil)
-                return false;
-
-            muxed.reset(new AUOutputStreamer(NULL,
-                                             streamer->sndgrpid,
-                                             streamer->framesize,
-                                             streamer->samplerate,
-                                             streamer->channels,
-                                             streamer->soundsystem,
-                                             VOICEPROCESSINGIO_DEVICE_ID));
-            muxed->audunit = audioUnit;
-
-            // setup callback function
-            AURenderCallbackStruct callbackStruct;
-            callbackStruct.inputProc = AudioMuxedCallback;
-            callbackStruct.inputProcRefCon = muxed.get();
-            OSStatus status;
-            status = AudioUnitSetProperty(audioUnit, 
-                                          kAudioUnitProperty_SetRenderCallback, 
-                                          kAudioUnitScope_Input, 
-                                          kOutputBus,
-                                          &callbackStruct, sizeof(callbackStruct));
-            assert(status == noErr);
-            if(status != noErr)
-                goto fail;
-
-            MYTRACE(ACE_TEXT("Opened new muxed output device with samplerate %d and channels %d\n"),
-                    streamer->samplerate, streamer->channels);
-
-            status = AudioUnitInitialize(audioUnit);
-            assert(status == noErr);
-            if(status != noErr)
-                goto fail;
-
-            status = AudioOutputUnitStart(audioUnit);
-            MYTRACE_COND(status != noErr, ACE_TEXT("Failed to start output audio queue\n"));
-            if (status != noErr)
-                goto fail;
-
-            MYTRACE(ACE_TEXT("Started muxed output with samplerate %d and channels %d\n"),
-                    muxed->samplerate, muxed->channels);
-
-            m_muxed_streamers.push_back(muxed);
-
-            // add to muxed playback
-            muxed->streamers.push_back(streamer);
-
-            return true;
-
-        fail:
-            status = AudioUnitUninitialize(audioUnit);
-            assert(status == noErr);
-            status = AudioComponentInstanceDispose(audioUnit);
-            assert(status == noErr);
-
-            return false;
         }
 
         bool NewStreamer(int outputdeviceid, outputstreamer_t streamer)
@@ -701,44 +611,15 @@ assert(status == noErr);
 
         void CloseStream(outputstreamer_t streamer)
         {
-            AudioUnit audunit = nil;
-
-            // remove from shared streamers
-            std::lock_guard<std::recursive_mutex> g(m_mux_lock);
-            outputstreamer_t muxed = GetMuxedStreamer(streamer);
-            if (muxed)
-            {
-                std::lock_guard<std::recursive_mutex> g2(muxed->streamers_mtx);
-                auto i = std::find(muxed->streamers.begin(), muxed->streamers.end(), streamer);
-                if (i != muxed->streamers.end())
-                    muxed->streamers.erase(i);
-
-                if (muxed->streamers.empty())
-                {
-                    i = std::find(m_muxed_streamers.begin(), m_muxed_streamers.end(), muxed);
-                    if (i != m_muxed_streamers.end())
-                        m_muxed_streamers.erase(i);
-                    audunit = muxed->audunit;
-                }
-                else
-                {
-                    // there are still active streams so don't delete
-                }
-            }
-            else
-            {
-                audunit = streamer->audunit;
-            }
-
-            if (audunit)
+            if (streamer->audunit)
             {
                 // close streamer's audio unit instance
                 OSStatus status;
-                status = AudioOutputUnitStop(audunit);
+                status = AudioOutputUnitStop(streamer->audunit);
                 assert(status == noErr);
-                status = AudioUnitUninitialize(audunit);
+                status = AudioUnitUninitialize(streamer->audunit);
                 assert(status == noErr);
-                status = AudioComponentInstanceDispose(audunit);
+                status = AudioComponentInstanceDispose(streamer->audunit);
                 assert(status == noErr);
             }
         }
@@ -780,23 +661,6 @@ assert(status == noErr);
             return !streamer->playing;
         }
 
-        outputstreamer_t GetMuxedStreamer(const outputstreamer_t& streamer)
-        {
-            // assumes 'm_mux_lock' has already been acquired.
-            muxed_streamers_t::const_iterator i = m_muxed_streamers.begin();
-            for(;i!=m_muxed_streamers.end();++i)
-            {
-                if (streamer->sndgrpid == (*i)->sndgrpid &&
-                    streamer->samplerate == (*i)->samplerate &&
-                    streamer->framesize == (*i)->framesize &&
-                    streamer->channels == (*i)->channels)
-                {
-                    return *i;
-                }
-            }
-            return outputstreamer_t();
-        }
-
         duplexstreamer_t NewStream(StreamDuplex* duplex, int inputdeviceid,
                                    int outputdeviceid, int sndgrpid,
                                    int samplerate, int input_channels, 
@@ -804,14 +668,20 @@ assert(status == noErr);
         {
             return duplexstreamer_t();
         }
+
         void CloseStream(duplexstreamer_t streamer)
         {
         }
+
         bool StartStream(duplexstreamer_t streamer)
         {
             return false;
         }
         
+        bool IsStreamStopped(duplexstreamer_t streamer)
+        {
+            return true;
+        }
     };
 
     soundsystem_t getAudUnit()
@@ -901,22 +771,9 @@ static OSStatus AudioInputCallback(void *userData, AudioUnitRenderActionFlags *a
     return noErr;
 }
 
-static OSStatus AudioMuxedCallback(void *userData, AudioUnitRenderActionFlags *actionFlags,
-                                   const AudioTimeStamp *audioTimeStamp, UInt32 busNumber,
-                                   UInt32 numFrames, AudioBufferList *buffers)
-{
-    AUOutputStreamer* streamer = reinterpret_cast<AUOutputStreamer*>(userData);
-
-    std::lock_guard<std::recursive_mutex> g(streamer->streamers_mtx);
-    if(streamer->streamers.empty())
-        return noErr;
-
-    return AudioOutputCallback(userData, actionFlags, audioTimeStamp, busNumber, numFrames, buffers);
-}
-
 static OSStatus AudioOutputCallback(void *userData, AudioUnitRenderActionFlags *actionFlags,
-                                const AudioTimeStamp *audioTimeStamp, UInt32 busNumber,
-                                UInt32 numFrames, AudioBufferList *buffers)
+                                    const AudioTimeStamp *audioTimeStamp, UInt32 busNumber,
+                                    UInt32 numFrames, AudioBufferList *buffers)
 {
     AUOutputStreamer* streamer = reinterpret_cast<AUOutputStreamer*>(userData);
     
@@ -954,29 +811,12 @@ static OSStatus AudioOutputCallback(void *userData, AudioUnitRenderActionFlags *
         ACE_NEW_RETURN(mb, ACE_Message_Block(cbbytes), noErr);
         
         short* samples_buffer = reinterpret_cast<short*>(mb->wr_ptr());
-        if (streamer->streamers.size()) // process muxed playback
-        {
-            assert(streamer->player == NULL);
-            memset(samples_buffer, 0, cbbytes);
-            std::vector<short> tmp_buffer(streamer->channels * streamer->framesize);
-            std::vector<OutputStreamer*> streamers;
-            for(auto i=streamer->streamers.begin();
-                i!=streamer->streamers.end();++i)
-            {
-                if ((*i)->playing)
-                    streamers.push_back((*i).get());
-            }
-            MuxPlayers(soundsystem::getAudUnit().get(), streamers, &tmp_buffer[0], samples_buffer);
-        }
-        else // process 'normal' playback
-        {
-            assert(streamer->player);
-            streamer->player->StreamPlayerCb(*streamer, &samples_buffer[0], streamer->framesize);
-            //soft volume also handles mute
-            SoftVolume(soundsystem::getAudUnit().get(), *streamer, &samples_buffer[0], streamer->framesize);
-        }
-
+        assert(streamer->player);
+        streamer->player->StreamPlayerCb(*streamer, &samples_buffer[0], streamer->framesize);
+        //soft volume also handles mute
+        SoftVolume(soundsystem::getAudUnit().get(), *streamer, &samples_buffer[0], streamer->framesize);
         mb->wr_ptr(cbbytes);
+        
         ACE_Time_Value tv;
         ret = streamer->samples_queue.enqueue_tail(mb, &tv);
         assert(ret >= 0);
