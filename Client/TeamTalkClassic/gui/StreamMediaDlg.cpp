@@ -143,9 +143,12 @@ BOOL CStreamMediaDlg::OnInitDialog()
         m_wndFilename.AddString(m_fileList.GetNext(pos));
     m_wndFilename.SetCurSel(0);
 
-    AddString(m_wndAudioPreprocessor, _T("No Audio Preprocessor"), NO_AUDIOPREPROCESSOR);
-    AddString(m_wndAudioPreprocessor, _T("TeamTalk Audio Preprocessor"), TEAMTALK_AUDIOPREPROCESSOR);
-    AddString(m_wndAudioPreprocessor, _T("Speex DSP Audio Preprocessor"), SPEEXDSP_AUDIOPREPROCESSOR);
+    CString szPreprocessor = LoadText(IDS_NOPREPROCESSOR, _T("No Audio Preprocessor"));
+    AddString(m_wndAudioPreprocessor, szPreprocessor, NO_AUDIOPREPROCESSOR);
+    szPreprocessor = LoadText(IDD_DIALOG_TTAUDIOPREPROCESSOR, _T("TeamTalk Audio Preprocessor"));
+    AddString(m_wndAudioPreprocessor, szPreprocessor, TEAMTALK_AUDIOPREPROCESSOR);
+    szPreprocessor = LoadText(IDD_DIALOG_SPEEXDSP, _T("Speex DSP Audio Preprocessor"));
+    AddString(m_wndAudioPreprocessor, szPreprocessor, SPEEXDSP_AUDIOPREPROCESSOR);
 
     m_mfp = m_xmlSettings.GetMediaFilePlayback();
     SetCurSelItemData(m_wndAudioPreprocessor, m_mfp.audioPreprocessor.nPreprocessor);
@@ -157,7 +160,8 @@ BOOL CStreamMediaDlg::OnInitDialog()
     SetCurSelItemData(m_wndVidCodec, WEBM_VP8_CODEC);
     m_wndVidBitrateSpinCtrl.SetRange(0, 1000);
 
-    UpdateMediaFile(m_fileList.GetHead());
+    if (m_fileList.GetCount())
+        UpdateMediaFile(m_fileList.GetHead());
     UpdateControls();
 
     if (m_mfp.uOffsetMSec != TT_MEDIAPLAYBACK_OFFSET_IGNORE &&
@@ -165,7 +169,7 @@ BOOL CStreamMediaDlg::OnInitDialog()
     {
         double percent = m_mfp.uOffsetMSec;
         percent /= m_mfi.uDurationMSec;
-        m_wndOffset.SetPos(m_wndOffset.GetRangeMax() * percent);
+        m_wndOffset.SetPos(int(m_wndOffset.GetRangeMax() * percent));
     }
 
     return TRUE;  // return TRUE unless you set the focus to a control
@@ -178,13 +182,13 @@ void CStreamMediaDlg::UpdateMediaFile(const CString szFileName)
     BOOL audio = m_mfi.audioFmt.nAudioFmt != AFF_NONE;
     BOOL video = m_mfi.videoFmt.picFourCC != FOURCC_NONE;
 
-    CString szAudioFormat = _T("Unknown format");
-    CString szVideoFormat = _T("Unknown format");
-    CString szDuration = _T("Unspecified");
+    CString szAudioFormat = LoadText(IDS_STREAMDLGUNKFOR, _T("Unknown format"));
+    CString szVideoFormat = LoadText(IDS_STREAMDLGUNKFOR, _T("Unknown format"));
+    CString szDuration = LoadText(IDS_STREAMDLGUNSPECIFIED, _T("Unspecified"));
 
     if(audio)
         szAudioFormat.Format(_T("%d Hz, %s"), m_mfi.audioFmt.nSampleRate,
-                             (m_mfi.audioFmt.nChannels == 2? _T("Stereo") : _T("Mono")));
+                             (m_mfi.audioFmt.nChannels == 2? LoadText(IDS_STREAMDLGSTEREO, _T("Stereo")) : LoadText(IDS_STREAMDLGMONO, _T("Mono"))));
     if(video)
     {
         double fps = (double)m_mfi.videoFmt.nFPS_Numerator / (double)m_mfi.videoFmt.nFPS_Denominator;
@@ -230,7 +234,7 @@ void CStreamMediaDlg::UpdateControls()
         break;
     }
 
-    switch(GetItemData(m_wndAudioPreprocessor))
+    switch(GetItemData(m_wndAudioPreprocessor, NO_AUDIOPREPROCESSOR))
     {
     case TEAMTALK_AUDIOPREPROCESSOR :
     case SPEEXDSP_AUDIOPREPROCESSOR :
@@ -244,7 +248,7 @@ void CStreamMediaDlg::UpdateControls()
 
 void CStreamMediaDlg::OnBnClickedButtonBrowse()
 {
-    CString filetypes = _T("Media files (*.*)|*.*|");
+    CString filetypes = LoadText(IDS_STREAMDLGMFT, _T("Media files (*.*)|*.*|"));
     CFileDialog dlg(TRUE, 0, 0, OFN_FILEMUSTEXIST| OFN_HIDEREADONLY,filetypes, this);
     TCHAR s[MAX_PATH];
     GetCurrentDirectory(MAX_PATH, s);
@@ -303,7 +307,7 @@ void CStreamMediaDlg::OnOK()
 
 void CStreamMediaDlg::OnBnClickedButtonAudiosetup()
 {
-    switch(GetItemData(m_wndAudioPreprocessor))
+    switch(GetItemData(m_wndAudioPreprocessor, NO_AUDIOPREPROCESSOR))
     {
     case TEAMTALK_AUDIOPREPROCESSOR :
     {
@@ -323,7 +327,7 @@ void CStreamMediaDlg::OnBnClickedButtonAudiosetup()
             {
                 m_mfp.uOffsetMSec = TT_MEDIAPLAYBACK_OFFSET_IGNORE;
                 if (!TT_UpdateLocalPlayback(ttInst, m_nPlaybackID, &m_mfp))
-                    MessageBox(_T("Failed to update preprocessor"), LoadText(IDS_PLAY));
+                    MessageBox(LoadText(IDS_STREAMDLGFAILEDUPDATE, _T("Failed to update preprocessor")), LoadText(IDS_PLAY));
             }
 
             m_xmlSettings.SetTTAudioPreprocessor(m_mfp.audioPreprocessor.ttpreprocessor);
@@ -356,7 +360,7 @@ void CStreamMediaDlg::OnBnClickedButtonAudiosetup()
             {
                 m_mfp.uOffsetMSec = TT_MEDIAPLAYBACK_OFFSET_IGNORE;
                 if(!TT_UpdateLocalPlayback(ttInst, m_nPlaybackID, &m_mfp))
-                    MessageBox(_T("Failed to update preprocessor"), LoadText(IDS_PLAY));
+                    MessageBox(LoadText(IDS_STREAMDLGFAILEDUPDATE, _T("Failed to update preprocessor")), LoadText(IDS_PLAY));
             }
 
             m_xmlSettings.SetSpeexDSPAudioPreprocessor(m_mfp.audioPreprocessor.speexdsp);
@@ -439,7 +443,7 @@ void CStreamMediaDlg::OnBnClickedButtonPlay()
             return;
         else
         {
-            MessageBox(_T("Failed to resume"), LoadText(IDS_PLAY));
+            MessageBox(LoadText(IDS_STREAMDLGFAILEDRESUME, _T("Failed to resume")), LoadText(IDS_PLAY));
         }
         TT_StopLocalPlayback(ttInst, m_nPlaybackID);
     }
@@ -461,7 +465,7 @@ void CStreamMediaDlg::OnBnClickedButtonPlay()
     m_nPlaybackID = TT_InitLocalPlayback(ttInst, szFilename, &m_mfp);
     if (m_nPlaybackID <= 0)
     {
-        MessageBox(_T("Failed to start playback"), LoadText(IDS_PLAY));
+        MessageBox(LoadText(IDS_STREAMDLGFAILEDSTARTPB, _T("Failed to start playback")), LoadText(IDS_PLAY));
         return;
     }
 }
@@ -482,7 +486,7 @@ void CStreamMediaDlg::UpdateOffset()
 
 void CStreamMediaDlg::OnCbnSelchangeComboAudiopreprocessor()
 {
-    m_mfp.audioPreprocessor.nPreprocessor = AudioPreprocessorType(GetItemData(m_wndAudioPreprocessor));
+    m_mfp.audioPreprocessor.nPreprocessor = AudioPreprocessorType(GetItemData(m_wndAudioPreprocessor, NO_AUDIOPREPROCESSOR));
     switch(m_mfp.audioPreprocessor.nPreprocessor)
     {
     case TEAMTALK_AUDIOPREPROCESSOR:

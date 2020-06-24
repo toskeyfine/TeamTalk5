@@ -113,9 +113,6 @@ CTeamTalkDlg::CTeamTalkDlg(CWnd* pParent /*=NULL*/)
 , m_bTwoPanes(TRUE)
 , m_bIgnoreResize(FALSE)
 , m_bHotKey(FALSE)
-, m_bBoostBugComp(FALSE)
-, m_bTempMixerInput(FALSE)
-, m_nLastMixerInput(UNDEFINED)
 , m_nLastRecvBytes(0)
 , m_nLastSentBytes(0)
 , m_pTray(NULL)
@@ -296,7 +293,7 @@ void CTeamTalkDlg::Login()
 
     m_commands[cmd] = CMD_COMPLETE_LOGIN;
 
-    AddStatusText(_T("Connected... logging in"));
+    AddStatusText(LoadText(IDS_CONLOGIN, _T("Connected... logging in")));
 }
 
 void CTeamTalkDlg::UpdateWindowTitle()
@@ -432,7 +429,7 @@ void CTeamTalkDlg::StartMediaStream()
 
     if (!TT_StartStreamingMediaFileToChannelEx(ttInst, szFileName, &mfp, &vidcodec))
     {
-        MessageBox(_T("Failed to stream media file."),
+        MessageBox(LoadText(IDS_STREAMFAILEDBOX, _T("Failed to stream media file.")),
             LoadText(IDD_DIALOG_STREAMMEDIA, _T("Stream Media File")), MB_OK);
         return;
     }
@@ -504,8 +501,6 @@ void CTeamTalkDlg::RunWizard()
     /// Sound system
     soundpage.m_nInputDevice = m_xmlSettings.GetSoundInputDevice(UNDEFINED);
     soundpage.m_nOutputDevice = m_xmlSettings.GetSoundOutputDevice(UNDEFINED);
-    if(m_xmlSettings.GetSoundMixerDevice() != UNDEFINED)
-        soundpage.m_nMixerInput = m_xmlSettings.GetSoundMixerDevice();
 
     dlg.AddPage(&welcomepage);
     dlg.AddPage(&generalpage);
@@ -541,10 +536,6 @@ void CTeamTalkDlg::RunWizard()
         /// Sound system
         m_xmlSettings.SetSoundInputDevice(soundpage.m_nInputDevice);
         m_xmlSettings.SetSoundOutputDevice(soundpage.m_nOutputDevice);
-        if(soundpage.m_nOutputDevice != CB_ERR)
-            m_xmlSettings.SetSoundMixerDevice(soundpage.m_nMixerInput);
-        else
-            m_xmlSettings.SetSoundMixerDevice(UNDEFINED);
 
         if(completepage.m_bWebsite)
             OnHelpWebsite();
@@ -1003,15 +994,13 @@ void CTeamTalkDlg::OnConnectFailed(const TTMessage& msg)
     Disconnect();
 
     CString s;
-    s.Format(_T("Failed to connect to %s TCP port %d UDP port %d"), STR_UTF8(m_host.szAddress.c_str()), m_host.nTcpPort, m_host.nUdpPort);
+    s.Format(LoadText(IDS_CONNFAILED, _T("Failed to connect to %s TCP port %d UDP port %d")), STR_UTF8(m_host.szAddress.c_str()), m_host.nTcpPort, m_host.nUdpPort);
     AddStatusText(s);
 
     if(!m_nReconnectTimerID)
     {
         CString szError;
-        szError.Format(    _T("Failed to connect to host \"%s\" TCP port %d UDP port %d.\r\n")
-            _T("Check that the server is running on the specified address\r\n")
-            _T("and that a firewall isn't preventing clients from connecting."),
+        szError.Format(LoadText(IDS_CONFAILED, _T("Failed to connect to host %s TCP port %d UDP port %d.\r\nCheck that the server is running on the specified address\r\nand that a firewall isn't preventing clients from connecting.")),
             STR_UTF8(m_host.szAddress.c_str()), m_host.nTcpPort, m_host.nUdpPort);
         AfxMessageBox(szError);
     }
@@ -1022,7 +1011,7 @@ void CTeamTalkDlg::OnConnectionLost(const TTMessage& msg)
     Disconnect();
 
     CString s;
-    s.Format(_T("Connection lost to %s TCP port %d UDP port %d"), STR_UTF8(m_host.szAddress.c_str()), m_host.nTcpPort, m_host.nUdpPort);
+    s.Format(LoadText(IDS_CONLOST, _T("Connection lost to %s TCP port %d UDP port %d")), STR_UTF8(m_host.szAddress.c_str()), m_host.nTcpPort, m_host.nUdpPort);
     AddStatusText(s);
 
     //reconnect to latest?
@@ -1039,7 +1028,7 @@ void CTeamTalkDlg::OnConnectionLost(const TTMessage& msg)
 
 void CTeamTalkDlg::OnLoggedIn(const TTMessage& msg)
 {
-    AddStatusText(_T("Successfully logged in"));
+    AddStatusText(LoadText(IDS_CONSUCCESS, _T("Successfully logged in")));
 
     switch(m_xmlSettings.GetGender(GENDER_NONE))
     {
@@ -1055,14 +1044,14 @@ void CTeamTalkDlg::OnLoggedIn(const TTMessage& msg)
 
 void CTeamTalkDlg::OnLoggedOut(const TTMessage& msg)
 {
-    AddStatusText(_T("Successfully logged out"));
+    AddStatusText(LoadText(IDS_LOGOUTSUCCESS, _T("Successfully logged out")));
 }
 
 void CTeamTalkDlg::OnKicked(const TTMessage& msg)
 {
     PlaySoundEvent(SOUNDEVENT_CONNECTION_LOST);
 
-    AfxMessageBox(_T("You have been kicked from the channel."));
+    AfxMessageBox(LoadText(IDS_KICKEDFROMCHANNEL, _T("You have been kicked from the channel.")));
 }
 
 void CTeamTalkDlg::OnServerUpdate(const TTMessage& msg)
@@ -1093,33 +1082,135 @@ void CTeamTalkDlg::OnServerStatistics(const TTMessage& msg)
 
 void CTeamTalkDlg::OnCommandError(const TTMessage& msg)
 {
+    CString szError = LoadText(IDS_ERROROCCURREDCOMMAND, _T("An error occurred while perform a requested command:\r\n"));
+
     switch(msg.clienterrormsg.nErrorNo)
     {
+    case CMDERR_SYNTAX_ERROR :
+        szError += LoadText(IDS_CMDERR_SYNTAX_ERROR, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_UNKNOWN_COMMAND :
+        szError += LoadText(IDS_CMDERR_UNKNOWN_COMMAND, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_MISSING_PARAMETER :
+        szError += LoadText(IDS_CMDERR_MISSING_PARAMETER, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_INCOMPATIBLE_PROTOCOLS :
+        szError += LoadText(IDS_CMDERR_INCOMPATIBLE_PROTOCOLS, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_UNKNOWN_AUDIOCODEC :
+        szError += LoadText(IDS_CMDERR_UNKNOWN_AUDIOCODEC, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_INVALID_USERNAME :
+        szError += LoadText(IDS_CMDERR_INVALID_USERNAME, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_INCORRECT_CHANNEL_PASSWORD :
+        szError += LoadText(IDS_CMDERR_INCORRECT_CHANNEL_PASSWORD, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_INVALID_ACCOUNT :
+        szError += LoadText(IDS_CMDERR_INVALID_ACCOUNT, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_MAX_SERVER_USERS_EXCEEDED :
+        szError += LoadText(IDS_CMDERR_MAX_SERVER_USERS_EXCEEDED, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_MAX_CHANNEL_USERS_EXCEEDED :
+        szError += LoadText(IDS_CMDERR_MAX_CHANNEL_USERS_EXCEEDED, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_SERVER_BANNED :
+        szError += LoadText(IDS_CMDERR_SERVER_BANNED, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_NOT_AUTHORIZED :
+        szError += LoadText(IDS_CMDERR_NOT_AUTHORIZED, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_MAX_DISKUSAGE_EXCEEDED :
+        szError += LoadText(IDS_CMDERR_MAX_DISKUSAGE_EXCEEDED, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_INCORRECT_OP_PASSWORD :
+        szError += LoadText(IDS_CMDERR_INCORRECT_OP_PASSWORD, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_AUDIOCODEC_BITRATE_LIMIT_EXCEEDED :
+        szError += LoadText(IDS_CMDERR_AUDIOCODEC_BITRATE_LIMIT_EXCEEDED, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_MAX_LOGINS_PER_IPADDRESS_EXCEEDED :
+        szError += LoadText(IDS_CMDERR_MAX_LOGINS_PER_IPADDRESS_EXCEEDED, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_MAX_CHANNELS_EXCEEDED :
+        szError += LoadText(IDS_CMDERR_MAX_CHANNELS_EXCEEDED, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_COMMAND_FLOOD :
+        szError += LoadText(IDS_CMDERR_COMMAND_FLOOD, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_CHANNEL_BANNED :
+        szError += LoadText(IDS_CMDERR_CHANNEL_BANNED, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_NOT_LOGGEDIN :
+        szError += LoadText(IDS_CMDERR_NOT_LOGGEDIN, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_ALREADY_LOGGEDIN :
+        szError += LoadText(IDS_CMDERR_ALREADY_LOGGEDIN, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_NOT_IN_CHANNEL :
+        szError += LoadText(IDS_CMDERR_NOT_IN_CHANNEL, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_ALREADY_IN_CHANNEL :
+        szError += LoadText(IDS_CMDERR_ALREADY_IN_CHANNEL, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_CHANNEL_ALREADY_EXISTS :
+        szError += LoadText(IDS_CMDERR_CHANNEL_ALREADY_EXISTS, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_CHANNEL_NOT_FOUND :
+        szError += LoadText(IDS_CMDERR_CHANNEL_NOT_FOUND, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_BAN_NOT_FOUND :
+        szError += LoadText(IDS_CMDERR_BAN_NOT_FOUND, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_FILETRANSFER_NOT_FOUND :
+        szError += LoadText(IDS_CMDERR_FILETRANSFER_NOT_FOUND, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_OPENFILE_FAILED :
+        szError += LoadText(IDS_CMDERR_OPENFILE_FAILED, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_ACCOUNT_NOT_FOUND :
+        szError += LoadText(IDS_CMDERR_ACCOUNT_NOT_FOUND, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_FILE_NOT_FOUND :
+        szError += LoadText(IDS_CMDERR_FILE_NOT_FOUND, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_FILE_ALREADY_EXISTS :
+        szError += LoadText(IDS_CMDERR_FILE_ALREADY_EXISTS, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_FILESHARING_DISABLED :
+        szError += LoadText(IDS_CMDERR_FILESHARING_DISABLED, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_CHANNEL_HAS_USERS :
+        szError += LoadText(IDS_CMDERR_CHANNEL_HAS_USERS, msg.clienterrormsg.szErrorMsg);
+        break;
+    case CMDERR_LOGINSERVICE_UNAVAILABLE :
+        szError += LoadText(IDS_CMDERR_LOGINSERVICE_UNAVAILABLE, msg.clienterrormsg.szErrorMsg);
+        break;
     case CMDERR_USER_NOT_FOUND :
-        //just ignore if reply to unsubscribe. It's use for closing streams
+        //just ignore if reply to unsubscribe. It's used for closing streams
         if(m_commands[m_nCurrentCmdID] == CMD_COMPLETE_UNSUBSCRIBE)
+        {
+            szError.Empty();
             break;
+        }
+        szError += LoadText(IDS_CMDERR_USER_NOT_FOUND, msg.clienterrormsg.szErrorMsg);
+        break;
     default :
-    {
-        // remove command complete notification, since the command failed
-        m_commands.erase(msg.nSource);
+        //unknown error occured
+        szError = LoadText(IDS_UNKNOWNERROR, _T("An unknown error occurred. Check that the action you\r\nperformed is supported by the server. This error is most\r\nlikely caused by an incompability issue between the server\r\nand your client:\r\n"));
+        szError += msg.clienterrormsg.szErrorMsg;
+        break;
+    }
 
-        if(_tcslen(msg.clienterrormsg.szErrorMsg))
-        {
-            CString szError = _T("An error occurred while perform a requested command:\r\n");
-            szError += msg.clienterrormsg.szErrorMsg;
-            AfxMessageBox(szError);
-        }
-        else
-        {
-            //unknown error occured
-            AfxMessageBox(_T("An unknown error occurred. Check that the action you\r\n")
-                _T("performed is supported by the server. This error is most\r\n")
-                _T("likely caused by an incompability issue between the server\r\n")
-                _T("and your client."));
-        }
+    if (szError.GetLength())
+    {
+        AfxMessageBox(szError);
     }
-    }
+
+    // remove command complete notification, since the command failed
+    m_commands.erase(msg.nSource);
 }
 
 void CTeamTalkDlg::OnCommandProc(const TTMessage& msg)
@@ -1650,9 +1741,9 @@ void CTeamTalkDlg::OnChannelUpdate(const TTMessage& msg)
         if(ret != 0)
         {
             if (ret < 0)
-                szMsg.Format(_T("%s can no longer transmit voice!"), szName);
+                szMsg.Format(LoadText(IDS_NOLONGERTRANSMIT, _T("%s can no longer transmit voice!")), szName);
             else
-                szMsg.Format(_T("%s can now transmit voice!"), szName);
+                szMsg.Format(LoadText(IDS_CANNOWTRANSMIT, _T("%s can now transmit voice!")), szName);
 
             AddStatusText(szMsg);
             if (m_xmlSettings.GetEventTTSEvents() & TTS_CLASSROOM_VIDEO_TX)
@@ -1662,9 +1753,9 @@ void CTeamTalkDlg::OnChannelUpdate(const TTMessage& msg)
         if(ret != 0)
         {
             if (ret < 0)
-                szMsg.Format(_T("%s can no longer transmit video input!"), szName);
+                szMsg.Format(LoadText(IDS_NOLONGERTRANSMITVIDEO, _T("%s can no longer transmit video input!")), szName);
             else
-                szMsg.Format(_T("%s can now transmit video input!"), szName);
+                szMsg.Format(LoadText(IDS_CANNOWTRANSMITVIDEO, _T("%s can now transmit video input!")), szName);
 
             AddStatusText(szMsg);
             if (m_xmlSettings.GetEventTTSEvents() & TTS_CLASSROOM_VOICE_TX)
@@ -1674,9 +1765,9 @@ void CTeamTalkDlg::OnChannelUpdate(const TTMessage& msg)
         if(ret != 0)
         {
             if (ret < 0)
-                szMsg.Format(_T("%s can no longer transmit shared desktops!"), szName);
+                szMsg.Format(LoadText(IDS_NOLONGERTRANSMITDESKTOP, _T("%s can no longer transmit shared desktops!")), szName);
             else
-                szMsg.Format(_T("%s can now transmit shared desktops!"), szName);
+                szMsg.Format(LoadText(IDS_CANNOWTRANSMITDESKTOP, _T("%s can now transmit shared desktops!")), szName);
 
             AddStatusText(szMsg);
             if (m_xmlSettings.GetEventTTSEvents() & TTS_CLASSROOM_DESKTOP_TX)
@@ -1686,9 +1777,9 @@ void CTeamTalkDlg::OnChannelUpdate(const TTMessage& msg)
         if(ret != 0)
         {
             if (ret < 0)
-                szMsg.Format(_T("%s can no longer transmit media files!"), szName);
+                szMsg.Format(LoadText(IDS_NOLONGERTRANSMITMEDIAFILE, _T("%s can no longer transmit media files!")), szName);
             else
-                szMsg.Format(_T("%s can now transmit media files!"), szName);
+                szMsg.Format(LoadText(IDS_CANNOWTRANSMITMEDIAFILE, _T("%s can now transmit media files!")), szName);
             AddStatusText(szMsg);
             if (m_xmlSettings.GetEventTTSEvents() & TTS_CLASSROOM_MEDIAFILE_TX)
                 AddVoiceMessage(szMsg);
@@ -2100,7 +2191,7 @@ void CTeamTalkDlg::OnUserAudioFile(const TTMessage& msg)
     if(msg.mediafileinfo.nStatus == MFS_ERROR)
     {
         CString szMsg;
-        szMsg.Format(_T("Failed to write audio file for %s"),
+        szMsg.Format(LoadText(IDS_FAILEDTOWRITEAUDIOFILE, _T("Failed to write audio file for %s")),
                      GetDisplayName(user));
         AddStatusText(szMsg);
     }
@@ -2127,7 +2218,7 @@ void CTeamTalkDlg::OnFileTransfer(const TTMessage& msg)
         else
         {
             CString szError;
-            szError.Format(_T("Failed to start file transfer.\r\nFile name: %s"),
+            szError.Format(LoadText(IDS_FAILEDTOSTARTFILETRANSFER, _T("Failed to start file transfer.\r\nFile name: %s")),
                 (filetransfer.bInbound? filetransfer.szRemoteFileName :
                 filetransfer.szRemoteFileName));
             AfxMessageBox(szError);
@@ -2159,21 +2250,21 @@ void CTeamTalkDlg::OnStreamMediaFile(const TTMessage& msg)
     switch(msg.mediafileinfo.nStatus)
     {
     case MFS_ERROR :
-        AddStatusText(_T("Error streaming media file to channel"));
+        AddStatusText(LoadText(IDS_ERRORSTREAMINGTOCHANNEL, _T("Error streaming media file to channel")));
         StopMediaStream();
         break;
     case MFS_STARTED :
-        AddStatusText(_T("Started streaming media file to channel"));
+        AddStatusText(LoadText(IDS_STREAMINGTOCHANNELSTART, _T("Started streaming media file to channel")));
         break;
     case MFS_FINISHED :
-        AddStatusText(_T("Finished streaming media file to channel"));
+        AddStatusText(LoadText(IDS_STREAMINGTOCHANNELFINISH, _T("Finished streaming media file to channel")));
         StopMediaStream();
 
         if (m_xmlSettings.GetMediaFileRepeat(false))
             StartMediaStream();
         break;
     case MFS_ABORTED :
-        AddStatusText(_T("Aborted streaming media file to channel"));
+        AddStatusText(LoadText(IDS_STREAMINGTOCHANNELABORT, _T("Aborted streaming media file to channel")));
         StopMediaStream();
         break;
     }
@@ -2201,39 +2292,6 @@ void CTeamTalkDlg::OnHotKey(const TTMessage& msg)
     case HOTKEY_PUSHTOTALK_ID :
         if(msg.bActive)
         {
-            //check whether input must be changed
-            if(m_bTempMixerInput)
-            {
-                int nSelectedIndex = -1;
-                int count = TT_Mixer_GetWaveInControlCount(0);
-                for(int i=0;i<count && nSelectedIndex == -1;i++)
-                {
-                    if(TT_Mixer_GetWaveInControlSelected(0, i))
-                        nSelectedIndex = i;
-                }
-
-                int nAutoSelectedIndex = m_xmlSettings.GetMixerAutoSelectInput();
-                ASSERT(nAutoSelectedIndex != UNDEFINED);
-                if(nSelectedIndex>=0 && nAutoSelectedIndex != UNDEFINED)
-                {
-                    m_nLastMixerInput = nSelectedIndex;
-                    TT_Mixer_SetWaveInControlSelected(0, nAutoSelectedIndex);
-                }
-                else
-                {
-                    m_bTempMixerInput = FALSE;
-                    AfxMessageBox(_T("Unable to access Windows' mixer"));
-                    m_nLastMixerInput = -1;
-                }
-            }
-            //check whether compensation for boost bug is active
-            if(m_bBoostBugComp)
-            {
-                BOOL bEnabled = TT_Mixer_GetWaveInBoost(0);
-                TT_Mixer_SetWaveInBoost(0, !bEnabled);
-                TT_Mixer_SetWaveInBoost(0, bEnabled);
-            }
-
             TT_EnableVoiceTransmission(ttInst, TRUE);
             m_wndTree.SetUserTalking(TT_GetMyUserID(ttInst),
                                      IsMyselfTalking());
@@ -2250,10 +2308,6 @@ void CTeamTalkDlg::OnHotKey(const TTMessage& msg)
 
             //released event
             PlaySoundEvent(SOUNDEVENT_PUSHTOTALK);
-
-            //check whether input must be changed
-            if(m_bTempMixerInput)
-                TT_Mixer_SetWaveInControlSelected(0, m_nLastMixerInput);
         }
         break;
     case HOTKEY_VOICEACT_ID :
@@ -2376,7 +2430,7 @@ BOOL CTeamTalkDlg::OnInitDialog()
     //load accelerators
     m_hAccel = ::LoadAccelerators(AfxGetResourceHandle(), (LPCTSTR)IDR_ACCELERATOR2);
     if (!m_hAccel)
-        MessageBox(_T("The accelerator table was not loaded"));
+        MessageBox(LoadText(IDS_ACCELERATORNOTLOADDED, _T("The accelerator table was not loaded")));
 
     //load bmp for pictures
     //transparent pictures
@@ -2431,8 +2485,8 @@ BOOL CTeamTalkDlg::OnInitDialog()
         {
             if(m_xmlSettings.HasErrors())
             {
-                CString szMsg = _T("Unable to load the settings file:\r\n");
-                szMsg += szXmlFile + _T(".\r\n") _T("Create a new settings file?");
+                CString szMsg = LoadText(IDS_UNABLELOADSETFILE, _T("Unable to load the settings file:\r\n"));
+                szMsg += szXmlFile + _T(".\r\n") + LoadText(IDS_CREATENEWSETFILE, _T("Create a new settings file?"));
                 if(AfxMessageBox(szMsg, MB_YESNO) == IDYES)
                 {
                     m_xmlSettings.CreateFile(ansiXml);
@@ -2581,11 +2635,11 @@ BOOL CTeamTalkDlg::OnInitDialog()
     m_brush.CreateSolidBrush(RGB(244,244,244));
 
     BOOL b = m_tabChat.Create(IDD_TAB_CHAT, &m_wndTabCtrl);
-    CString szChat = _T("Chat");
+    CString szChat = LoadText(IDS_CHAT, _T("Chat"));
     TRANSLATE_ITEM(IDS_CHAT, szChat);
     m_wndTabCtrl.AddTab(&m_tabChat, szChat, 0);
     b &= m_tabFiles.Create(IDD_TAB_FILES, &m_wndTabCtrl);
-    CString szFiles = _T("Files");
+    CString szFiles = LoadText(IDS_FILES, _T("Files"));
     TRANSLATE_ITEM(IDS_FILES, szFiles);
     m_wndTabCtrl.AddTab(&m_tabFiles, szFiles, 0);
     m_tabChat.m_hAccel = m_hAccel;
@@ -2631,34 +2685,6 @@ BOOL CTeamTalkDlg::OnInitDialog()
     m_tabChat.m_wndRichEdit.m_bShowTimeStamp = m_xmlSettings.GetMessageTimeStamp();
 
     m_wndVUProgress.ShowWindow(m_xmlSettings.GetVuMeterUpdate()?SW_SHOW : SW_HIDE);
-
-    //detect whether mixer device differs from orginal
-    int nMixerDeviceIndex = m_xmlSettings.GetSoundMixerDevice();
-    if(nMixerDeviceIndex != UNDEFINED)
-    {
-        if(TT_Mixer_GetWaveInControlCount(0)>0 &&
-            TT_Mixer_GetWaveInControlSelected(0, nMixerDeviceIndex) == FALSE)
-        {
-            int nRet = AfxMessageBox(_T("Mixer input device has been changed. Reset to default?"), MB_YESNO);
-            if(nRet == IDYES)
-                TT_Mixer_SetWaveInControlSelected(0, nMixerDeviceIndex);
-            else
-                m_xmlSettings.SetSoundMixerDevice(UNDEFINED);
-        }
-    }
-
-    //set auto mixer selection
-    m_bTempMixerInput = m_xmlSettings.GetMixerAutoSelection();
-
-    //compensate for boostbug?
-    if(m_xmlSettings.GetMixerBoostBugCompensation())
-    {
-        BOOL bEnabled = TT_Mixer_GetWaveInBoost(0);
-        if(!TT_Mixer_SetWaveInBoost(0, bEnabled))
-            AfxMessageBox(_T("Failed to enable boost bug compensation"));
-        else
-            m_bBoostBugComp = TRUE;
-    }
 
     RunAppUpdate();
     SetTimer(TIMER_APPUPDATE_ID, 24 * 60 * 60 * 1000, NULL);
@@ -2734,7 +2760,7 @@ void CTeamTalkDlg::OnSysCommand(UINT nID, LPARAM lParam)
             GetWindowText(wintitle);
             if(!m_pTray->Create(0, WM_TRAY_MSG, wintitle, GetIcon(TRUE), IDR_MENU_TRAY))
             {
-                AfxMessageBox(_T("Failed to create tray icon"));
+                AfxMessageBox(LoadText(IDS_FAILEDTOCREATETRAYICON, _T("Failed to create tray icon")));
                 delete m_pTray;
                 m_pTray = NULL;
             }
@@ -2864,8 +2890,8 @@ void CTeamTalkDlg::Exit()
 		if (!CopyFile(szDefPath, szCfgPath, FALSE))
 		{
 			CString szMsg;
-			szMsg.Format(_T("Failed to copy %s to %s"), szDefPath, szCfgPath);
-			MessageBox(szMsg, _T("Reset Settings"));
+			szMsg.Format(LoadText(IDS_FAILEDTOCOPY, _T("Failed to copy %s to %s")), szDefPath, szCfgPath);
+			MessageBox(szMsg, LoadText(IDS_RESETSETTINGS, _T("Reset Settings")));
 		}
 	}
 
@@ -3184,7 +3210,7 @@ void CTeamTalkDlg::OnFileHostmanager()
         m_nReconnectTimerID = 0;
         Disconnect();
         CString s;
-        s.Format(_T("Disconnected from %s TCP port %d UDP port %d"), 
+        s.Format(LoadText(IDS_DISCONNECTEDFROM, _T("Disconnected from %s TCP port %d UDP port %d")), 
             STR_UTF8(m_host.szAddress.c_str()), m_host.nTcpPort, 
             m_host.nUdpPort);
         AddStatusText(s);
@@ -3352,7 +3378,6 @@ void CTeamTalkDlg::OnFilePreferences()
     soundpage.m_nInputDevice = m_xmlSettings.GetSoundInputDevice(UNDEFINED);
     soundpage.m_szInputDeviceID = STR_UTF8(m_xmlSettings.GetSoundInputDevice());
     soundpage.m_bPositioning = m_xmlSettings.GetAutoPositioning();
-    soundpage.m_bDuplexMode = m_xmlSettings.GetDuplexMode(DEFAULT_SOUND_DUPLEXMODE);
     soundpage.m_bEchoCancel = m_xmlSettings.GetEchoCancel(DEFAULT_ECHO_ENABLE);
     soundpage.m_bAGC = m_xmlSettings.GetAGC(DEFAULT_AGC_ENABLE);
     soundpage.m_bDenoise = m_xmlSettings.GetDenoise(DEFAULT_DENOISE_ENABLE);
@@ -3413,9 +3438,6 @@ void CTeamTalkDlg::OnFilePreferences()
     ////////////////////
     // advanced
     ////////////////////
-    advancedpage.m_bMixerAutoSelect = m_xmlSettings.GetMixerAutoSelection();
-    advancedpage.m_nMixerIndex = m_xmlSettings.GetMixerAutoSelectInput();
-    advancedpage.m_bBoostBug = m_xmlSettings.GetMixerBoostBugCompensation();
 
     sheet.AddPage(&generalpage);
     sheet.AddPage(&windowpage);
@@ -3425,7 +3447,7 @@ void CTeamTalkDlg::OnFilePreferences()
     sheet.AddPage(&ttspage);
     sheet.AddPage(&shortcutspage);
     sheet.AddPage(&videopage);
-    sheet.AddPage(&advancedpage);
+    //sheet.AddPage(&advancedpage);
 
     if(sheet.DoModal() == IDOK)
     {
@@ -3588,7 +3610,9 @@ void CTeamTalkDlg::OnFilePreferences()
         BOOL bRestart = FALSE;
         bRestart |= m_xmlSettings.GetSoundOutputDevice(UNDEFINED) != soundpage.m_nOutputDevice;
         bRestart |= m_xmlSettings.GetSoundInputDevice(UNDEFINED) != soundpage.m_nInputDevice;
-        bRestart |= m_xmlSettings.GetDuplexMode(DEFAULT_SOUND_DUPLEXMODE) != (bool)soundpage.m_bDuplexMode;
+        bRestart |= m_xmlSettings.GetAGC(DEFAULT_AGC_ENABLE) != (bool)soundpage.m_bAGC;
+        bRestart |= m_xmlSettings.GetEchoCancel(DEFAULT_ECHO_ENABLE) != (bool)soundpage.m_bEchoCancel;
+        bRestart |= m_xmlSettings.GetDenoise(DEFAULT_DENOISE_ENABLE) != (bool)soundpage.m_bDenoise;
         bRestart = bRestart && (TT_GetFlags(ttInst) & CLIENT_CONNECTION);
 
         m_xmlSettings.SetSoundOutputDevice(soundpage.m_nOutputDevice);
@@ -3596,7 +3620,6 @@ void CTeamTalkDlg::OnFilePreferences()
         m_xmlSettings.SetSoundInputDevice(soundpage.m_nInputDevice);
         m_xmlSettings.SetSoundInputDevice(STR_UTF8(soundpage.m_szInputDeviceID));
         m_xmlSettings.SetAutoPositioning(soundpage.m_bPositioning);
-        m_xmlSettings.SetDuplexMode(soundpage.m_bDuplexMode);
         m_xmlSettings.SetEchoCancel(soundpage.m_bEchoCancel);
         m_xmlSettings.SetAGC(soundpage.m_bAGC);
         m_xmlSettings.SetDenoise(soundpage.m_bDenoise);
@@ -3618,8 +3641,8 @@ void CTeamTalkDlg::OnFilePreferences()
         {
             if (!InitSoundSystem(m_xmlSettings))
             {
-                MessageBox(_T("Failed to initialize new sound devices."),
-                    _T("Restart Sound System"), MB_OK);
+                MessageBox(LoadText(IDS_FAILEDTOINITIALIZENEWSD, _T("Failed to initialize new sound devices.")),
+                    LoadText(IDS_RESTARTSS, _T("Restart Sound System")), MB_OK);
             }
         }
 
@@ -3682,47 +3705,6 @@ void CTeamTalkDlg::OnFilePreferences()
         /////////////////////////////////////////
         //   write settings for Advanced
         //////////////////////////////////////////
-        m_xmlSettings.SetMixerAutoSelection(advancedpage.m_bMixerAutoSelect);
-        m_xmlSettings.SetMixerAutoSelectInput(advancedpage.m_nMixerIndex);
-        m_xmlSettings.SetMixerBoostBugCompensation(advancedpage.m_bBoostBug);
-        m_bTempMixerInput = advancedpage.m_bMixerAutoSelect;
-        m_bBoostBugComp = advancedpage.m_bBoostBug;
-
-        if(advancedpage.m_bMixerAutoSelect)
-        {
-            int nSelectedIndex = -1;
-            int count = TT_Mixer_GetWaveInControlCount(0);
-            for(int i=0;i<count && nSelectedIndex == -1;i++)
-            {
-                if(TT_Mixer_GetWaveInControlSelected(0, i))
-                    nSelectedIndex = i;
-            }
-            if(!TT_Mixer_SetWaveInControlSelected(0, advancedpage.m_nMixerIndex))
-            {
-                AfxMessageBox(_T("Failed to selected temporary mixer device"));
-                m_xmlSettings.SetMixerAutoSelection(FALSE);
-                m_xmlSettings.SetMixerAutoSelectInput(UNDEFINED);
-                m_bTempMixerInput = FALSE;
-            }
-            else
-                m_bTempMixerInput = advancedpage.m_bMixerAutoSelect;
-            if(nSelectedIndex>=0)
-                TT_Mixer_SetWaveInControlSelected(0, nSelectedIndex);
-        }
-
-        //compensate for boost bug
-        if(advancedpage.m_bBoostBug)
-        {
-            BOOL bEnabled = TT_Mixer_GetWaveInBoost(0);
-            if(!TT_Mixer_SetWaveInBoost(0, bEnabled))
-            {
-                AfxMessageBox(_T("Failed to enable boost bug compensation"));
-                VERIFY(m_xmlSettings.SetMixerBoostBugCompensation(FALSE));
-                m_bBoostBugComp = FALSE;
-            }
-            else
-                m_bBoostBugComp = advancedpage.m_bBoostBug;
-        }
 
         m_xmlSettings.SaveFile();
     }
@@ -3741,7 +3723,7 @@ void CTeamTalkDlg::OnUpdateMeChangenick(CCmdUI *pCmdUI)
 
 void CTeamTalkDlg::OnMeChangenick()
 {
-    CString szChNick = _T("Change nickname"), szNewNick = _T("New nickname");
+    CString szChNick = LoadText(IDS_CHANGENN, _T("Change nickname")), szNewNick = LoadText(IDS_NEWNN, _T("New nickname"));
     TRANSLATE_ITEM(IDS_CHANGENICKNAME, szChNick);
     TRANSLATE_ITEM(IDS_NEWNICKNAME, szNewNick);
 
@@ -3789,8 +3771,7 @@ void CTeamTalkDlg::OnMeEnablehotkey()
         }
         else
         {
-            if( AfxMessageBox(    _T("No push-to-talk key combination is currently configured.\r\n")
-                _T("Would you like to configure it now?"), MB_YESNO) == IDYES)
+            if( AfxMessageBox(    LoadText(IDS_NOCOMBINAISONKEYPTT, _T("No push-to-talk key combination is currently configured.\r\nWould you like to configure it now?")), MB_YESNO) == IDYES)
             {
                 CKeyCompDlg dlg;
                 dlg.DoModal();
@@ -3851,7 +3832,7 @@ void CTeamTalkDlg::OnUsersViewinfo()
         TT_GetUser(ttInst, nUserID, &user);
 
         dlg.m_szUsername = user.szUsername;
-        dlg.m_szUserType = (user.uUserType & USERTYPE_ADMIN)? _T("Admin"): _T("Default");
+        dlg.m_szUserType = (user.uUserType & USERTYPE_ADMIN)? LoadText(IDS_ADMIN, _T("Admin")): LoadText(IDS_DEFAULT, _T("Default"));
         if(TT_GetMyUserRights(ttInst) & USERRIGHT_BAN_USERS)
             dlg.m_szIPAddr = user.szIPAddress;
         dlg.m_szClientName = user.szClientName;
@@ -4034,9 +4015,9 @@ void CTeamTalkDlg::OnUsersOp()
         }
         else
         {
-            CString szTitle = _T("Operator password");
+            CString szTitle = LoadText(IDS_OPPSW, _T("Operator password"));
             TRANSLATE_ITEM(IDC_STATIC_OPPASSWD, szTitle);
-            CInputDlg dlg(szTitle, _T("Enter password"), _T(""), this);
+            CInputDlg dlg(szTitle, LoadText(IDS_ENTERPSW, _T("Enter password")), _T(""), this);
             if(dlg.DoModal() == IDOK)
                 TT_DoChannelOpEx(ttInst, i->nUserID, i->nChannelID, dlg.m_szInput, bNewState);
         }
@@ -4064,16 +4045,16 @@ void CTeamTalkDlg::OnUsersPositionusers()
 {
     if((TT_GetFlags(ttInst) & CLIENT_SNDINOUTPUT_DUPLEX))
     {
-        MessageBox(_T("Positioning users is not supported in sound duplex mode"),
-        _T("Position Users"), MB_OK);
+        MessageBox(LoadText(IDS_DUPLEXNOTSUPPORTPOS, _T("Positioning users is not supported in sound duplex mode")),
+        LoadText(IDS_POSUSERS, _T("Position Users")), MB_OK);
         return;
     }
 
     SoundDevice dev;
     if(GetSoundOutputDevice(m_xmlSettings, &dev) == UNDEFINED || dev.nSoundSystem != SOUNDSYSTEM_DSOUND)
     {
-        MessageBox(_T("Positioning users is only support with DirectSound"),
-        _T("Position Users"), MB_OK);
+        MessageBox(LoadText(IDS_POSONLYDS, _T("Positioning users is only support with DirectSound")),
+        LoadText(IDS_POSUSERS, _T("Position Users")), MB_OK);
         return;
     }
 
@@ -4329,8 +4310,8 @@ void CTeamTalkDlg::OnChannelsDeletechannel()
     TTCHAR path[TT_STRLEN] = {};
     TT_GetChannelPath(ttInst, channelid, path);
     CString s;
-    s.Format(_T("Are you sure you want to delete channel %s"), path);
-    if(MessageBox(s, _T("Delete Channel"), MB_YESNO) == IDYES)
+    s.Format(LoadText(IDS_SUREDELETECHAN, _T("Are you sure you want to delete channel %s")), path);
+    if(MessageBox(s, LoadText(IDS_CHANDELETETITLE, _T("Delete Channel")), MB_YESNO) == IDYES)
         TT_DoRemoveChannel(ttInst, channelid);
 }
 
@@ -4353,7 +4334,7 @@ void CTeamTalkDlg::OnChannelsJoinchannel()
         TT_GetChannelPath(ttInst, nChannelID, szChannelPath);
         if(chan.bPassword)
         {
-            CInputDlg dlg(_T("Channel password"), _T("Enter password"), _T(""), this);
+            CInputDlg dlg(LoadText(IDS_CHANPSW, _T("Channel password")), LoadText(IDS_ENTERPSW, _T("Enter password")), _T(""), this);
             dlg.m_szInput = m_channelPasswords[nChannelID];
             if(dlg.DoModal() == IDOK)
             {
@@ -4377,7 +4358,7 @@ void CTeamTalkDlg::OnChannelsJoinchannel()
 
             int nCmdID = TT_DoJoinChannelByID(ttInst, nChannelID, _T(""));
             m_commands[nCmdID] = CMD_COMPLETE_JOIN;
-            TRACE(_T("Joining \"%s\"\n"), szChannelPath);
+            TRACE(_T("Joining %s\r\n"), szChannelPath);
         }
     }
 }
@@ -4470,27 +4451,27 @@ void CTeamTalkDlg::OnChannelsViewchannelmessages()
 void CTeamTalkDlg::OnHelpAbout()
 {
     CAboutBox dlg;
-    dlg.m_szCompiled = _T("Compiled on ") _T( __DATE__ ) _T(" ") _T( __TIME__ ) _T(".\r\n");
+    dlg.m_szCompiled = LoadText(IDS_COMPILEDON, _T("Compiled on ")) + _T( __DATE__ ) _T(" ") _T( __TIME__ ) _T(".\r\n");
 #if defined(UNICODE)
-    dlg.m_szCompiled += _T("Unicode -> UTF-8 conversion enabled.\r\n");
+    dlg.m_szCompiled += LoadText(IDS_UNICODEENABLED, _T("Unicode -> UTF-8 conversion enabled.\r\n"));
 #else
-    dlg.m_szCompiled += _T("Uses local character set.\r\n");
+    dlg.m_szCompiled += LoadText(IDS_LOCALECHARS, _T("Uses local character set.\r\n"));
 #endif
     if(sizeof(void*) == 8)
-        dlg.m_szCompiled += _T("TeamTalk 64-bit DLL version: ") + CString(TT_GetVersion());
+        dlg.m_szCompiled += LoadText(IDS_TTDLLVER, _T("TeamTalk 64-bit DLL version: ")) + CString(TT_GetVersion());
     else
-        dlg.m_szCompiled += _T("TeamTalk 32-bit DLL version: ") + CString(TT_GetVersion());
+        dlg.m_szCompiled += LoadText(IDS_TTDLLVERS, _T("TeamTalk 32-bit DLL version: ")) + CString(TT_GetVersion());
     dlg.DoModal();
 }
 
 void CTeamTalkDlg::OnHelpWebsite()
 {
-    HINSTANCE i = ShellExecute(this->m_hWnd,_T("open"),WEBSITE,_T(""),_T(""),SW_SHOW);
+    HINSTANCE i = ShellExecute(this->m_hWnd,LoadText(IDS_SHELLEXECOPEN, _T("open")),WEBSITE,_T(""),_T(""),SW_SHOW);
 }
 
 void CTeamTalkDlg::OnHelpManual()
 {
-    HINSTANCE i = ShellExecute(this->m_hWnd,_T("open"),MANUALFILE,_T(""),NULL,SW_SHOW);
+    HINSTANCE i = ShellExecute(this->m_hWnd,LoadText(IDS_SHELLEXECOPEN, _T("open")),MANUALFILE,_T(""),NULL,SW_SHOW);
 }
 
 void CTeamTalkDlg::OnTimer(UINT_PTR nIDEvent)
@@ -4523,10 +4504,10 @@ void CTeamTalkDlg::OnTimer(UINT_PTR nIDEvent)
                     }
 
                     if(stats.nUdpPingTimeMs != -1)
-                        m_szStatusBar.Format(_T("RX: %.2fKB TX: %.2fKB PING: %u %s"), 
+                        m_szStatusBar.Format(LoadText(IDS_RXTXPING, _T("RX: %.2fKB TX: %.2fKB PING: %u %s")), 
                         rx, tx, stats.nUdpPingTimeMs, szHotKey);
                     else
-                        m_szStatusBar.Format(_T("RX: %.2fKB TX: %.2fKB %s"), 
+                        m_szStatusBar.Format(LoadText(IDS_RXTX, _T("RX: %.2fKB TX: %.2fKB %s")), 
                         rx, tx, szHotKey);
                 }
             }
@@ -4541,7 +4522,7 @@ void CTeamTalkDlg::OnTimer(UINT_PTR nIDEvent)
                 {
                     if((user.nStatusMode & STATUSMODE_MASK) != STATUSMODE_AWAY)
                     {
-                        TT_DoChangeStatus(ttInst, STATUSMODE_AWAY, _T("Away"));
+                        TT_DoChangeStatus(ttInst, STATUSMODE_AWAY, LoadText(IDS_AWAY, _T("Away")));
                         if(m_xmlSettings.GetDisableVadOnIdle() && m_xmlSettings.GetVoiceActivated())
                             EnableVoiceActivation(FALSE);
                         m_bIdledOut = TRUE;
@@ -4569,8 +4550,7 @@ void CTeamTalkDlg::OnTimer(UINT_PTR nIDEvent)
             Disconnect();
 
             CString szErr;
-            szErr.Format(_T("Failed to connect to %s port %d sound port %d.\r\n")
-                _T("Check that your host settings are correct."), 
+            szErr.Format(LoadText(IDS_FAILEDTOCONNECTLP, _T("Failed to connect to %s port %d sound port %d.\r\nCheck that your host settings are correct.")), 
                 STR_UTF8(m_host.szAddress.c_str()), m_host.nTcpPort, 
                 m_host.nUdpPort);
             AfxMessageBox(szErr, MB_OK | MB_ICONSTOP);
@@ -4645,7 +4625,7 @@ void CTeamTalkDlg::OnTimer(UINT_PTR nIDEvent)
                 if(!updname.IsEmpty())
                 {
                     CString str;
-                    str.Format(_T("New update available: %s"), updname);
+                    str.Format(LoadText(IDS_NEWUPDATEAVAILABLE, _T("New update available: %s")), updname);
                     AddStatusText(str);
                 }
                 CString szRegisterUrl = STR_UTF8(xmlDoc.GetValue(false, "teamtalk/bearware/register-url", "").c_str());
@@ -4770,10 +4750,10 @@ LRESULT CTeamTalkDlg::OnTeamTalkFile(WPARAM wParam, LPARAM lParam)
     {
         m_host = tthost;
 
-        CString szFormat, szText;
-        szFormat = LoadText(IDS_CLIENTSETTINGS);
-        szText.Format(szFormat, m_szTTLink, APPTITLE_SHORT);
-        if(tt.HasClientSetup() && MessageBox(szText, _T("Load ") _T(TTFILE_EXT) _T(" File"), MB_YESNO) == IDYES)
+        CString szText, szCaption;
+        szText.Format(LoadText(IDS_CLIENTSETTINGS), m_szTTLink, APPTITLE_SHORT);
+        szCaption.Format(LoadText(IDS_LOADFILECLIENTSET, _T("Load %s File")), _T(TTFILE_EXT));
+        if(tt.HasClientSetup() && MessageBox(szText, szCaption, MB_YESNO) == IDYES)
         {
             //override nickname if set in .tt file and not set in settings
             if(m_host.szNickname.size())
@@ -4820,7 +4800,7 @@ LRESULT CTeamTalkDlg::OnTeamTalkFile(WPARAM wParam, LPARAM lParam)
 
         if(TT_GetFlags(ttInst) & CLIENT_CONNECTION)
         {
-            if(AfxMessageBox(_T("Disconnect from current host?"), MB_YESNO) == IDNO)
+            if(AfxMessageBox(LoadText(IDS_DISCONNECTCURRENT, _T("Disconnect from current host?")), MB_YESNO) == IDNO)
             {
                 m_szTTLink.Empty();
                 return TRUE;
@@ -4833,8 +4813,7 @@ LRESULT CTeamTalkDlg::OnTeamTalkFile(WPARAM wParam, LPARAM lParam)
                     m_host.nUdpPort, m_host.bEncrypted))
         {
             CString s;
-            s.Format(_T("Failed to connect to %s, port %d, sound port %d\r\n")
-                _T("Please check that that host is valid"), STR_UTF8(m_host.szAddress.c_str()), m_host.nTcpPort, m_host.nUdpPort);
+            s.Format(LoadText(IDS_FAILEDTOCONNECTCHECKHOSTVALID, _T("Failed to connect to %s, port %d, sound port %d\r\nPlease check that that host is valid")), STR_UTF8(m_host.szAddress.c_str()), m_host.nTcpPort, m_host.nUdpPort);
             AfxMessageBox(s);
         }
 
@@ -4844,14 +4823,13 @@ LRESULT CTeamTalkDlg::OnTeamTalkFile(WPARAM wParam, LPARAM lParam)
     else if(!VersionSameOrLater(STR_UTF8(tt.GetFileVersion()), _T("5.0")))
     {
         CString szError;
-        szError.Format(_T("The file \"%s\" is incompatible with %s"), m_szTTLink, APPTITLE);
-        MessageBox(szError, _T("Load File"), MB_ICONERROR);
+        szError.Format(LoadText(IDS_TTFILEINCOMPATIBLE, _T("The file \"%s\" is incompatible with %s")), m_szTTLink, APPTITLE);
+        MessageBox(szError, LoadText(IDS_MSGBOXTTFILELOADERROR, _T("Load File")), MB_ICONERROR);
     }
     else
     {
         CString s;
-        s.Format(_T("The file %s\r\ndoes not contain a valid %s host entry.\r\n")
-            _T("Error message: %s"), m_szTTLink, APPNAME, STR_UTF8(tt.GetError().c_str()));
+        s.Format(LoadText(IDS_TTFILENOTVALIDHOST, _T("The file %s\r\ndoes not contain a valid %s host entry.\r\nError message: %s")), m_szTTLink, APPNAME, STR_UTF8(tt.GetError().c_str()));
         AfxMessageBox(s);
     }
 
@@ -4867,7 +4845,7 @@ LRESULT CTeamTalkDlg::OnTeamTalkLink(WPARAM wParam, LPARAM lParam)
     if(StartsWith(m_szTTLink, TTURL, FALSE))
     {
         if(TT_GetFlags(ttInst) & CLIENT_CONNECTION)
-            if(AfxMessageBox(_T("Disconnect from current host?"), MB_YESNO) == IDNO)
+            if(AfxMessageBox(LoadText(IDS_DISCONNECTCURRENT, _T("Disconnect from current host?")), MB_YESNO) == IDNO)
             {
                 m_szTTLink.Empty();
                 return TRUE;
@@ -4929,7 +4907,7 @@ LRESULT CTeamTalkDlg::OnTeamTalkLink(WPARAM wParam, LPARAM lParam)
     }
     else
     {
-        CString szErr; szErr = _T("Unable to parse link address:\r\n") + m_szTTLink;
+        CString szErr; szErr = LoadText(IDS_UNABLETOPARSELINKADDR, _T("Unable to parse link address:\r\n")) + m_szTTLink;
         AfxMessageBox(szErr);
     }
 
@@ -4969,7 +4947,7 @@ void CTeamTalkDlg::OnMeUsespeechonevents()
 void CTeamTalkDlg::OnHelpRunwizard()
 {
     if(TT_GetFlags(ttInst) & CLIENT_CONNECTION)
-        AfxMessageBox(_T("Please disconnect before running this wizard"));
+        AfxMessageBox(LoadText(IDS_DISCOBEFORERUN, _T("Please disconnect before running this wizard")));
     else
         RunWizard();
 }
@@ -5173,10 +5151,11 @@ void CTeamTalkDlg::FirewallInstall()
     GetModuleFileName(NULL, szPath.GetBufferSetLength(MAX_PATH), MAX_PATH);
     if(!TT_Firewall_AppExceptionExists(szPath))
     {
-        int nAnswer = MessageBox(_T("Add ") APPNAME _T(" to Windows Firewall exceptions?"),
-            APPNAME, MB_YESNO);
+        CString szText;
+        szText.Format(LoadText(IDS_ADDTOFWEXCEP, _T("Add %s to Windows Firewall exceptions?")), APPNAME);
+        int nAnswer = MessageBox(szText, APPNAME, MB_YESNO);
         if(nAnswer == IDYES && !TT_Firewall_AddAppException(APPNAME, szPath))
-            MessageBox(_T("Failed to add application to Windows Firewall exceptions."));
+            MessageBox(LoadText(IDS_FWFAILEDTOADD, _T("Failed to add application to Windows Firewall exceptions.")));
     }
 }
 
@@ -5233,11 +5212,11 @@ void CTeamTalkDlg::UpdateAudioStorage(BOOL bEnable)
             if(!TT_StartRecordingMuxedAudioFile(ttInst, &chan.audiocodec, 
                 szAudioFile, aff))
             {
-                MessageBox(_T("Failed to start recording"), _T("Error"));
+                MessageBox(LoadText(IDS_RECSTARTFAILED, _T("Failed to start recording")), LoadText(IDS_ERR, _T("Error")));
                 return;
             }
             else
-                AddStatusText(_T("Recording to file: ") + szAudioFile);
+                AddStatusText(LoadText(IDS_RECORDINGFILE, _T("Recording to file: ")) + szAudioFile);
         }
     }
 }
@@ -5254,6 +5233,7 @@ void CTeamTalkDlg::UpdateGainLevel(int nGain)
     if(m_wndGainSlider.GetPos() != nGain)
         m_wndGainSlider.SetPos(nGain);
 
+    // m_wndGainSlider windows is disabled in AudioConfig-mode
     SpeexDSP spxdsp =  {};
     if(TT_GetSoundInputPreprocess(ttInst, &spxdsp) && spxdsp.bEnableAGC)
     {
@@ -5296,7 +5276,12 @@ void CTeamTalkDlg::UpdateAudioConfig()
     }
     else
     {
-        TT_SetSoundInputPreprocess(ttInst, &spxdsp);
+        // enable SpeexDSP if no AGC/AEC etc is enabled from sound device.
+        SoundDeviceEffects effects = {};
+        TT_GetSoundDeviceEffects(ttInst, &effects);
+        if (!effects.bEnableAGC && !effects.bEnableDenoise && !effects.bEnableEchoCancellation)
+            TT_SetSoundInputPreprocess(ttInst, &spxdsp);
+
         UpdateGainLevel(m_wndGainSlider.GetPos());
     }
 
@@ -5318,10 +5303,10 @@ void CTeamTalkDlg::UpdateChannelLog()
     CString szPath = STR_UTF8(m_xmlSettings.GetChanTextLogStorage());
     if(szPath.GetLength())
     {
-        if(!OpenLogFile(m_logChan, szPath, chan.szName, szPath))
+        if(!OpenLogFile(m_logChan, szPath, CString(chan.szName) + _T(".clog"), szPath))
         {
             CString szFormat;
-            szFormat.Format(_T("Failed to open file: %s"), szPath);
+            szFormat.Format(LoadText(IDS_FILEOPENFAILED, _T("Failed to open file: %s")), szPath);
             m_tabChat.m_wndRichEdit.AddLogMesage(szFormat);
         }
     }
@@ -5395,12 +5380,12 @@ void CTeamTalkDlg::OnChannelsUploadfile()
         CString szWorkDir;
         GetCurrentDirectory(MAX_PATH, szWorkDir.GetBufferSetLength(MAX_PATH));
 
-        CString filetypes = _T("All files (*.*)|*.*|");
+        CString filetypes = LoadText(IDS_ALLFILESTYPE, _T("All files (*.*)|*.*|"));
         CFileDialog dlg(TRUE, 0,0,OFN_FILEMUSTEXIST| OFN_HIDEREADONLY,filetypes, this);
         if(dlg.DoModal() == IDOK)
         {
             if(!TT_DoSendFile(ttInst, TT_GetMyChannelID(ttInst), dlg.GetPathName()))
-                AfxMessageBox(_T("Failed to send file."));
+                AfxMessageBox(LoadText(IDS_SENDFILEFAILED, _T("Failed to send file.")));
         }
         SetCurrentDirectory(szWorkDir);
     }
@@ -5435,12 +5420,12 @@ void CTeamTalkDlg::OnChannelsDownloadfile()
             CString szWorkDir;
             GetCurrentDirectory(MAX_PATH, szWorkDir.GetBufferSetLength(MAX_PATH));
 
-            TCHAR szFilters[] = _T("All Files (*.*)|*.*||");
+            CString szFilters = LoadText(IDS_ALLFILESTYPE, _T("All Files (*.*)|*.*||"));
             CFileDialog fileDlg(FALSE, NULL, remotefiles[j].szFileName, OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY, szFilters, this);
             if(fileDlg.DoModal() == IDOK)
             {
                 if(!TT_DoRecvFile(ttInst, TT_GetMyChannelID(ttInst), fileids[i], fileDlg.GetPathName()))
-                    AfxMessageBox(_T("Failed to download file."));
+                    AfxMessageBox(LoadText(IDS_DLFILEFAILED, _T("Failed to download file.")));
             }
             SetCurrentDirectory(szWorkDir);
         }
@@ -5469,7 +5454,7 @@ LRESULT CTeamTalkDlg::OnFilesDropped(WPARAM wParam, LPARAM lParam)
         if(nChannelID>0)
         {
             if(!TT_DoSendFile(ttInst, TT_GetMyChannelID(ttInst), szFileName))
-                AfxMessageBox(_T("Failed to send file."));
+                AfxMessageBox(LoadText(IDS_SENDFILEFAILED, _T("Failed to send file.")));
         }
     }
     return TRUE;
@@ -6317,7 +6302,7 @@ void CTeamTalkDlg::OnServerServerstatistics()
     if(nCmdID>0)
         m_commands[nCmdID] = CMD_COMPLETE_SERVERSTATS;
     else
-        MessageBox(_T("Failed to query server statistics"), _T("Server Statistics"), MB_OK);
+        MessageBox(LoadText(IDS_QUERYSERVSTATFAILED, _T("Failed to query server statistics")), LoadText(IDS_SERVSTAT, _T("Server Statistics")), MB_OK);
 }
 
 void CTeamTalkDlg::OnNMCustomdrawSliderGainlevel(NMHDR *pNMHDR, LRESULT *pResult)
@@ -6335,7 +6320,7 @@ void CTeamTalkDlg::OnUpdateServerBroadcastmessage(CCmdUI *pCmdUI)
 
 void CTeamTalkDlg::OnServerBroadcastmessage()
 {
-    CInputDlg dlg(_T("Broadcast Message"), _T("Message to broadcast"), 0, this);
+    CInputDlg dlg(LoadText(IDS_BROADMSG, _T("Broadcast Message")), LoadText(IDS_MSGTOBROAD, _T("Message to broadcast")), 0, this);
     if(dlg.DoModal() == IDOK)
     {
         TextMessage msg = {};
@@ -6364,7 +6349,7 @@ void CTeamTalkDlg::OnMeEnablevideotransmission()
         return;
     }
 
-    TCHAR szCaption[] = _T("Enable Video Transmission");
+    CString szCaption = LoadText(IDS_ENABLEVT, _T("Enable Video Transmission"));
     CString szDeviceID = STR_UTF8(m_xmlSettings.GetVideoCaptureDevice());
     vector<VideoCaptureDevice> viddevs;
     int count = 0;
@@ -6394,8 +6379,7 @@ void CTeamTalkDlg::OnMeEnablevideotransmission()
         }
         else
         {
-            MessageBox(_T("No video devices detected.\r\n")
-                       _T("Press Client -> Preferences -> Video Capture to reconfigure."), 
+            MessageBox(LoadText(IDS_NOVIDEODEVICE, _T("No video devices detected.\r\nPress Client -> Preferences -> Video Capture to reconfigure.")), 
                        szCaption, MB_OK);
             return;
         }
@@ -6425,14 +6409,14 @@ void CTeamTalkDlg::OnMeEnablevideotransmission()
 
     if(!TT_InitVideoCaptureDevice(ttInst, szDeviceID, &capformat))
     {
-        MessageBox(_T("Failed to start video capture device."),
+        MessageBox(LoadText(IDS_STARTVIDEODEVICEFAILED, _T("Failed to start video capture device.")),
                    szCaption, MB_OK);
         return;
     }
 
     if(!TT_StartVideoCaptureTransmission(ttInst, &codec))
     {
-        MessageBox(_T("Failed to initiate video codec."),
+        MessageBox(LoadText(IDS_INITIALIZEVIDEOCODECFAILED, _T("Failed to initiate video codec.")),
                    szCaption, MB_OK);
         TT_CloseVideoCaptureDevice(ttInst);
         return;
@@ -6563,7 +6547,7 @@ void CTeamTalkDlg::OnUserinfoSpeakuserinfo()
             return;
 
         CString szUser, szVoice, szMute, szMediaFile, szMuteMediaFile,
-            szVideoCapture, szDesktop, szChanOp = _T("Channel Operator");
+            szVideoCapture, szDesktop, szChanOp = LoadText(IDS_CHANOP, _T("Channel Operator"));
 
         szUser.LoadString(IDS_USER);
         TRANSLATE_ITEM(IDD_TAB_CHANNELOP, szChanOp);
@@ -6735,7 +6719,7 @@ void CTeamTalkDlg::OnHelpResetpreferencestodefault()
     TRANSLATE_ITEM(IDS_RESETPREFERENCES, szMsg);
 
     szTitle = ExtractMenuText(ID_HELP_RESETPREFERENCESTODEFAULT,
-                              _T("Reset Preferences"));
+                              LoadText(IDS_RESETPREF, _T("Reset Preferences")));
     if(MessageBox(szMsg, szTitle, MB_YESNO) == IDYES)
     {
         m_bResetSettings = TRUE;
@@ -6785,7 +6769,7 @@ void CTeamTalkDlg::OnClientNewclientinstance()
     const CString szNewProfile = LoadText(IDS_NEWPROFILE, _T("New Profile")),
         szDelProfile = LoadText(IDS_DELETEPROFILE, _T("Delete Profile")),
         szTitle = ExtractMenuText(ID_CLIENT_NEWCLIENTINSTANCE,
-                                  _T("New Client Instance")),
+                                  LoadText(IDS_NEWCLIENTINSTAN, _T("New Client Instance"))),
         szSelect = LoadText(IDS_SELECTPROFILE, _T("Select profile")),
         szProfileName = LoadText(IDS_PROFILENAME, _T("Profile name"));
 
@@ -6855,5 +6839,5 @@ void CTeamTalkDlg::OnClientNewclientinstance()
     ZERO_STRUCT(processInfo);
 
     if (!CreateProcess(szBuff, szCmdLine.GetBuffer(), NULL, NULL, FALSE, CREATE_DEFAULT_ERROR_MODE, NULL, NULL, &info, &processInfo))
-        MessageBox(szTitle, _T("Failed to execute: ") + szCmdLine);
+        MessageBox(szTitle, LoadText(IDS_EXECUTEFAILED, _T("Failed to execute: ")) + szCmdLine);
 }
