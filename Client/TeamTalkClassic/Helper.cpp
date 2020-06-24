@@ -259,14 +259,12 @@ void AddString(CComboBox& wnd, LPCTSTR szText, DWORD_PTR nItemData)
     wnd.SetItemData(nIndex, nItemData);
 }
 
-int GetItemData(CComboBox& wnd, BOOL* pError)
+DWORD_PTR GetItemData(CComboBox& wnd, DWORD_PTR dwDefault)
 {
     int nCur = wnd.GetCurSel();
-    if(pError)
-        *pError = nCur>=0;
-    if(nCur>=0)
-        return int(wnd.GetItemData(nCur));
-    return 0;
+    if(nCur != CB_ERR)
+        return wnd.GetItemData(nCur);
+    return dwDefault;
 }
 
 void SetCurSelItemData(CComboBox& wnd, DWORD_PTR nItemData)
@@ -280,6 +278,14 @@ void SetCurSelItemData(CComboBox& wnd, DWORD_PTR nItemData)
             return;
         }
     }
+}
+
+DWORD_PTR GetItemData(CListBox& wnd, DWORD_PTR dwDefault)
+{
+    int nCur = wnd.GetCurSel();
+    if(nCur != LB_ERR)
+        return wnd.GetItemData(nCur);
+    return dwDefault;
 }
 
 HTREEITEM GetItemDataItem(CTreeCtrl& wnd, DWORD_PTR dwItemData)
@@ -503,12 +509,26 @@ BOOL InitSoundSystem(teamtalk::ClientXML& xmlSettings)
     TT_CloseSoundOutputDevice(ttInst);
     TT_CloseSoundDuplexDevices(ttInst);
 
-    int nInputDevice = GetSoundInputDevice(xmlSettings);
+    SoundDevice indev = {};
+    int nInputDevice = GetSoundInputDevice(xmlSettings, &indev);
     int nOutputDevice = GetSoundOutputDevice(xmlSettings);
 
+    SoundDeviceEffects effects = {};
+    effects.bEnableAGC = (indev.uSoundDeviceFeatures & SOUNDDEVICEFEATURE_AGC) && xmlSettings.GetAGC(DEFAULT_AGC_ENABLE);
+    effects.bEnableDenoise = (indev.uSoundDeviceFeatures & SOUNDDEVICEFEATURE_DENOISE) && xmlSettings.GetDenoise(DEFAULT_DENOISE_ENABLE);
+    effects.bEnableEchoCancellation = (indev.uSoundDeviceFeatures & SOUNDDEVICEFEATURE_AEC) && xmlSettings.GetEchoCancel(DEFAULT_ECHO_ENABLE);
+
+    TT_SetSoundDeviceEffects(ttInst, &effects);
     BOOL bSuccess = FALSE;
-    if (xmlSettings.GetDuplexMode(DEFAULT_SOUND_DUPLEXMODE))
+
+    if ((effects.bEnableAGC || effects.bEnableEchoCancellation || effects.bEnableDenoise) &&
+        (indev.nSoundSystem == SOUNDSYSTEM_WASAPI))
     {
+        bSuccess = TT_InitSoundDuplexDevices(ttInst, nInputDevice, nOutputDevice);
+    }
+    else if (xmlSettings.GetEchoCancel(DEFAULT_ECHO_ENABLE))
+    {
+        // Echo cancel requires duplex mode when using SpeexDSP
         bSuccess = TT_InitSoundDuplexDevices(ttInst, nInputDevice, nOutputDevice);
     }
     else
