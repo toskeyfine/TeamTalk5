@@ -16,7 +16,7 @@
  * client's version can be seen in the @a szVersion member of the
  * #User-struct. */
 
-#define TEAMTALK_VERSION "5.5.0.4993"
+#define TEAMTALK_VERSION "5.6.0.5000"
 
 
 #if defined(WIN32)
@@ -278,8 +278,46 @@ extern "C" {
          * Duplex mode is not supported by AudioUnit iOS sound API.
          * @see TT_SOUNDDEVICE_ID_REMOTEIO
          * @see TT_SOUNDDEVICE_ID_VOICEPREPROCESSINGIO */
-        SOUNDSYSTEM_AUDIOUNIT = 8
+        SOUNDSYSTEM_AUDIOUNIT = 8,
+        /** @brief Same as #SOUNDSYSTEM_AUDIOUNIT. */
+        SOUNDSYSTEM_AUDIOUNIT_IOS = SOUNDSYSTEM_AUDIOUNIT,
     } SoundSystem;
+
+    /**
+     * @brief Features available on a sound device.
+     * Checkout @c uSoundDeviceFeatures on #SoundDevice.
+     * */
+    typedef enum SoundDeviceFeature
+    {
+        SOUNDDEVICEFEATURE_NONE         = 0x0000,
+        /** @brief The #SoundDevice can enable Acoustic 
+         * Echo Canceler (AEC).
+         * Enable AEC use property @c bEnableAEC on
+         * #SoundDeviceEffects.
+         * @see TT_SetSoundDeviceEffects() */
+        SOUNDDEVICEFEATURE_AEC          = 0x0001,
+        /** @brief The #SoundDevice can enable Automatic
+         * Gain Control (AGC).
+         * Enable AGC use property @c bEnableAGC on
+         * #SoundDeviceEffects.
+         * @see TT_SetSoundDeviceEffects() */
+        SOUNDDEVICEFEATURE_AGC          = 0x0002,
+        /** @brief The #SoundDevice can enable denoising.
+         * Enable denoising use property @c bEnableDenoising on 
+         * #SoundDeviceEffects.
+         * @see TT_SetSoundDeviceEffects() */
+        SOUNDDEVICEFEATURE_DENOISE      = 0x0004,
+        /** @brief The #SoundDevice can position user in 3D.
+         * @see TT_SetUserPosition()  */
+        SOUNDDEVICEFEATURE_3DPOSITION   = 0x0008,
+        /** @brief The #SoundDevice can run in duplex mode.
+         * @see TT_InitSoundDuplexDevices() */
+        SOUNDDEVICEFEATURE_DUPLEXMODE   = 0x0010,
+    } SoundDeviceFeature;
+
+    /** @brief A bitmask of available #SoundDeviceFeature. 
+     * Checkout @c uSoundDeviceFeatures on #SoundDevice. */
+    typedef UINT32 SoundDeviceFeatures;
 
     /** 
      * @brief A struct containing the properties of a sound device
@@ -310,23 +348,25 @@ extern "C" {
          * DirectSound, WASAPI and WinMM it would be the GUID of the sound
          * device. Note that it may not always be available. */
         TTCHAR szDeviceID[TT_STRLEN];
-#if defined(WIN32)
         /** 
-         * @brief The ID of the device used in Win32's
-         * waveInGetDevCaps and waveOutGetDevCaps.
+         * @brief A Windows specific ID to the sound device.
          *
+         * For DirectSound and WinMM this is the ID of the device used 
+         * in Win32's waveInGetDevCaps and waveOutGetDevCaps.
          * Value will be -1 if no ID could be found This ID can also
          * be used to find the corresponding mixer on Windows passing
          * it as @a nWaveDeviceID.  Note that this ID applies both to
          * DirectSound and WinMM.
          *
+         * For WASAPI this ID is the index of 
+         * IMMDeviceEnumerator::EnumAudioEndpoints()
+         *
          * @see TT_Mixer_GetWaveInName
          * @see TT_Mixer_GetWaveOutName
          * @see TT_Mixer_GetMixerCount */
         INT32 nWaveDeviceID;
-#endif
         /** @brief Whether the sound device supports 3D-sound
-         * effects. */
+         * effects. @deprecated Use #SOUNDDEVICEFEATURE_3DPOSITION. */
         TTBOOL bSupports3D;
         /** @brief The maximum number of input channels. */
         INT32 nMaxInputChannels;
@@ -342,7 +382,58 @@ extern "C" {
         INT32 outputSampleRates[TT_SAMPLERATES_MAX];
         /** @brief The default sample rate for the sound device. */
         INT32 nDefaultSampleRate;
+        /** @brief Additional features available for this sound
+         * device. The sound device features can be used to enable
+         * additional features on the sound device.
+         * @see SoundDeviceFeature
+         * @see TT_SetSoundDeviceEffects() */
+        SoundDeviceFeatures uSoundDeviceFeatures;
     } SoundDevice;
+
+    /**
+     * @brief Set up audio effects supported by the sound device.
+     *
+     * The effects supported by a sound device are listed in the @c
+     * uSoundDeviceFeatures property of #SoundDevice.
+     *
+     * To apply audio effects on a sound device call
+     * TT_SetSoundDeviceEffects() */
+    typedef struct SoundDeviceEffects
+    {
+        /**
+         * @brief Enable Automatic Gain Control.
+         *
+         * Supported platforms:
+         * - Windows
+         *   - Automatic gain control is per #TTInstance.
+         * - Android
+         *   - Automatic gain control will be applied on all active
+         *     #TTInstance.
+         * @see SOUNDDEVICEFEATURE_AGC */
+        TTBOOL bEnableAGC;
+        /**
+         * @brief Enable noise suppression.
+         *
+         * Supported platforms:
+         * - Windows
+         *   - Noise suppression is per #TTInstance.
+         * - Android
+         *   - Noise suppression will be applied on all active
+         *     #TTInstance.
+         * @see SOUNDDEVICEFEATURE_DENOISE */
+        TTBOOL bEnableDenoise;
+        /**
+         * @brief Enable echo cancellation.
+         *
+         * Supported platforms:
+         * - Windows
+         *   - Echo cancellation is per #TTInstance.
+         * - Android
+         *   - Echo cancellation will be applied on all active
+         *     #TTInstance.
+         * @see SOUNDDEVICEFEATURE_AEC */
+        TTBOOL bEnableEchoCancellation;
+    } SoundDeviceEffects;
 
 /**
  * @brief Flag/bit in @c nDeviceID telling if the #SoundDevice is a
@@ -371,14 +462,22 @@ extern "C" {
 #define TT_SOUNDDEVICE_ID_REMOTEIO              0
     
 /** @brief Sound device ID for iOS AudioUnit subtype Voice-Processing
- * I/O Unit. @see SOUNDSYSTEM_AUDIOUNIT */
-#define TT_SOUNDDEVICE_ID_VOICEPREPROCESSINGIO  1
+ * I/O Unit.
+ *
+ * This sound device ID include the flag
+ * #TT_SOUNDDEVICE_ID_SHARED_FLAG since multiple streams cannot be
+ * recorded/played on the device. @see SOUNDSYSTEM_AUDIOUNIT */
+#define TT_SOUNDDEVICE_ID_VOICEPREPROCESSINGIO  (1 | TT_SOUNDDEVICE_ID_SHARED_FLAG)
     
 /** @brief Sound device ID for Android OpenSL ES default audio
- * device. Note that this sound device may also exist in the form
- * where the @c nDeviceID as been or'ed with
- * #TT_SOUNDDEVICE_ID_SHARED_FLAG. @see SOUNDSYSTEM_OPENSLES_ANDROID */
+ * device. @see SOUNDSYSTEM_OPENSLES_ANDROID */
 #define TT_SOUNDDEVICE_ID_OPENSLES_DEFAULT      0
+
+/** @brief Sound device ID for Android OpenSL ES voice communication
+ * mode. This device uses the OpenSL ES' AndroidConfiguration @c
+ * SL_ANDROID_RECORDING_PRESET_VOICE_COMMUNICATION @see
+ * SOUNDSYSTEM_OPENSLES_ANDROID */
+#define TT_SOUNDDEVICE_ID_OPENSLES_VOICECOM     1
     
 /** @brief Sound device ID for virtual TeamTalk sound device.
  *
@@ -515,13 +614,22 @@ extern "C" {
 #define TT_LOCAL_USERID 0
 
 /**
+ * @brief User ID passed to TT_EnableAudioBlockEvent() in order to
+ * receive #AudioBlock when voice transmission is activated.
+ *
+ * Either through TT_EnableVoiceActivation() or
+ * TT_EnableVoiceTransmission().
+ */
+#define TT_LOCAL_TX_USERID 0x1002
+
+/**
  * @brief User ID used to identify muxed audio that has been mixed
  * into a single stream.
  *
  * This user ID is passed to TT_EnableAudioBlockEvent() in order to
  * receive #AudioBlock of audio that is played in the #TTInstance's
  * channel. */
-#define TT_MUXED_USERID 0x1001 /* TT_USERID_MAX + 1 */
+#define TT_MUXED_USERID 0x1001 /* TT_USERID_MAX + 2 */
 
     /** @} */
 
@@ -567,7 +675,7 @@ extern "C" {
          * @see TT_SetUserMediaStorageDir()
          * @see TT_StartRecordingMuxedAudioFile() */
         AFF_CHANNELCODEC_FORMAT  = 1,
-        /** @brief Store in 16-bit wave format. */
+        /** @brief Store in PCM 16-bit wave format. */
         AFF_WAVE_FORMAT          = 2,
         /** @brief Store in MP3-format. */
         AFF_MP3_16KBIT_FORMAT    = 3,
@@ -863,8 +971,8 @@ extern "C" {
         /** @brief Playback should be done in stereo. Doing so will
          * disable 3d-positioning.
          *
-         * @see TT_SetUserPosition
-         * @see TT_SetUserStereo */
+         * @see TT_SetUserPosition()
+         * @see TT_SetUserStereo() */
         TTBOOL bStereoPlayback;
     } SpeexCodec;
 
@@ -907,8 +1015,8 @@ extern "C" {
         /** @brief Playback should be done in stereo. Doing so will
          * disable 3d-positioning.
          *
-         * @see TT_SetUserPosition
-         * @see TT_SetUserStereo */
+         * @see TT_SetUserPosition()
+         * @see TT_SetUserStereo() */
         TTBOOL bStereoPlayback; 
     } SpeexVBRCodec;
 
@@ -1085,7 +1193,6 @@ extern "C" {
         /** @brief Whether to mute right speaker in stereo playback. */
         TTBOOL bMuteRightSpeaker;
     } TTAudioPreprocessor;
-
 
     /** @brief The types of supported audio preprocessors.
      *
@@ -1929,12 +2036,12 @@ extern "C" {
         INT32 nStoppedDelayMediaFile;
         /** @brief User's position when using 3D-sound (DirectSound option).
          * Index 0 is x-axis, index 1 is y-axis and index 2 is Z-axis.
-         * @see TT_SetUserPosition
+         * @see TT_SetUserPosition()
          * @see SoundDevice */
         float soundPositionVoice[3];
         /** @brief User's position when using 3D-sound (DirectSound option).
          * Index 0 is x-axis, index 1 is y-axis and index 2 is Z-axis.
-         * @see TT_SetUserPosition
+         * @see TT_SetUserPosition()
          * @see SoundDevice */
         float soundPositionMediaFile[3];
         /** @brief Check what speaker a user is outputting to. 
@@ -2626,14 +2733,16 @@ extern "C" {
          * Ensure the settings specified in #AudioCodec are valid.
          * @see TT_DoJoinChannel() */
         INTERR_AUDIOCODEC_INIT_FAILED = 10002,
-        /** @brief #SpeexDSP failed to initialize.
-         *
-         * This error occurs when joining a channel.
-         *
-         * The settings specified by TT_SetSoundInputPreprocess() are
-         * invalid for the specified audio codec. @see
-         * TT_DoJoinChannel() */
+        /** @brief Same as #INTERR_AUDIOPREPROCESSOR_INIT_FAILED. */
         INTERR_SPEEXDSP_INIT_FAILED = 10003,
+        /** @brief #AudioPreprocessor failed to initialize.
+         *
+         * This error occurs when joining a channel and the
+         * #AudioPreprocessor is initialized.
+         *
+         * The settings specified by TT_SetSoundInputPreprocessEx()
+         * are invalid or unsupported. @see TT_DoJoinChannel() */
+        INTERR_AUDIOPREPROCESSOR_INIT_FAILED = 10003,
         /** @brief #TTMessage event queue overflowed.
          *
          * The message queue for events has overflowed because
@@ -2642,6 +2751,13 @@ extern "C" {
          * the queue overflows and resumes event handling again when
          * the message queue has been drained. */
         INTERR_TTMESSAGE_QUEUE_OVERFLOW = 10004,
+        /** @brief #SoundDeviceEffects failed to initialize.
+         * 
+         * This error occurs when joining a channel and an effect in
+         * #SoundDeviceEffects failed to initialize.
+         * 
+         * The effects are applied using TT_SetSoundDeviceEffects() */
+        INTERR_SNDEFFECT_FAILURE = 10005,
     } ClientError;
 
     /** @brief Struct containing an error message. */
@@ -3367,7 +3483,7 @@ extern "C" {
         /** @brief If set the client instance will auto position users
         * in a 180 degree circle using 3D-sound. This option is only
         * available with #SOUNDSYSTEM_DSOUND.
-        * @see TT_SetUserPosition 
+        * @see TT_SetUserPosition()
         * @see TT_Enable3DSoundPositioning */
         CLIENT_SNDOUTPUT_AUTO3DPOSITION = 0x00000040,
         /** @brief If set the client instance's video device has been
@@ -3630,6 +3746,18 @@ extern "C" {
      * @brief Perform a record and playback test of specified sound
      * devices along with an audio configuration.
      *
+     * @deprecated Use TT_StartSoundLoopbackTestEx() */
+    TEAMTALKDLL_API TTSoundLoop* TT_StartSoundLoopbackTest(IN INT32 nInputDeviceID,
+                                                           IN INT32 nOutputDeviceID,
+                                                           IN INT32 nSampleRate,
+                                                           IN INT32 nChannels,
+                                                           IN TTBOOL bDuplexMode,
+                                                           IN const SpeexDSP* lpSpeexDSP);
+
+    /**
+     * @brief Perform a record and playback test of specified sound
+     * devices along with an audio configuration.
+     *
      * Call TT_CloseSoundLoopbackTest() to stop the loopback
      * test.
      *
@@ -3647,21 +3775,26 @@ extern "C" {
      * the specified sample rate since this loop back test uses duplex
      * mode ( @see TT_InitSoundDuplexDevices() ). Check out @c
      * supportedSampleRates of #SoundDevice to see which sample rates
-     * are supported.
-     * @param lpSpeexDSP The preprocessing settings to use, i.e. AGC 
+     * are supported. The #SoundDevice must have the feature
+     * #SOUNDDEVICEFEATURE_DUPLEXMODE.
+     * @param lpAudioPreprocessor The preprocessing settings to use, i.e. AGC
      * and denoising properties. Pass NULL to ignore AGC, denoise and AEC.
+     * @param lpSoundDeviceEffects The sound device effects which should be
+     * applied before the loopback test is started.
      * @return Returns NULL in case of error, otherwise sound loop instance
      * which can be closed by TT_CloseSoundLoopbackTest();
      * @see TT_InitSoundInputDevice()
      * @see TT_InitSoundOutputDevice()
      * @see TT_InitSoundDuplexDevices()
      * @see TT_CloseSoundLoopbackTest() */
-    TEAMTALKDLL_API TTSoundLoop* TT_StartSoundLoopbackTest(IN INT32 nInputDeviceID, 
-                                                           IN INT32 nOutputDeviceID,
-                                                           IN INT32 nSampleRate,
-                                                           IN INT32 nChannels,
-                                                           IN TTBOOL bDuplexMode,
-                                                           IN const SpeexDSP* lpSpeexDSP);
+    TEAMTALKDLL_API TTSoundLoop* TT_StartSoundLoopbackTestEx(IN INT32 nInputDeviceID,
+                                                             IN INT32 nOutputDeviceID,
+                                                             IN INT32 nSampleRate,
+                                                             IN INT32 nChannels,
+                                                             IN TTBOOL bDuplexMode,
+                                                             IN const AudioPreprocessor* lpAudioPreprocessor,
+                                                             IN const SoundDeviceEffects* lpSoundDeviceEffects);
+    
     
     /**
      * @brief Stop recorder and playback test.
@@ -3708,6 +3841,39 @@ extern "C" {
     TEAMTALKDLL_API TTBOOL TT_InitSoundInputDevice(IN TTInstance* lpTTInstance, 
                                                    IN INT32 nInputDeviceID);
 
+    /**
+     * @brief Setup sample rate, channels and frame size of shared
+     * sound input device.
+     *
+     * By default a shared sound device (checkout
+     * #TT_SOUNDDEVICE_ID_SHARED_FLAG) initialized by
+     * TT_InitSoundInputDevice will use the sound device's @c
+     * nDefaultSampleRate, @c nMaxInputChannels of #SoundDevice and
+     * a frame size (callback buffer) of nDefaultSampleRate * 0.04.
+     *
+     * TT_InitSoundInputSharedDevice() can be used to override these
+     * default settings.
+     *
+     * Note that TT_InitSoundInputSharedDevice() must be called prior
+     * to TT_InitSoundInputDevice(). Also ensure no shared sound input
+     * device is currently active.
+     *
+     * @param nSampleRate The sample rate to use on the shared
+     * device. Must exist in #SoundDevice's @c inputSampleRates. 
+     * Pass zero to reset to default behaviour.
+     * @param nChannels The number of channels to use (mono,
+     * stereo). Must be less or equals to #SoundDevice's @c
+     * nMaxInputChannels.  Pass zero to reset to default behaviour.
+     * @param nFrameSize The number of samples in each callback from
+     * the shared sound device. A 40 msec callback on a 48 KHz input
+     * is calculated like this: nFrameSize = 48000 * 0.04.  Pass zero
+     * to reset to default behaviour.
+     *
+     * @see TT_InitSoundInputDevice()
+     * @see TT_InitSoundOutputSharedDevice() */
+    TEAMTALKDLL_API TTBOOL TT_InitSoundInputSharedDevice(IN INT32 nSampleRate,
+                                                         IN INT32 nChannels,
+                                                         IN INT32 nFrameSize);
     /** 
      * @brief Initialize the sound output device (for audio playback).
      *
@@ -3742,6 +3908,39 @@ extern "C" {
                                                     IN INT32 nOutputDeviceID);
 
     /**
+     * @brief Setup sample rate, channels and frame size of shared
+     * sound output device.
+     *
+     * By default a shared sound device (checkout
+     * #TT_SOUNDDEVICE_ID_SHARED_FLAG) initialized by
+     * TT_InitSoundOutputDevice will use the sound device's @c
+     * nDefaultSampleRate, @c nMaxOutputChannels of #SoundDevice and
+     * a frame size (callback buffer) of nDefaultSampleRate * 0.04.
+     *
+     * TT_InitSoundOutputSharedDevice() can be used to override these
+     * default settings.
+     *
+     * Note that TT_InitSoundOutputSharedDevice() must be called prior
+     * to TT_InitSoundOutputDevice(). Also ensure no shared sound output
+     * device is currently active.
+     *
+     * @param nSampleRate The sample rate to use on the shared
+     * device. Must exist in #SoundDevice's @c outputSampleRates. 
+     * Pass zero to reset to default behaviour.
+     * @param nChannels The number of channels to use (mono,
+     * stereo). Must be less or equals to #SoundDevice's @c
+     * nMaxOutputChannels.  Pass zero to reset to default behaviour.
+     * @param nFrameSize The number of samples in each callback from
+     * the shared sound device. A 40 msec callback on a 48KHz output
+     * is calculated like this: nFrameSize = 48000 * 0.04.  Pass zero
+     * to reset to default behaviour.
+     *
+     * @see TT_InitSoundInputDevice()
+     * @see TT_InitSoundOutputSharedDevice() */
+    TEAMTALKDLL_API TTBOOL TT_InitSoundOutputSharedDevice(IN INT32 nSampleRate,
+                                                          IN INT32 nChannels,
+                                                          IN INT32 nFrameSize);
+    /**
      * @brief Enable duplex mode where multiple audio streams are
      * mixed into a single stream using software.
      *
@@ -3750,6 +3949,9 @@ extern "C" {
      * and #SOUNDSYSTEM_ALSA typically only support a single sample
      * rate.  Check @c supportedSampleRates in #SoundDevice to see
      * which sample rates are supported.
+     *
+     * To use duplex mode the feature #SOUNDDEVICEFEATURE_DUPLEXMODE
+     * must be available on the #SoundDevice.
      *
      * Sound duplex mode is required for echo cancellation since sound
      * input and output device must be synchronized. Also sound cards
@@ -3837,6 +4039,44 @@ extern "C" {
     TEAMTALKDLL_API TTBOOL TT_CloseSoundDuplexDevices(IN TTInstance* lpTTInstance);
 
     /**
+     * @brief Set up audio effects on a sound device.
+     *
+     * Some devices, like Android, enable the user to toggle certain
+     * audio effects on their device to improve audio quality. The
+     * #SoundDeviceEffects-struct can be used to toggle these audio
+     * effects on the device.
+     *
+     * Currently only #SOUNDSYSTEM_OPENSLES_ANDROID supports setting
+     * #SoundDeviceEffects. Modifying #SoundDeviceEffects on Android
+     * will apply to all active #TTInstance, i.e. #SoundDeviceEffects
+     * are applied globally.
+     *
+     * This setting should not be confused with
+     * TT_SetSoundInputPreprocessEx() which runs entirely in software
+     * and is specific to the #TTInstance.
+     *
+     * Investigate #SoundDeviceFeature to see what audio effects are
+     * supported by the available #SoundDevice.
+     *
+     * Note that the sound effects may not be immediately applied
+     * since an sound device is not active until the #TTInstance joins
+     * a channel where the sound device knowns the sample rate and
+     * number of channels
+     * (mono/stereo). #INTERR_SNDEFFECT_INIT_FAILED will be
+     * posted if the #SoundDeviceEffects was unable to initialize.
+     *
+     * @see TT_GetSoundDeviceEffects() */
+    TEAMTALKDLL_API TTBOOL TT_SetSoundDeviceEffects(IN TTInstance* lpTTInstance,
+                                                    IN const SoundDeviceEffects* lpSoundDeviceEffect);
+
+    /**
+     * @brief Get the audio effects that are currently enabled.
+     *
+     * @see TT_SoundDeviceEffects() */
+    TEAMTALKDLL_API TTBOOL TT_GetSoundDeviceEffects(IN TTInstance* lpTTInstance,
+                                                    OUT SoundDeviceEffects* lpSoundDeviceEffect);
+    
+    /**
      * @brief Get the volume level of the current recorded audio.
      *
      * The current level is updated at an interval specified in a channel's
@@ -3859,8 +4099,10 @@ extern "C" {
      * original volume and 8000 is 8 times the original volume.
      *
      * Note that using TT_SetSoundInputPreprocess() will override
-     * settings an input gain level. This is because automatic gain
+     * settings on input gain level. This is because automatic gain
      * control will adjust the volume level.
+     *
+     * @deprecated Use TT_SetSoundInputPreprocessEx() and #TEAMTALK_AUDIOPREPROCESSOR.
      *
      * @param lpTTInstance Pointer to client instance created by 
      * #TT_InitTeamTalk.
@@ -3871,6 +4113,8 @@ extern "C" {
 
     /**
      * @brief Get voice gain level of outgoing audio
+     *
+     * @deprecated Use TT_GetSoundInputPreprocessEx()
      *
      * @param lpTTInstance Pointer to client instance created by 
      * #TT_InitTeamTalk.
@@ -3889,6 +4133,8 @@ extern "C" {
      * In order for echo cancellation to work best it's important to
      * also enable AGC in the #SpeexDSP.
      *
+     * @deprecated Use TT_SetSoundInputPreprocessEx()
+     *
      * @param lpTTInstance Pointer to client instance created by 
      * #TT_InitTeamTalk.
      * @param lpSpeexDSP The sound preprocessor settings to use. 
@@ -3896,20 +4142,49 @@ extern "C" {
      * settings for all users.
      * @return TRUE on success, FALSE on failure. */
     TEAMTALKDLL_API TTBOOL TT_SetSoundInputPreprocess(IN TTInstance* lpTTInstance,
-                                                      const IN SpeexDSP* lpSpeexDSP);
+                                                      IN const SpeexDSP* lpSpeexDSP);
 
     /** 
      * @brief Get the sound preprocessor settings which are currently in use
      * for recorded sound input device (voice input).
      *
+     * @deprecated Use TT_GetSoundInputPreprocessEx()
+     *
      * @param lpTTInstance Pointer to client instance created by 
      * #TT_InitTeamTalk.
      * @param lpSpeexDSP A preallocated SpeexDSP which will 
      * receive the settings that is currently in effect.
-     *
      * @return TRUE on success, FALSE on failure. */
     TEAMTALKDLL_API TTBOOL TT_GetSoundInputPreprocess(IN TTInstance* lpTTInstance,
                                                       OUT SpeexDSP* lpSpeexDSP);
+
+    /**
+     * @brief Enable sound preprocessor which should be used for
+     * processing audio recorded by the sound input device (voice
+     * input).
+     *
+     * It is recommended to use the sound device's native echo
+     * cancellor, denoising and automatic gain control instead of
+     * #SpeexDSP. Checkout TT_SetSoundDeviceEffects().
+     *
+     * @param lpTTInstance Pointer to client instance created by 
+     * #TT_InitTeamTalk.
+     * @param lpAudioPreprocessor The sound preprocessor settings to use.
+     * @return TRUE on success, FALSE on failure. */
+    TEAMTALKDLL_API TTBOOL TT_SetSoundInputPreprocessEx(IN TTInstance* lpTTInstance,
+                                                        IN const AudioPreprocessor* lpAudioPreprocessor);
+    
+    /** 
+     * @brief Get the sound preprocessor settings which are currently
+     * in use for recorded sound input device (voice input).
+     *
+     * @param lpTTInstance Pointer to client instance created by 
+     * #TT_InitTeamTalk.
+     * @param lpAudioPreprocessor A preallocated #AudioPreprocessor which will 
+     * receive the settings that is currently in effect.
+     * @return TRUE on success, FALSE on failure. */
+    TEAMTALKDLL_API TTBOOL TT_GetSoundInputPreprocessEx(IN TTInstance* lpTTInstance,
+                                                        OUT AudioPreprocessor* lpAudioPreprocessor);
 
     /**
      * @brief Set master volume. 
@@ -3948,25 +4223,29 @@ extern "C" {
     /** 
      * @brief Enable automatically position users using 3D-sound.
      *
+     * 3D sound position requires #SOUNDDEVICEFEATURE_3DPOSITION.
+     *
      * Note that 3d-sound does not work if sound is running in duplex
-     * mode (#CLIENT_SNDINOUTPUT_DUPLEX).
+     * mode (#CLIENT_SNDINOUTPUT_DUPLEX) or in stereo.
      *
      * @param lpTTInstance Pointer to client instance created by
      * #TT_InitTeamTalk.
      * @param bEnable TRUE to enable, otherwise FALSE.
-     * @see TT_SetUserPosition */
+     * @see TT_SetUserPosition() */
     TEAMTALKDLL_API TTBOOL TT_Enable3DSoundPositioning(IN TTInstance* lpTTInstance, 
                                                        IN TTBOOL bEnable);
 
     /** 
      * @brief Automatically position users using 3D-sound.
      *
+     * 3D sound position requires #SOUNDDEVICEFEATURE_3DPOSITION.
+     *
      * Note that 3d-sound does not work if sound is running in duplex
-     * mode (#CLIENT_SNDINOUTPUT_DUPLEX).
+     * mode (#CLIENT_SNDINOUTPUT_DUPLEX) or in stereo.
      *
      * @param lpTTInstance Pointer to client instance created by
      * #TT_InitTeamTalk.
-     * @see TT_SetUserPosition */
+     * @see TT_SetUserPosition() */
     TEAMTALKDLL_API TTBOOL TT_AutoPositionUsers(IN TTInstance* lpTTInstance);
 
     /**
@@ -3977,6 +4256,8 @@ extern "C" {
      * will be accessible by calling TT_AcquireUserAudioBlock(). Every
      * time a new #AudioBlock is available the event
      * #CLIENTEVENT_USER_AUDIOBLOCK is generated.
+     *
+     * @deprecated Use TT_EnableAudioBlockEventEx()
      * 
      * @param lpTTInstance Pointer to client instance created by
      * #TT_InitTeamTalk.
@@ -3996,6 +4277,32 @@ extern "C" {
                                                     IN StreamType nStreamType,
                                                     IN TTBOOL bEnable);
 
+    /**
+     * @brief Same as TT_EnableAudioBlockEvent() but option to specify
+     * audio output format.
+     *
+     * @param lpTTInstance Pointer to client instance created by
+     * #TT_InitTeamTalk.
+     * @param nUserID The user ID to monitor for audio callback. Pass
+     * special user ID #TT_LOCAL_USERID to monitor local recorded
+     * audio prior to encoding/processing. Pass special user ID
+     * #TT_MUXED_USERID to get a single audio stream of all audio that
+     * is being played from users.
+     * @param nStreamType Either #STREAMTYPE_VOICE or 
+     * #STREAMTYPE_MEDIAFILE_AUDIO.
+     * @param lpAudioFormat Resample audio format from user to this #AudioFormat.
+     * Currently only AFF_WAVE_FORMAT is supported.
+     * Specify NULL to get original audio format.
+     * @param bEnable Whether to enable the #CLIENTEVENT_USER_AUDIOBLOCK event.
+     * @see TT_AcquireUserAudioBlock()
+     * @see TT_ReleaseUserAudioBlock()
+     * @see CLIENTEVENT_USER_AUDIOBLOCK */
+    TEAMTALKDLL_API TTBOOL TT_EnableAudioBlockEventEx(IN TTInstance* lpTTInstance,
+                                                      IN INT32 nUserID,
+                                                      IN StreamType nStreamType,
+                                                      IN const AudioFormat* lpAudioFormat,
+                                                      IN TTBOOL bEnable);
+    
     /** @} */
 
     /** @addtogroup transmission
@@ -6367,9 +6674,11 @@ extern "C" {
     /**
      * @brief Set the position of a user.
      *
-     * This can only be done using DirectSound (#SOUNDSYSTEM_DSOUND)
-     * and with sound duplex mode (#CLIENT_SNDINOUTPUT_DUPLEX)
-     * disabled.
+     * 3D sound position requires #SOUNDDEVICEFEATURE_3DPOSITION.
+     *
+     * This can only be done using DirectSound (#SOUNDSYSTEM_DSOUND),
+     * a mono channel and with sound duplex mode 
+     * (#CLIENT_SNDINOUTPUT_DUPLEX) disabled.
      *
      * @param lpTTInstance Pointer to client instance created by
      * #TT_InitTeamTalk.

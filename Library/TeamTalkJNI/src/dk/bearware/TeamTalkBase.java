@@ -98,16 +98,39 @@ public abstract class TeamTalkBase
                                                      boolean bDuplexMode,
                                                      SpeexDSP lpSpeexDSP);
 
+    private static native long startSoundLoopbackTestEx(int nInputDeviceID,
+                                                        int nOutputDeviceID,
+                                                        int nSampleRate,
+                                                        int nChannels,
+                                                        boolean bDuplexMode,
+                                                        AudioPreprocessor lpAudioPreprocessor,
+                                                        SoundDeviceEffects lpSoundDeviceEffects);
+
+    public static long startSoundLoopbackTest(int nInputDeviceID,
+                                              int nOutputDeviceID,
+                                              int nSampleRate,
+                                              int nChannels,
+                                              boolean bDuplexMode,
+                                              AudioPreprocessor lpAudioPreprocessor,
+                                              SoundDeviceEffects lpSoundDeviceEffects) {
+        return startSoundLoopbackTestEx(nInputDeviceID, nOutputDeviceID, nSampleRate,
+                                        nChannels, bDuplexMode, lpAudioPreprocessor,
+                                        lpSoundDeviceEffects);
+    }
+    
+
     public static native boolean closeSoundLoopbackTest(long lpTTSoundLoop);
 
     private native boolean initSoundInputDevice(long lpTTInstance, int nInputDeviceID);
     public boolean initSoundInputDevice(int nInputDeviceID) {
         return initSoundInputDevice(ttInst, nInputDeviceID);
     }
+    public static native boolean initSoundInputSharedDevice(int nSampleRate, int nChannels, int nFrameSize);
     private native boolean initSoundOutputDevice(long lpTTInstance, int nOutputDeviceID);
     public boolean initSoundOutputDevice(int nOutputDeviceID) {
         return initSoundOutputDevice(ttInst, nOutputDeviceID);
     }
+    public static native boolean initSoundOutputSharedDevice(int nSampleRate, int nChannels, int nFrameSize);
     private native boolean initSoundDuplexDevices(long lpTTInstance, int nInputDeviceID, int nOutputDeviceID);
     public boolean initSoundDuplexDevices(int nInputDeviceID, int nOutputDeviceID) {
         return initSoundDuplexDevices(ttInst, nInputDeviceID, nOutputDeviceID);
@@ -123,6 +146,14 @@ public abstract class TeamTalkBase
     private native boolean closeSoundDuplexDevices(long lpTTInstance);
     public boolean closeSoundDuplexDevices() {
         return closeSoundDuplexDevices(ttInst);
+    }
+    private native boolean setSoundDeviceEffects(long lpTTInstance, SoundDeviceEffects lpSoundDeviceEffects);
+    public boolean setSoundDeviceEffects(SoundDeviceEffects lpSoundDeviceEffects) {
+        return setSoundDeviceEffects(ttInst, lpSoundDeviceEffects);
+    }
+    private native boolean getSoundDeviceEffects(long lpTTInstance, SoundDeviceEffects lpSoundDeviceEffects);
+    public boolean getSoundDeviceEffects(SoundDeviceEffects lpSoundDeviceEffects) {
+        return getSoundDeviceEffects(ttInst, lpSoundDeviceEffects);
     }
     private native int getSoundInputLevel(long lpTTInstance);
     public int getSoundInputLevel() { return getSoundInputLevel(ttInst); }
@@ -144,6 +175,16 @@ public abstract class TeamTalkBase
         return getSoundInputPreprocess(ttInst, lpSpeexDSP);
     }
 
+    private native boolean setSoundInputPreprocessEx(long lpTTInstance, AudioPreprocessor lpAudioPreprocessor);
+    public boolean setSoundInputPreprocess(AudioPreprocessor lpAudioPreprocessor) {
+        return setSoundInputPreprocessEx(ttInst, lpAudioPreprocessor);
+    }
+
+    private native boolean getSoundInputPreprocessEx(long lpTTInstance, AudioPreprocessor lpAudioPreprocessor);
+    public boolean getSoundInputPreprocess(AudioPreprocessor lpAudioPreprocessor) {
+        return getSoundInputPreprocessEx(ttInst, lpAudioPreprocessor);
+    }
+    
     private native boolean setSoundOutputVolume(long lpTTInstance, int nVolume);
     public boolean setSoundOutputVolume(int nVolume)
         { return setSoundOutputVolume(ttInst, nVolume); }
@@ -170,6 +211,11 @@ public abstract class TeamTalkBase
     public boolean enableAudioBlockEvent(int nUserID, int nStreamType, boolean bEnable)
         { return enableAudioBlockEvent(ttInst, nUserID, nStreamType, bEnable); }
 
+    private native boolean enableAudioBlockEventEx(long lpTTInstance, int nUserID,
+                                                   int nStreamType, AudioFormat lpAudioFormat, boolean bEnable);
+    public boolean enableAudioBlockEvent(int nUserID, int nStreamType, AudioFormat lpAudioFormat, boolean bEnable)
+        { return enableAudioBlockEventEx(ttInst, nUserID, nStreamType, lpAudioFormat, bEnable); }
+    
     private native boolean insertAudioBlock(long lpTTInstance, AudioBlock lpAudioBlock);
     public boolean insertAudioBlock(AudioBlock lpAudioBlock) {
         return insertAudioBlock(ttInst, lpAudioBlock);
