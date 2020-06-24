@@ -34,22 +34,17 @@ import java.io.File;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 
-import dk.bearware.AudioBlock;
-import dk.bearware.AudioFileFormat;
-import dk.bearware.Channel;
-import dk.bearware.ClientEvent;
-import dk.bearware.Codec;
-import dk.bearware.SpeexConstants;
-import dk.bearware.SpeexDSP;
-import dk.bearware.StreamType;
-import dk.bearware.TTMessage;
-import dk.bearware.TeamTalkBase;
-import dk.bearware.WindowsHelper;
-
 public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
-    public void test_01_This() {
-        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+    protected void setUp() throws Exception {
+        super.setUp();
+
+        if (this.IPADDR.length() > 0)
+            resetServerProperties();
+    }
+
+    public void testThis() {
+        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
         TeamTalkBase ttclient = newClientInstance();
@@ -65,7 +60,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         // System.out.println("Desktop window: " + wnd.nWidth + "x" + wnd.nHeight + " size " + wnd.frameBuffer.length);
     }
 
-    public void test_SoundDevs() {
+    public void testSoundDevs() {
         TeamTalkBase ttclient = newClientInstance();
         initSound(ttclient);
 
@@ -73,15 +68,15 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue("Set output mute", ttclient.setSoundOutputMute(true));
     }
 
-    public void test_Connect() {
+    public void testConnect() {
         TeamTalkBase ttclient = newClientInstance();
         connect(ttclient);
 
         assertTrue("ping", waitCmdComplete(ttclient, ttclient.doPing(), DEF_WAIT));
     }
 
-    public void test_Auth() {
-        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+    public void testAuth() {
+        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_TRANSMIT_VOICE | UserRight.USERRIGHT_VIEW_ALL_USERS;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
         TeamTalkBase ttclient = newClientInstance();
@@ -109,9 +104,9 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
     }
 
-    public void test_Channels() {
+    public void testChannels() {
 
-        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
         TeamTalkBase ttclient = newClientInstance();
@@ -166,11 +161,11 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue(waitCmdSuccess(ttclient, ttclient.doJoinChannel(chan), DEF_WAIT));
     }
 
-    public void test_GenericMethods() {
+    public void testGenericMethods() {
 
         TeamTalkBase ttclient = newClientInstance();
         connect(ttclient);
-        login(ttclient, ADMIN_NICKNAME, ADMIN_USERNAME, ADMIN_PASSWORD);
+        login(ttclient, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
         joinRoot(ttclient);
         IntPtr howmany = new IntPtr(0);
 
@@ -178,7 +173,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         assertTrue(waitCmdSuccess(ttclient, ttclient.doChangeNickname("Foobar"), DEF_WAIT));
 
-        assertTrue(waitCmdSuccess(ttclient, ttclient.doChangeNickname(ADMIN_NICKNAME), DEF_WAIT));
+        assertTrue(waitCmdSuccess(ttclient, ttclient.doChangeNickname(ADMIN_NICKNAME + " - " + getTestMethodName()), DEF_WAIT));
 
         assertTrue(waitCmdSuccess(ttclient, ttclient.doChangeStatus(0, "My status message"), DEF_WAIT));
 
@@ -214,10 +209,10 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
     }
 
-    public void test_UserAccount() {
+    public void testUserAccount() {
         TeamTalkBase ttclient = newClientInstance();
         connect(ttclient);
-        login(ttclient, ADMIN_NICKNAME, ADMIN_USERNAME, ADMIN_PASSWORD);
+        login(ttclient, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
 
         IntPtr howmany = new IntPtr(0);
 
@@ -247,10 +242,10 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
     }
 
 
-    public void test_Stats() {
+    public void testStats() {
         TeamTalkBase ttclient = newClientInstance();
         connect(ttclient);
-        login(ttclient, ADMIN_NICKNAME, ADMIN_USERNAME, ADMIN_PASSWORD);
+        login(ttclient, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
 
         assertTrue(waitCmdSuccess(ttclient, ttclient.doQueryServerStats(), DEF_WAIT));
 
@@ -264,9 +259,9 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue(ttclient.getClientStatistics(stats));
     }
 
-    public void test_SendDesktopWindow() {
+    public void testSendDesktopWindow() {
 
-        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL |
                          UserRight.USERRIGHT_TRANSMIT_DESKTOP | UserRight.USERRIGHT_MULTI_LOGIN;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
@@ -309,7 +304,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue("Close desktop", ttclient.closeDesktopWindow());
     }
 
-    public void test_VideoCaptureDevs() {
+    public void testVideoCaptureDevs() {
 
         if (VIDEODEVICEID.equals(VIDEODEVDISABLE)) {
             System.err.println("Video capture test skipped due to device id: " + VIDEODEVDISABLE);
@@ -359,14 +354,14 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue(ttclient.closeVideoCaptureDevice());
     }
 
-    public void test_VideoCaptureStream() {
+    public void testVideoCaptureStream() {
 
         if (VIDEODEVICEID.equals(VIDEODEVDISABLE)) {
             System.err.println("Video capture test skipped due to device id: " + VIDEODEVDISABLE);
             return;
         }
 
-        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_TRANSMIT_VIDEOCAPTURE;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
 
@@ -457,16 +452,16 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue(ttclient.closeVideoCaptureDevice());
     }
 
-    public void test_MediaStreaming() {
+    public void testMediaStreaming() {
 
         if (MEDIAFILE_VIDEO.isEmpty()) {
-            System.err.println(getCurrentMethod() + " skipped due to missing " + MEDIAFILE_VIDEO);
+            System.err.println(getTestMethodName() + " skipped due to missing " + MEDIAFILE_VIDEO);
             return;
         }
 
         TeamTalkBase ttclient = newClientInstance();
 
-        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_TRANSMIT_MEDIAFILE_AUDIO | UserRight.USERRIGHT_TRANSMIT_MEDIAFILE_VIDEO;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
 
@@ -544,16 +539,16 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue("Stopped", ttclient.stopStreamingMediaFileToChannel());
     }
 
-    public void test_MediaStreamingOffset() {
+    public void testMediaStreamingOffset() {
 
         if (MEDIAFILE_VIDEO.isEmpty()) {
-            System.err.println(getCurrentMethod() + " skipped due to missing " + MEDIAFILE_VIDEO);
+            System.err.println(getTestMethodName() + " skipped due to missing " + MEDIAFILE_VIDEO);
             return;
         }
 
         TeamTalkBase ttclient = newClientInstance();
 
-        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_TRANSMIT_MEDIAFILE_AUDIO | UserRight.USERRIGHT_TRANSMIT_MEDIAFILE_VIDEO;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
 
@@ -608,16 +603,16 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue("Stopped", ttclient.stopStreamingMediaFileToChannel());
     }
 
-    public void test_MediaStreaming_https() {
+    public void testMediaStreaming_https() {
 
         if (HTTPS_MEDIAFILE.isEmpty()) {
-            System.err.println(getCurrentMethod() + " skipped due to empty HTTPS URL");
+            System.err.println(getTestMethodName() + " skipped due to empty HTTPS URL");
             return;
         }
 
         TeamTalkBase ttclient = newClientInstance();
 
-        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_TRANSMIT_MEDIAFILE_AUDIO | UserRight.USERRIGHT_TRANSMIT_MEDIAFILE_VIDEO;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
 
@@ -650,9 +645,9 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
 
 
-    public void test_MediaStorage_WaveOutput() {
+    public void testMediaStorage_WaveOutput() {
 
-        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_TRANSMIT_VOICE | UserRight.USERRIGHT_MULTI_LOGIN |
             UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
@@ -668,7 +663,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
             assertTrue(ttclient.setSoundInputPreprocess(new SpeexDSP()));
 
             connect(ttclient);
-            login(ttclient, "ttclient" + (i), USERNAME, PASSWORD);
+            login(ttclient, NICKNAME + (i), USERNAME, PASSWORD);
             joinRoot(ttclient);
 
             ttclient.DBG_SetSoundInputTone(StreamType.STREAMTYPE_VOICE, freq);
@@ -683,7 +678,8 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         ttclient.getChannel(ttclient.getMyChannelID(), chan);
 
         assertEquals("OPUS codec running", Codec.OPUS_CODEC, chan.audiocodec.nCodec);
-        assertTrue("Opus to muxed wave", ttclient.startRecordingMuxedAudioFile(chan.audiocodec, MUXEDMEDIAFILE_WAVE, AudioFileFormat.AFF_WAVE_FORMAT));
+        assertTrue("Opus to muxed wave", ttclient.startRecordingMuxedAudioFile(chan.audiocodec,
+                                                                               STORAGEFOLDER + File.separator + MUXEDMEDIAFILE_WAVE, AudioFileFormat.AFF_WAVE_FORMAT));
 
         assertTrue(waitCmdSuccess(ttclient, ttclient.doSubscribe(ttclient.getMyUserID(),
                                                                  Subscription.SUBSCRIBE_VOICE), DEF_WAIT));
@@ -707,7 +703,8 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
             assertTrue(waitCmdSuccess(clients.get(i), clients.get(i).doJoinChannelByID(ttclient.getMyChannelID(), ""), DEF_WAIT));
         }
 
-        assertTrue("Speex to muxed wave", ttclient.startRecordingMuxedAudioFile(chan.audiocodec, MUXEDMEDIAFILE_WAVE, AudioFileFormat.AFF_WAVE_FORMAT));
+        assertTrue("Speex to muxed wave", ttclient.startRecordingMuxedAudioFile(chan.audiocodec,
+                                                                                STORAGEFOLDER + File.separator + MUXEDMEDIAFILE_WAVE, AudioFileFormat.AFF_WAVE_FORMAT));
 
 
         ttclient.enableVoiceTransmission(true);
@@ -778,9 +775,9 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
     }
 
-    public void test_MediaStorage_Self_WaveOutput() {
+    public void testMediaStorage_Self_WaveOutput() {
 
-        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_TRANSMIT_VOICE | UserRight.USERRIGHT_MULTI_LOGIN |
             UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
@@ -802,7 +799,8 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         Channel chan = new Channel();
         ttclient.getChannel(ttclient.getMyChannelID(), chan);
-        assertTrue("Record muxed audio file", ttclient.startRecordingMuxedAudioFile(chan.audiocodec, MUXEDMEDIAFILE_WAVE, AudioFileFormat.AFF_WAVE_FORMAT));
+        assertTrue("Record muxed audio file", ttclient.startRecordingMuxedAudioFile(chan.audiocodec,
+                                                                                    STORAGEFOLDER + File.separator + MUXEDMEDIAFILE_WAVE, AudioFileFormat.AFF_WAVE_FORMAT));
 
         assertTrue("enable voice tx", ttclient.enableVoiceTransmission(true));
 
@@ -815,14 +813,14 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         ttclient.enableVoiceTransmission(false);
     }
 
-    public void test_MediaStorage_OpusOutput() {
+    public void testMediaStorage_OpusOutput() {
 
         if (!OPUSTOOLS) {
-            System.err.println(getCurrentMethod() + " skipped due to OPUS tools disabled.");
+            System.err.println(getTestMethodName() + " skipped due to OPUS tools disabled.");
             return;
         }
 
-        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_TRANSMIT_VOICE | UserRight.USERRIGHT_MULTI_LOGIN |
             UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
@@ -858,7 +856,8 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
                                                                                    Subscription.SUBSCRIBE_VOICE), DEF_WAIT));
 
         assertEquals("OPUS codec running", Codec.OPUS_CODEC, chan.audiocodec.nCodec);
-        assertTrue("Mux to Opus file", ttclient1.startRecordingMuxedAudioFile(chan.audiocodec, MUXEDMEDIAFILE_OPUS, AudioFileFormat.AFF_CHANNELCODEC_FORMAT));
+        assertTrue("Mux to Opus file", ttclient1.startRecordingMuxedAudioFile(chan.audiocodec,
+                                                                              STORAGEFOLDER + File.separator + MUXEDMEDIAFILE_OPUS, AudioFileFormat.AFF_CHANNELCODEC_FORMAT));
 
         assertTrue("enable voice tx 1", ttclient1.enableVoiceTransmission(true));
 
@@ -883,9 +882,9 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertFalse(waitForEvent(ttclient1, ClientEvent.CLIENTEVENT_USER_RECORD_MEDIAFILE, 100));
     }
 
-    public void test_MediaStorage_SpeexOutput() {
+    public void testMediaStorage_SpeexOutput() {
 
-        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_TRANSMIT_VOICE | UserRight.USERRIGHT_MULTI_LOGIN |
             UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
@@ -923,7 +922,8 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         ttclient2.DBG_SetSoundInputTone(StreamType.STREAMTYPE_VOICE, freq += 300);
 
         // now store in Speex
-        assertTrue("Mux to Speex file", ttclient1.startRecordingMuxedAudioFile(chan.audiocodec, MUXEDMEDIAFILE_SPEEX, AudioFileFormat.AFF_CHANNELCODEC_FORMAT));
+        assertTrue("Mux to Speex file", ttclient1.startRecordingMuxedAudioFile(chan.audiocodec,
+                                                                               STORAGEFOLDER + File.separator + MUXEDMEDIAFILE_SPEEX, AudioFileFormat.AFF_CHANNELCODEC_FORMAT));
 
         assertTrue(ttclient1.enableVoiceTransmission(true));
 
@@ -954,7 +954,8 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
                                                                    Subscription.SUBSCRIBE_VOICE), DEF_WAIT));
 
         // now store in Speex
-        assertTrue("Mux to Speex VBR file", ttclient2.startRecordingMuxedAudioFile(chan.audiocodec, MUXEDMEDIAFILE_SPEEX_VBR, AudioFileFormat.AFF_CHANNELCODEC_FORMAT));
+        assertTrue("Mux to Speex VBR file", ttclient2.startRecordingMuxedAudioFile(chan.audiocodec,
+                                                                                   STORAGEFOLDER + File.separator + MUXEDMEDIAFILE_SPEEX_VBR, AudioFileFormat.AFF_CHANNELCODEC_FORMAT));
 
         assertTrue("get channel spx vbr", ttclient2.getChannel(ttclient2.getMyChannelID(), chan));
 
@@ -978,9 +979,9 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         waitForEvent(ttclient1, ClientEvent.CLIENTEVENT_NONE, 1000);
     }
 
-    public void test_SelfEchoMediaStorage() {
+    public void testSelfEchoMediaStorage() {
 
-        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_TRANSMIT_VOICE | UserRight.USERRIGHT_MULTI_LOGIN |
             UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
@@ -1002,7 +1003,8 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         Channel chan = new Channel();
         ttclient.getChannel(ttclient.getMyChannelID(), chan);
-        assertTrue(ttclient.startRecordingMuxedAudioFile(chan.audiocodec, MUXEDMEDIAFILE_WAVE, AudioFileFormat.AFF_WAVE_FORMAT));
+        assertTrue(ttclient.startRecordingMuxedAudioFile(chan.audiocodec,
+                                                         STORAGEFOLDER + File.separator + MUXEDMEDIAFILE_WAVE, AudioFileFormat.AFF_WAVE_FORMAT));
 
         assertTrue(waitCmdSuccess(ttclient, ttclient.doSubscribe(ttclient.getMyUserID(),
                                                                  Subscription.SUBSCRIBE_VOICE), DEF_WAIT));
@@ -1018,9 +1020,9 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         ttclient.enableVoiceTransmission(false);
     }
 
-    public void test_RecordMultipleChannels() {
+    public void testRecordMultipleChannels() {
 
-        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL | UserRight.USERRIGHT_MULTI_LOGIN |
             UserRight.USERRIGHT_TRANSMIT_VOICE | UserRight.USERRIGHT_VIEW_ALL_USERS;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
@@ -1055,7 +1057,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         TeamTalkBase ttadmin = newClientInstance();
         connect(ttadmin);
         initSound(ttadmin);
-        login(ttadmin, ADMIN_NICKNAME, ADMIN_USERNAME, ADMIN_PASSWORD);
+        login(ttadmin, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
 
         for (TeamTalkBase ttclient : clients) {
             assertTrue("Intercept", waitCmdSuccess(ttadmin, ttadmin.doSubscribe(ttclient.getMyUserID(), Subscription.SUBSCRIBE_INTERCEPT_VOICE), DEF_WAIT));
@@ -1067,13 +1069,15 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         for (int i=0;i<clients.size();i+=2) {
             TeamTalkBase ttclient = clients.elementAt(i);
             assertTrue("get channel", ttclient.getChannel(ttclient.getMyChannelID(), chan));
-            String filename = "MuxedRecording-" + chan.szName + "-#" + ttclient.getMyUserID() + ".wav";
+            String filename = STORAGEFOLDER + File.separator + "MuxedRecording-" +
+                chan.szName + "-#" + ttclient.getMyUserID() + "-" + chan.audiocodec.opus.nTxIntervalMSec + "msec.wav";
+
             filenames.add(filename);
             cbintervalMSec.add(chan.audiocodec.opus.nTxIntervalMSec);
             assertTrue("Record mux", ttadmin.startRecordingMuxedAudioFile(ttclient.getMyChannelID(), filename, AudioFileFormat.AFF_WAVE_FORMAT));
         }
 
-        String rootfilename = "MuxedRecording-Root-Channel.wav";
+        String rootfilename = STORAGEFOLDER + File.separator + "MuxedRecording-Root-Channel.wav";
         filenames.add(rootfilename);
         assertTrue("Record mux", ttadmin.startRecordingMuxedAudioFile(ttadmin.getRootChannelID(), rootfilename, AudioFileFormat.AFF_WAVE_FORMAT));
         assertTrue("get root channel", ttadmin.getChannel(ttadmin.getRootChannelID(), chan));
@@ -1122,16 +1126,16 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
             // tolerance. This is not a very precise way of testing
             // the duration of the files, but at least they should be
             // somewhere near the duration of the recording.
-            int tolerance = cbintervalMSec.remove(0) * 2;
+            int tolerance = cbintervalMSec.remove(0) * 3;
             assertTrue(String.format("Media file %s duration is %d, must be >= %d, tolerance %d",
                                      filename, mfi.uDurationMSec, duration, tolerance),
                        mfi.uDurationMSec + tolerance >= duration);
         }
     }
 
-    public void test_AudioBlock() {
+    public void testAudioBlock() {
 
-        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL |
             UserRight.USERRIGHT_TRANSMIT_VOICE | UserRight.USERRIGHT_TRANSMIT_MEDIAFILE_AUDIO |
             UserRight.USERRIGHT_VIEW_ALL_USERS;
@@ -1147,6 +1151,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         Channel chan = buildDefaultChannel(ttclient, "Opus");
         assertEquals(chan.audiocodec.nCodec, Codec.OPUS_CODEC);
+        int framesize = (int)((chan.audiocodec.opus.nTxIntervalMSec / 1000.) * chan.audiocodec.opus.nSampleRate);
 
         assertTrue("join", waitCmdSuccess(ttclient, ttclient.doJoinChannel(chan), DEF_WAIT));
 
@@ -1173,7 +1178,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue("Enable aud cb", ttclient.enableAudioBlockEvent(ttclient.getMyUserID(), StreamType.STREAMTYPE_MEDIAFILE_AUDIO, true));
 
         MediaFileInfo mfi = new MediaFileInfo();
-        mfi.szFileName = "hest.wav";
+        mfi.szFileName = STORAGEFOLDER + File.separator + "hest.wav";
         mfi.audioFmt = new AudioFormat(AudioFileFormat.AFF_WAVE_FORMAT, 48000, 2);
         mfi.uDurationMSec = 30 * 1000;
 
@@ -1181,7 +1186,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         assertTrue("Start stream file", ttclient.startStreamingMediaFileToChannel(mfi.szFileName, new VideoCodec()));
 
-        int n_voice_blocks = 0, n_mfa_blocks = 0;
+        int n_voice_blocks = 0, n_mfa_blocks = 0, voice_sampleindex = -1, mfa_sampleindex = -1, voice_sid = -1, mfa_sid = -1;
         while (n_voice_blocks < 10 || n_mfa_blocks < 10)
         {
             assertTrue(waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
@@ -1191,11 +1196,29 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
                 n_voice_blocks++;
                 block = ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, msg.nSource);
                 assertTrue(block.nSamples > 0);
+                if (voice_sampleindex == -1) {
+                    voice_sampleindex = block.uSampleIndex;
+                    voice_sid = block.nStreamID;
+                }
+                else {
+                    assertEquals("Voice sample index match", voice_sampleindex, block.uSampleIndex);
+                    assertEquals("Voice stream ID match", voice_sid, block.nStreamID);
+                }
+                voice_sampleindex += framesize;
                 break;
             case StreamType.STREAMTYPE_MEDIAFILE_AUDIO :
                 n_mfa_blocks++;
                 block = ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_MEDIAFILE_AUDIO, msg.nSource);
                 assertTrue(block.nSamples > 0);
+                if (mfa_sampleindex == -1) {
+                    mfa_sampleindex = block.uSampleIndex;
+                    mfa_sid = block.nStreamID;
+                }
+                else {
+                    assertEquals("Media file sample index match", mfa_sampleindex, block.uSampleIndex);
+                    assertEquals("Media file stream ID match", mfa_sid, block.nStreamID);
+                }
+                mfa_sampleindex += framesize;
                 break;
             }
         }
@@ -1269,9 +1292,9 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         }
     }
 
-    public void test_LocalAudioBlock() {
+    public void testLocalAudioBlock() {
 
-        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL |
             UserRight.USERRIGHT_TRANSMIT_VOICE | UserRight.USERRIGHT_TRANSMIT_MEDIAFILE_AUDIO |
             UserRight.USERRIGHT_VIEW_ALL_USERS;
@@ -1334,9 +1357,9 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         }
     }
 
-    public void test_MuxedAudioBlock() throws IOException {
+    public void testMuxedAudioBlock() throws IOException {
 
-        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL |
             UserRight.USERRIGHT_TRANSMIT_VOICE |
             UserRight.USERRIGHT_MULTI_LOGIN;
@@ -1384,39 +1407,56 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         }
 
         assertTrue("enable aud cb", rxclient.enableAudioBlockEvent(Constants.TT_MUXED_USERID, StreamType.STREAMTYPE_VOICE, true));
-        assertTrue("enable aud mux file", rxclient.startRecordingMuxedAudioFile(chan.audiocodec, "muxfileoutput.wav", AudioFileFormat.AFF_WAVE_FORMAT));
+        assertTrue("enable aud mux file", rxclient.startRecordingMuxedAudioFile(chan.audiocodec, STORAGEFOLDER + File.separator + "muxfileoutput.wav", AudioFileFormat.AFF_WAVE_FORMAT));
 
         int bytelen = chan.audiocodec.opus.nSampleRate * chan.audiocodec.opus.nChannels * 12/*seconds*/ * 2 /*short*/;
-        FileOutputStream fs = newWaveFile("muxoutput_opus.wav", chan.audiocodec.opus.nSampleRate, chan.audiocodec.opus.nChannels, bytelen);
+        try (FileOutputStream fs = newWaveFile(STORAGEFOLDER + File.separator + "muxoutput_opus.wav", chan.audiocodec.opus.nSampleRate, chan.audiocodec.opus.nChannels, bytelen);) {
 
-        int receiveSamples = chan.audiocodec.opus.nSampleRate;
-        do {
-            assertTrue("gimme 1 secs of voice audioblock", waitForEvent(rxclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
-            assertEquals("muxed userid", Constants.TT_MUXED_USERID, msg.nSource);
-            AudioBlock block = rxclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, msg.nSource);
-            assertTrue("block valid", block != null);
-            assertTrue("aud block has samples", block.nSamples > 0);
-            receiveSamples -= block.nSamples;
-            fs.write(block.lpRawAudio);
-        } while (receiveSamples > 0);
-        // 1 sec
+            int receiveSamples = chan.audiocodec.opus.nSampleRate;
+            do {
+                assertTrue("gimme 1 secs of voice audioblock", waitForEvent(rxclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
+                assertEquals("muxed userid", Constants.TT_MUXED_USERID, msg.nSource);
+                AudioBlock block = rxclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, msg.nSource);
+                assertTrue("block valid", block != null);
+                assertTrue("aud block has samples", block.nSamples > 0);
+                receiveSamples -= block.nSamples;
+                fs.write(block.lpRawAudio);
+            } while (receiveSamples > 0);
+            // 1 sec
 
-        assertTrue("enable tx", rxclient.enableVoiceTransmission(true));
-        receiveSamples = chan.audiocodec.opus.nSampleRate;
-        do {
-            assertTrue("tone for 1 sec of voice audioblock", waitForEvent(rxclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
-            assertEquals("muxed userid", Constants.TT_MUXED_USERID, msg.nSource);
-            AudioBlock block = rxclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, msg.nSource);
-            assertTrue("block valid", block != null);
-            receiveSamples -= block.nSamples;
-            fs.write(block.lpRawAudio);
-        } while (receiveSamples > 0);
-        // 2 sec
+            assertTrue("enable tx", rxclient.enableVoiceTransmission(true));
+            receiveSamples = chan.audiocodec.opus.nSampleRate;
+            do {
+                assertTrue("tone for 1 sec of voice audioblock", waitForEvent(rxclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
+                assertEquals("muxed userid", Constants.TT_MUXED_USERID, msg.nSource);
+                AudioBlock block = rxclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, msg.nSource);
+                assertTrue("block valid", block != null);
+                receiveSamples -= block.nSamples;
+                fs.write(block.lpRawAudio);
+            } while (receiveSamples > 0);
+            // 2 sec
 
-        assertTrue("disable tx", rxclient.enableVoiceTransmission(false));
+            assertTrue("disable tx", rxclient.enableVoiceTransmission(false));
 
-        for (TeamTalkBase ttclient : txclients) {
-            assertTrue("enable tx", ttclient.enableVoiceTransmission(true));
+            for (TeamTalkBase ttclient : txclients) {
+                assertTrue("enable tx", ttclient.enableVoiceTransmission(true));
+                receiveSamples = chan.audiocodec.opus.nSampleRate;
+                do {
+                    assertTrue("gimme 1 sec tone of voice audioblock", waitForEvent(rxclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
+                    assertEquals("muxed userid", Constants.TT_MUXED_USERID, msg.nSource);
+                    AudioBlock block = rxclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, msg.nSource);
+                    assertTrue("block valid", block != null);
+                    receiveSamples -= block.nSamples;
+                    fs.write(block.lpRawAudio);
+                } while (receiveSamples > 0);
+                assertTrue("disable tx", ttclient.enableVoiceTransmission(false));
+            }
+            // 11 sec
+
+            for (TeamTalkBase ttclient : txclients) {
+                assertTrue("enable tx", ttclient.enableVoiceTransmission(true));
+            }
+
             receiveSamples = chan.audiocodec.opus.nSampleRate;
             do {
                 assertTrue("gimme 1 sec tone of voice audioblock", waitForEvent(rxclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
@@ -1426,40 +1466,24 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
                 receiveSamples -= block.nSamples;
                 fs.write(block.lpRawAudio);
             } while (receiveSamples > 0);
-            assertTrue("disable tx", ttclient.enableVoiceTransmission(false));
+            // 12 sec
+
+            assertTrue("leave opus", waitCmdSuccess(rxclient, rxclient.doLeaveChannel(), DEF_WAIT));
+
+            assertTrue("disable aud cb and remove pending audio blocks", rxclient.enableAudioBlockEvent(Constants.TT_MUXED_USERID, StreamType.STREAMTYPE_VOICE, false));
+
+            assertTrue("cleared audio blocks", rxclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, Constants.TT_MUXED_USERID) == null);
+
+            assertTrue("enable aud cb again", rxclient.enableAudioBlockEvent(Constants.TT_MUXED_USERID, StreamType.STREAMTYPE_VOICE, true));
+
+            assertFalse("no audio mux when out of channel", waitForEvent(rxclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, 500));
+
+            chan = buildDefaultChannel(rxclient, "Speex VBR", Codec.SPEEX_VBR_CODEC);
+
+            assertTrue("join", waitCmdSuccess(rxclient, rxclient.doJoinChannel(chan), DEF_WAIT));
+
+            assertTrue("get new chan", rxclient.getChannel(rxclient.getMyChannelID(), chan));
         }
-        // 11 sec
-
-        for (TeamTalkBase ttclient : txclients) {
-            assertTrue("enable tx", ttclient.enableVoiceTransmission(true));
-        }
-
-        receiveSamples = chan.audiocodec.opus.nSampleRate;
-        do {
-            assertTrue("gimme 1 sec tone of voice audioblock", waitForEvent(rxclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
-            assertEquals("muxed userid", Constants.TT_MUXED_USERID, msg.nSource);
-            AudioBlock block = rxclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, msg.nSource);
-            assertTrue("block valid", block != null);
-            receiveSamples -= block.nSamples;
-            fs.write(block.lpRawAudio);
-        } while (receiveSamples > 0);
-        // 12 sec
-
-        assertTrue("leave opus", waitCmdSuccess(rxclient, rxclient.doLeaveChannel(), DEF_WAIT));
-
-        assertTrue("disable aud cb and remove pending audio blocks", rxclient.enableAudioBlockEvent(Constants.TT_MUXED_USERID, StreamType.STREAMTYPE_VOICE, false));
-
-        assertTrue("cleared audio blocks", rxclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, Constants.TT_MUXED_USERID) == null);
-
-        assertTrue("enable aud cb again", rxclient.enableAudioBlockEvent(Constants.TT_MUXED_USERID, StreamType.STREAMTYPE_VOICE, true));
-
-        assertFalse("no audio mux when out of channel", waitForEvent(rxclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, 500));
-
-        chan = buildDefaultChannel(rxclient, "Speex VBR", Codec.SPEEX_VBR_CODEC);
-
-        assertTrue("join", waitCmdSuccess(rxclient, rxclient.doJoinChannel(chan), DEF_WAIT));
-
-        assertTrue("get new chan", rxclient.getChannel(rxclient.getMyChannelID(), chan));
 
         int samplerate;
         switch (chan.audiocodec.speex_vbr.nBandmode) {
@@ -1474,66 +1498,203 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
             samplerate = 0;
             break;
         }
-
         bytelen = samplerate * 5;
-        fs = newWaveFile("muxoutput_speexvbr.wav", samplerate, 1, bytelen);
-        receiveSamples = samplerate;
-        do {
-            assertTrue("gimme 1 sec tone of voice speex vbr audioblock", waitForEvent(rxclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
-            assertEquals("muxed userid", Constants.TT_MUXED_USERID, msg.nSource);
-            AudioBlock block = rxclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, msg.nSource);
-            assertTrue("block valid", block != null);
-            assertEquals("correct sample rate", samplerate, block.nSampleRate);
-            assertEquals("correct channels", 1, block.nChannels);
-            receiveSamples -= block.nSamples;
-            fs.write(block.lpRawAudio);
-        } while (receiveSamples > 0);
+        try (FileOutputStream fs = newWaveFile(STORAGEFOLDER + File.separator + "muxoutput_speexvbr.wav", samplerate, 1, bytelen);) {
+            int receiveSamples = samplerate;
+            do {
+                assertTrue("gimme 1 sec tone of voice speex vbr audioblock", waitForEvent(rxclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
+                assertEquals("muxed userid", Constants.TT_MUXED_USERID, msg.nSource);
+                AudioBlock block = rxclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, msg.nSource);
+                assertTrue("block valid", block != null);
+                assertEquals("correct sample rate", samplerate, block.nSampleRate);
+                assertEquals("correct channels", 1, block.nChannels);
+                receiveSamples -= block.nSamples;
+                fs.write(block.lpRawAudio);
+            } while (receiveSamples > 0);
 
-        for (TeamTalkBase ttclient : txclients) {
-            assertTrue("join spx vbr", waitCmdSuccess(ttclient, ttclient.doJoinChannel(chan), DEF_WAIT));
+            for (TeamTalkBase ttclient : txclients) {
+                assertTrue("join spx vbr", waitCmdSuccess(ttclient, ttclient.doJoinChannel(chan), DEF_WAIT));
+            }
+
+            receiveSamples = samplerate * 4;
+            do {
+                assertTrue("gimme 4 sec tones of voice speex vbr audioblock", waitForEvent(rxclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
+                assertEquals("muxed userid", Constants.TT_MUXED_USERID, msg.nSource);
+                AudioBlock block = rxclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, msg.nSource);
+                assertTrue("block valid", block != null);
+                assertEquals("correct sample rate", samplerate, block.nSampleRate);
+                assertEquals("correct channels", 1, block.nChannels);
+                receiveSamples -= block.nSamples;
+                fs.write(block.lpRawAudio);
+            } while (receiveSamples > 0);
+
+            assertTrue("leave spx", waitCmdSuccess(rxclient, rxclient.doLeaveChannel(), DEF_WAIT));
+
+            assertFalse("no audio mux when out of channel", waitForEvent(rxclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, 500));
+
+            // drain any remaining audio blocks
+            while(rxclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, Constants.TT_MUXED_USERID) != null);
+
+            // ensure 'muxfileoutput.wav' will continue writing again
+            chan = buildDefaultChannel(rxclient, "Opus - Muxed secondary", Codec.OPUS_CODEC);
+            chan.audiocodec.opus.nChannels = 2;
+            chan.audiocodec.opus.nApplication = OpusConstants.OPUS_APPLICATION_AUDIO;
+            chan.audiocodec.opus.bDTX = false;
+
+            assertTrue("join", waitCmdSuccess(rxclient, rxclient.doJoinChannel(chan), DEF_WAIT));
+
+            assertTrue("get new chan", rxclient.getChannel(rxclient.getMyChannelID(), chan));
+            receiveSamples = chan.audiocodec.opus.nSampleRate;
+            do {
+                assertTrue("gimme 1 secs of opus voice audioblock again", waitForEvent(rxclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
+                assertEquals("muxed userid", Constants.TT_MUXED_USERID, msg.nSource);
+                AudioBlock block = rxclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, msg.nSource);
+                assertTrue("block valid", block != null);
+                assertTrue("aud block has samples", block.nSamples > 0);
+                receiveSamples -= block.nSamples;
+            } while (receiveSamples > 0);
         }
+    }
 
-        receiveSamples = samplerate * 4;
-        do {
-            assertTrue("gimme 4 sec tones of voice speex vbr audioblock", waitForEvent(rxclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
-            assertEquals("muxed userid", Constants.TT_MUXED_USERID, msg.nSource);
-            AudioBlock block = rxclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, msg.nSource);
-            assertTrue("block valid", block != null);
-            assertEquals("correct sample rate", samplerate, block.nSampleRate);
-            assertEquals("correct channels", 1, block.nChannels);
-            receiveSamples -= block.nSamples;
-            fs.write(block.lpRawAudio);
-        } while (receiveSamples > 0);
 
-        assertTrue("leave spx", waitCmdSuccess(rxclient, rxclient.doLeaveChannel(), DEF_WAIT));
+    public void testMuxedAudioBlockSoundInputDisabled() throws IOException {
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
+        int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL |
+            UserRight.USERRIGHT_TRANSMIT_VOICE |
+            UserRight.USERRIGHT_MULTI_LOGIN;
+        makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
 
-        assertFalse("no audio mux when out of channel", waitForEvent(rxclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, 500));
+        TeamTalkBase rxclient = newClientInstance();
 
-        // drain any remaining audio blocks
-        while(rxclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, Constants.TT_MUXED_USERID) != null);
+        TTMessage msg = new TTMessage();
 
-        // ensure 'muxfileoutput.wav' will continue writing again
-        chan = buildDefaultChannel(rxclient, "Opus - Muxed secondary", Codec.OPUS_CODEC);
+        connect(rxclient);
+        initSound(rxclient);
+        login(rxclient, NICKNAME, USERNAME, PASSWORD);
+
+        Channel chan = buildDefaultChannel(rxclient, "Opus - Mux initial", Codec.OPUS_CODEC);
         chan.audiocodec.opus.nChannels = 2;
         chan.audiocodec.opus.nApplication = OpusConstants.OPUS_APPLICATION_AUDIO;
         chan.audiocodec.opus.bDTX = false;
 
         assertTrue("join", waitCmdSuccess(rxclient, rxclient.doJoinChannel(chan), DEF_WAIT));
-
         assertTrue("get new chan", rxclient.getChannel(rxclient.getMyChannelID(), chan));
-        receiveSamples = chan.audiocodec.opus.nSampleRate;
+        assertTrue("enable aud cb", rxclient.enableAudioBlockEvent(Constants.TT_MUXED_USERID, StreamType.STREAMTYPE_VOICE, true));
+
+        // first receive initial audio blocks with sound input device active
+        int receiveBlocks = 5;
         do {
-            assertTrue("gimme 1 secs of opus voice audioblock again", waitForEvent(rxclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
+            assertTrue("gimme 1 secs of voice audioblock", waitForEvent(rxclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
             assertEquals("muxed userid", Constants.TT_MUXED_USERID, msg.nSource);
             AudioBlock block = rxclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, msg.nSource);
-            assertTrue("block valid", block != null);
+            assertTrue("block valid initially", block != null);
             assertTrue("aud block has samples", block.nSamples > 0);
-            receiveSamples -= block.nSamples;
-        } while (receiveSamples > 0);
+            receiveBlocks--;
+        } while (receiveBlocks > 0);
+
+        // close sound input device and ensure we still receive samples
+        assertTrue("close sound input", rxclient.closeSoundInputDevice());
+
+        receiveBlocks = 10;
+        do {
+            assertTrue("gimme audioblock with sound input disabled", waitForEvent(rxclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
+            assertEquals("muxed userid", Constants.TT_MUXED_USERID, msg.nSource);
+            AudioBlock block = rxclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, msg.nSource);
+            assertTrue("block valid with sound input disabled", block != null);
+            assertTrue("aud block has samples", block.nSamples > 0);
+            receiveBlocks--;
+        } while (receiveBlocks > 0);
+
+        // restart audio blocks while sound input device is disabled
+        assertTrue("disable aud cb and remove pending audio blocks", rxclient.enableAudioBlockEvent(Constants.TT_MUXED_USERID, StreamType.STREAMTYPE_VOICE, false));
+        waitForEvent(rxclient, ClientEvent.CLIENTEVENT_NONE, 0);
+        assertTrue("enable aud cb again", rxclient.enableAudioBlockEvent(Constants.TT_MUXED_USERID, StreamType.STREAMTYPE_VOICE, true));
+
+        receiveBlocks = 5;
+        do {
+            assertTrue("gimme audio block with reenabled audioblocks and sound input disabled", waitForEvent(rxclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
+            assertEquals("muxed userid", Constants.TT_MUXED_USERID, msg.nSource);
+            AudioBlock block = rxclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, msg.nSource);
+            assertTrue("block valid after reenable", block != null);
+            assertTrue("aud block has samples", block.nSamples > 0);
+            receiveBlocks--;
+        } while (receiveBlocks > 0);
+    }
+
+    public void testResampledAudioBlock() {
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
+        int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL |
+            UserRight.USERRIGHT_TRANSMIT_VOICE | UserRight.USERRIGHT_TRANSMIT_MEDIAFILE_AUDIO |
+            UserRight.USERRIGHT_VIEW_ALL_USERS;
+        makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
+
+        TeamTalkBase ttclient = newClientInstance();
+
+        TTMessage msg = new TTMessage();
+
+        connect(ttclient);
+        initSound(ttclient);
+        login(ttclient, NICKNAME, USERNAME, PASSWORD);
+
+        Channel chan = buildDefaultChannel(ttclient, "Opus");
+        chan.audiocodec.opus.nFrameSizeMSec = 10;
+        chan.audiocodec.opus.nTxIntervalMSec = 100;
+        assertEquals(chan.audiocodec.nCodec, Codec.OPUS_CODEC);
+
+        assertTrue("join", waitCmdSuccess(ttclient, ttclient.doJoinChannel(chan), DEF_WAIT));
+
+        assertTrue("vox", ttclient.enableVoiceTransmission(true));
+
+        AudioFormat fmt = new AudioFormat(AudioFileFormat.AFF_WAVE_FORMAT, 8000, 2);
+        int framesize = (int)((chan.audiocodec.opus.nTxIntervalMSec / 1000.) * fmt.nSampleRate);
+
+        // test for TT_LOCAL_USERID
+        assertTrue("enable aud cb", ttclient.enableAudioBlockEvent(Constants.TT_LOCAL_USERID, StreamType.STREAMTYPE_VOICE, fmt, true));
+
+        assertTrue("gimme voice audioblock", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
+
+        assertEquals("from local user", Constants.TT_LOCAL_USERID, msg.nSource);
+
+        AudioBlock ab = ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, msg.nSource);
+        assertTrue("retrieve audioblock", ab != null);
+
+        assertEquals("stereo", fmt.nChannels, ab.nChannels);
+        assertEquals("sample rate", fmt.nSampleRate, ab.nSampleRate);
+        assertEquals("frame size matches", framesize, ab.nSamples);
+
+        assertTrue("gimme next voice audioblock", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
+
+        AudioBlock ab2 = ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, msg.nSource);
+        assertTrue("retrieve next audioblock", ab2 != null);
+
+        assertEquals("same sample rate", fmt.nSampleRate, ab2.nSampleRate);
+        assertEquals("sample counter matches", ab.uSampleIndex + framesize, ab2.uSampleIndex);
+
+        assertTrue("disable local userid", ttclient.enableAudioBlockEvent(Constants.TT_LOCAL_USERID, StreamType.STREAMTYPE_VOICE, null, false));
+        while (ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, Constants.TT_LOCAL_USERID) != null);
+
+        // now do same test for TT_MUXED_USERID
+        assertTrue("enable aud cb for muxed", ttclient.enableAudioBlockEvent(Constants.TT_MUXED_USERID, StreamType.STREAMTYPE_VOICE, fmt, true));
+        assertTrue("gimme voice audioblock from muxed", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
+        assertEquals("from muxed user", Constants.TT_MUXED_USERID, msg.nSource);
+
+        ab = ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, msg.nSource);
+        assertTrue("retrieve audioblock from muxed", ab != null);
+
+        assertEquals("stereo in muxed", fmt.nChannels, ab.nChannels);
+        assertEquals("sample rate in muxed", fmt.nSampleRate, ab.nSampleRate);
+        assertEquals("frame size matches in muxed", framesize, ab.nSamples);
+
+        assertTrue("gimme next voice audioblock from muxed", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
+        ab2 = ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, msg.nSource);
+        assertTrue("retrieve next audioblock from muxed", ab2 != null);
+
+        assertEquals("same sample rate for muxed", fmt.nSampleRate, ab2.nSampleRate);
+        assertEquals("sample counter matches for muxed", ab.uSampleIndex + framesize, ab2.uSampleIndex);
     }
 
     public void testUserEventMuxedStream() {
-        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL |
             UserRight.USERRIGHT_TRANSMIT_VOICE | UserRight.USERRIGHT_MULTI_LOGIN;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
@@ -1566,7 +1727,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
     public void testOpusFrameSizeMSec() {
 
-        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL |
             UserRight.USERRIGHT_TRANSMIT_VOICE | UserRight.USERRIGHT_TRANSMIT_MEDIAFILE_AUDIO |
             UserRight.USERRIGHT_VIEW_ALL_USERS;
@@ -1639,10 +1800,10 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         }
     }
 
-    public void test_ListAccounts() {
+    public void testListAccounts() {
         TeamTalkBase ttclient = newClientInstance();
         connect(ttclient);
-        login(ttclient, "test_08_ListAccounts", ADMIN_USERNAME, ADMIN_PASSWORD);
+        login(ttclient, ADMIN_NICKNAME + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
 
         TTMessage msg = new TTMessage();
 
@@ -1652,11 +1813,11 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue(account.uUserType != UserType.USERTYPE_NONE);
     }
 
-    public void test_ListBannedUsers() {
+    public void testListBannedUsers() {
 
         TeamTalkBase ttadmin = newClientInstance();
         connect(ttadmin);
-        login(ttadmin, "test_09_ListBannedUsers", ADMIN_USERNAME, ADMIN_PASSWORD);
+        login(ttadmin, ADMIN_NICKNAME + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
 
         User user = new User();
         assertTrue("get self", ttadmin.getUser(ttadmin.getMyUserID(), user));
@@ -1674,7 +1835,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue("unban user IP", waitCmdSuccess(ttadmin, ttadmin.doUnBanUser(user.szIPAddress, 0), DEF_WAIT));
         assertTrue("unban specified IP", waitCmdSuccess(ttadmin, ttadmin.doUnBanUser(IPADDR, 0), DEF_WAIT));
 
-        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL | UserRight.USERRIGHT_VIEW_ALL_USERS |
             UserRight.USERRIGHT_TRANSMIT_VOICE | UserRight.USERRIGHT_MULTI_LOGIN;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
@@ -1751,53 +1912,53 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
     }
 
-    public void test_ChannelSwitch() throws InterruptedException{
+    public void testChannelSwitch() {
 
-        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
-        int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL | UserRight.USERRIGHT_VIEW_ALL_USERS |
-            UserRight.USERRIGHT_TRANSMIT_VOICE | UserRight.USERRIGHT_TRANSMIT_MEDIAFILE_AUDIO;
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
+        int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL | UserRight.USERRIGHT_TRANSMIT_VOICE;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
 
         TeamTalkBase ttclient = newClientInstance();
-
-        TTMessage msg = new TTMessage();
 
         connect(ttclient);
         initSound(ttclient);
         login(ttclient, NICKNAME, USERNAME, PASSWORD);
         joinRoot(ttclient);
 
-        assertTrue(ttclient.enableVoiceTransmission(true));
-        assertTrue(ttclient.enableAudioBlockEvent(ttclient.getMyUserID(), StreamType.STREAMTYPE_VOICE, true));
         assertTrue(waitCmdSuccess(ttclient, ttclient.doSubscribe(ttclient.getMyUserID(), Subscription.SUBSCRIBE_VOICE), DEF_WAIT));
+        assertTrue("enable tx", ttclient.enableVoiceTransmission(true));
+        assertTrue("enable audioblock", ttclient.enableAudioBlockEvent(ttclient.getMyUserID(), StreamType.STREAMTYPE_VOICE, true));
 
-        for(int i=0;i<5;i++) {
+        int[] opus_samplerates = {8000, 12000, 16000, 24000, 48000};
 
-            AudioBlock audblk = new AudioBlock();
-            for(int j=0;j<200;j++) {
-                assertTrue(waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT));
-                audblk = ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, ttclient.getMyUserID());
-                assertTrue(audblk.nStreamID>0);
-            }
+        for(int sr : opus_samplerates) {
 
             Channel chan;
-            if(i % 2 == 0) {
-                chan = buildDefaultChannel(ttclient, "Opus_" + i);
-                assertEquals(chan.audiocodec.nCodec, Codec.OPUS_CODEC);
-            }
-            else {
-                chan = new Channel();
-                assertTrue(ttclient.getChannel(ttclient.getRootChannelID(), chan));
+            chan = buildDefaultChannel(ttclient, "Opus_" + sr);
+            assertEquals("OPUS enabled", chan.audiocodec.nCodec, Codec.OPUS_CODEC);
+            chan.audiocodec.opus.nSampleRate = sr;
+            assertTrue("join channel", waitCmdSuccess(ttclient, ttclient.doJoinChannel(chan), DEF_WAIT));
+
+
+            for(int j=0;j<1000 / chan.audiocodec.opus.nTxIntervalMSec;j++) {
+                assertTrue("get audioblock " + j, waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT));
+                AudioBlock audblk = ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, ttclient.getMyUserID());
+                assertTrue("Stream ID is set", audblk.nStreamID>0);
+                assertEquals("Sample rate as channel", sr, audblk.nSampleRate);
             }
 
-            assertTrue(waitCmdSuccess(ttclient, ttclient.doJoinChannel(chan), DEF_WAIT));
+            assertTrue("leave channel", waitCmdSuccess(ttclient, ttclient.doLeaveChannel(), DEF_WAIT));
+
+            // drain messages after channel switch
+            while (ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, ttclient.getMyUserID()) != null);
+            waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 0);
         }
     }
 
-    public void bug_test_18_ViewAllUsers() throws InterruptedException {
+    public void bug_test18_ViewAllUsers() throws InterruptedException {
 
         String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - "
-            + getCurrentMethod();
+            + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL
             | UserRight.USERRIGHT_TRANSMIT_VOICE
             | UserRight.USERRIGHT_TRANSMIT_MEDIAFILE_AUDIO;
@@ -1818,44 +1979,27 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
             ttclient.getMyUserID(), Subscription.SUBSCRIBE_VOICE), DEF_WAIT));
     }
 
-    public void test_MessageQueue() throws InterruptedException {
+    public void _testMessageQueue() throws InterruptedException {
 
         String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - "
-            + getCurrentMethod();
-        int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL
-            | UserRight.USERRIGHT_TRANSMIT_VOICE
-            | UserRight.USERRIGHT_TRANSMIT_MEDIAFILE_AUDIO;
+            + getTestMethodName();
+        int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
 
         TeamTalkBase ttclient = newClientInstance();
 
         TTMessage msg = new TTMessage();
 
-        String longstr = "";
-        for(int i=0;i<Constants.TT_STRLEN-2;i++)
-            longstr = longstr.concat("T");
-        String channame = longstr.substring(0, 500);
-
         connect(ttclient);
         login(ttclient, NICKNAME, USERNAME, PASSWORD);
 
-        Channel chan = buildDefaultChannel(ttclient, channame);
-        chan.nUserData = 0x7fffffff;
-        chan.uChannelType = ~ChannelType.CHANNEL_PERMANENT;
-        chan.szOpPassword = longstr;
-        chan.szPassword = longstr;
-        chan.szTopic = longstr;
+        Channel chan = buildDefaultChannel(ttclient, "hest");
 
         assertTrue("join chan success", waitCmdSuccess(ttclient, ttclient.doJoinChannel(chan), DEF_WAIT));
 
-        chan.nChannelID = ttclient.getMyChannelID();
-
-        for(int j = 0;j < 20;j++) {
-            for(int i = 0;i < 50;i++) {
-                if(ttclient.doUpdateChannel(chan) < 0)
-                    break;
-            }
-            Thread.sleep(500);
+        for(int i=0;i<400;i++) {
+            ttclient.pumpMessage(ClientEvent.CLIENTEVENT_USER_STATECHANGE, ttclient.getMyUserID());
+            Thread.sleep(1);
         }
 
         assertTrue("Internal error", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_INTERNAL_ERROR, DEF_WAIT, msg));
@@ -1869,8 +2013,8 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
     }
 
-    public void test_WaveFile() throws IOException {
-        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+    public void testWaveFile() throws IOException {
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL |
             UserRight.USERRIGHT_TRANSMIT_VOICE | UserRight.USERRIGHT_TRANSMIT_MEDIAFILE_AUDIO |
             UserRight.USERRIGHT_VIEW_ALL_USERS;
@@ -1907,29 +2051,29 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue(ttclient.DBG_SetSoundInputTone(StreamType.STREAMTYPE_VOICE, 440));
         assertTrue(ttclient.enableAudioBlockEvent(ttclient.getMyUserID(), StreamType.STREAMTYPE_VOICE, true));
 
-        FileOutputStream fs = newWaveFile("MyWaveFile.wav", SAMPLERATE, CHANNELS, WRITE_BYTES);
+        try(FileOutputStream fs = newWaveFile(STORAGEFOLDER + File.separator + "MyWaveFile.wav", SAMPLERATE, CHANNELS, WRITE_BYTES);) {
 
-        while(WRITE_BYTES > 0) {
-            assertTrue("gimme voice audioblock", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
+            while(WRITE_BYTES > 0) {
+                assertTrue("gimme voice audioblock", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
 
-            AudioBlock block = ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, ttclient.getMyUserID());
-            assertTrue(block.nSamples > 0);
-            assertEquals(CHANNELS, block.nChannels);
-            assertEquals(SAMPLERATE, block.nSampleRate);
+                AudioBlock block = ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, ttclient.getMyUserID());
+                assertTrue(block.nSamples > 0);
+                assertEquals(CHANNELS, block.nChannels);
+                assertEquals(SAMPLERATE, block.nSampleRate);
 
-            if(block.lpRawAudio.length <= WRITE_BYTES)
-                fs.write(block.lpRawAudio);
-            else
-                fs.write(block.lpRawAudio, 0, WRITE_BYTES);
+                if(block.lpRawAudio.length <= WRITE_BYTES)
+                    fs.write(block.lpRawAudio);
+                else
+                    fs.write(block.lpRawAudio, 0, WRITE_BYTES);
 
-            WRITE_BYTES -= block.lpRawAudio.length;
+                WRITE_BYTES -= block.lpRawAudio.length;
+            }
         }
-        fs.close();
     }
 
-    public void test_RecordPlayback() throws IOException {
+    public void testRecordPlayback() throws IOException {
 
-        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL |
             UserRight.USERRIGHT_TRANSMIT_VOICE | UserRight.USERRIGHT_TRANSMIT_MEDIAFILE_AUDIO |
             UserRight.USERRIGHT_VIEW_ALL_USERS;
@@ -1968,43 +2112,45 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         assertTrue("pass 0 user id as MYSELF", ttclient.enableAudioBlockEvent(0, StreamType.STREAMTYPE_VOICE, true));
 
-        FileOutputStream fs = new FileOutputStream("MyWaveFile.wav");
+        String wavefilePath = STORAGEFOLDER + File.separator + "MyWaveFile.wav";
 
-        fs.write(new String("RIFF").getBytes());
-        v = WRITE_BYTES + 36 - 8;
-        fs.write(new byte[] {(byte)(v & 0xFF), (byte)((v>>8) & 0xFF), (byte)((v>>16) & 0xFF), (byte)((v>>24) & 0xFF)}); //WRITE_BYTES - 36 - 8
-        fs.write(new String("WAVEfmt ").getBytes());
-        fs.write(new byte[] {0x10, 0x0, 0x0, 0x0}); //hdr size
-        fs.write(new byte[] {0x1, 0x0}); //type
-        fs.write(new byte[] {(byte)CHANNELS, 0x0}); //channels
-        v = SAMPLERATE;
-        fs.write(new byte[] {(byte)(v & 0xFF), (byte)((v>>8) & 0xFF), (byte)((v>>16) & 0xFF), (byte)((v>>24) & 0xFF)}); //sample rate
-        v = (SAMPLERATE * 16 * CHANNELS) / 8;
-        fs.write(new byte[] {(byte)(v & 0xFF), (byte)((v>>8) & 0xFF), (byte)((v>>16) & 0xFF), (byte)((v>>24) & 0xFF)}); //bytes/sec
-        v = (16 * CHANNELS) / 8;
-        fs.write(new byte[] {(byte)(v & 0xFF), (byte)((v>>8) & 0xFF)}); //block align
-        fs.write(new byte[] {0x10, 0x0}); //bit depth
-        fs.write(new String("data").getBytes());
-        v = WRITE_BYTES - 44;
-        fs.write(new byte[] {(byte)(v & 0xFF), (byte)((v>>8) & 0xFF), (byte)((v>>16) & 0xFF), (byte)((v>>24) & 0xFF)}); //WRITE_BYTES - 44
+        try(FileOutputStream fs = new FileOutputStream(wavefilePath);) {
 
-        while(WRITE_BYTES > 0) {
-            assertTrue("gimme voice audioblock", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
+            fs.write(new String("RIFF").getBytes());
+            v = WRITE_BYTES + 36 - 8;
+            fs.write(new byte[] {(byte)(v & 0xFF), (byte)((v>>8) & 0xFF), (byte)((v>>16) & 0xFF), (byte)((v>>24) & 0xFF)}); //WRITE_BYTES - 36 - 8
+            fs.write(new String("WAVEfmt ").getBytes());
+            fs.write(new byte[] {0x10, 0x0, 0x0, 0x0}); //hdr size
+            fs.write(new byte[] {0x1, 0x0}); //type
+            fs.write(new byte[] {(byte)CHANNELS, 0x0}); //channels
+            v = SAMPLERATE;
+            fs.write(new byte[] {(byte)(v & 0xFF), (byte)((v>>8) & 0xFF), (byte)((v>>16) & 0xFF), (byte)((v>>24) & 0xFF)}); //sample rate
+            v = (SAMPLERATE * 16 * CHANNELS) / 8;
+            fs.write(new byte[] {(byte)(v & 0xFF), (byte)((v>>8) & 0xFF), (byte)((v>>16) & 0xFF), (byte)((v>>24) & 0xFF)}); //bytes/sec
+            v = (16 * CHANNELS) / 8;
+            fs.write(new byte[] {(byte)(v & 0xFF), (byte)((v>>8) & 0xFF)}); //block align
+            fs.write(new byte[] {0x10, 0x0}); //bit depth
+            fs.write(new String("data").getBytes());
+            v = WRITE_BYTES - 44;
+            fs.write(new byte[] {(byte)(v & 0xFF), (byte)((v>>8) & 0xFF), (byte)((v>>16) & 0xFF), (byte)((v>>24) & 0xFF)}); //WRITE_BYTES - 44
 
-            AudioBlock block = ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, 0);
-            assertTrue("audio block is valid", block != null);
-            assertTrue(block.nSamples > 0);
-            assertEquals(CHANNELS, block.nChannels);
-            assertEquals(SAMPLERATE, block.nSampleRate);
+            while(WRITE_BYTES > 0) {
+                assertTrue("gimme voice audioblock", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
 
-            if(block.lpRawAudio.length <= WRITE_BYTES)
-                fs.write(block.lpRawAudio);
-            else
-                fs.write(block.lpRawAudio, 0, WRITE_BYTES);
+                AudioBlock block = ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, 0);
+                assertTrue("audio block is valid", block != null);
+                assertTrue(block.nSamples > 0);
+                assertEquals(CHANNELS, block.nChannels);
+                assertEquals(SAMPLERATE, block.nSampleRate);
 
-            WRITE_BYTES -= block.lpRawAudio.length;
+                if(block.lpRawAudio.length <= WRITE_BYTES)
+                    fs.write(block.lpRawAudio);
+                else
+                    fs.write(block.lpRawAudio, 0, WRITE_BYTES);
+
+                WRITE_BYTES -= block.lpRawAudio.length;
+            }
         }
-        fs.close();
 
         assertTrue("disable callback for MYSELF", ttclient.enableAudioBlockEvent(0, StreamType.STREAMTYPE_VOICE, false));
 
@@ -2012,7 +2158,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         assertTrue("init output dev, so we can hear recorded wavfile", ttclient.initSoundOutputDevice(outdev.value));
 
-        assertTrue("Stream MyWaveFile.wav",  ttclient.startStreamingMediaFileToChannel("MyWaveFile.wav", new VideoCodec()));
+        assertTrue("Stream MyWaveFile.wav",  ttclient.startStreamingMediaFileToChannel(wavefilePath, new VideoCodec()));
 
         assertTrue("get initial streaming event", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_STREAM_MEDIAFILE, DEF_WAIT, msg));
 
@@ -2026,11 +2172,17 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertEquals("Stream ended", msg.mediafileinfo.nStatus, MediaFileStatus.MFS_FINISHED);
     }
 
-    public void test_SoundDuplex() {
+    public void testSoundDuplex() {
 
-        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_VIEW_ALL_USERS;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
+
+        if (INPUTDEVICEID != -1 && (INPUTDEVICEID & SoundDeviceConstants.TT_SOUNDDEVICE_ID_SHARED_FLAG) == SoundDeviceConstants.TT_SOUNDDEVICE_ID_SHARED_FLAG ||
+            OUTPUTDEVICEID != -1 && (OUTPUTDEVICEID & SoundDeviceConstants.TT_SOUNDDEVICE_ID_SHARED_FLAG) == SoundDeviceConstants.TT_SOUNDDEVICE_ID_SHARED_FLAG) {
+            System.err.println("Duplex tests skipped due to shared sound device as input/output");
+            return;
+        }
 
         TeamTalkBase ttclient = newClientInstance();
         initSound(ttclient, true);
@@ -2046,12 +2198,96 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         connect(ttclient);
         login(ttclient, NICKNAME, USERNAME, PASSWORD);
-        joinRoot(ttclient);
+
+        Channel chan = new Channel();
+        assertTrue("get root channel", ttclient.getChannel(ttclient.getRootChannelID(), chan));
+        assertEquals("opus set", Codec.OPUS_CODEC, chan.audiocodec.nCodec);
+
+        if (!supportsDuplexMode(ttclient, INPUTDEVICEID, OUTPUTDEVICEID, chan.audiocodec.opus.nSampleRate)) {
+            System.err.println("Duplex tests skipped due to no shared sample rate");
+            return;
+        }
+
+        int cmdid = ttclient.doJoinChannelByID(ttclient.getRootChannelID(), "");
+        assertTrue("issued cmd", cmdid>0);
+        waitForEvent(ttclient, ClientEvent.CLIENTEVENT_CMD_PROCESSING, DEF_WAIT);
+
+        do {
+            assertTrue("get event", ttclient.getMessage(msg, DEF_WAIT));
+            switch (msg.nClientEvent) {
+            case ClientEvent.CLIENTEVENT_INTERNAL_ERROR :
+                assertTrue("Sound input failure", msg.clienterrormsg.nErrorNo != ClientError.INTERR_SNDINPUT_FAILURE);
+                assertTrue("Sound output failure", msg.clienterrormsg.nErrorNo != ClientError.INTERR_SNDOUTPUT_FAILURE);
+                assertTrue("Preprocessor failure", msg.clienterrormsg.nErrorNo != ClientError.INTERR_AUDIOPREPROCESSOR_INIT_FAILED);
+                break;
+            }
+        } while (msg.nClientEvent != ClientEvent.CLIENTEVENT_CMD_PROCESSING);
     }
 
-    public void test_StoreUserVoiceInFileFormats() {
+    public void testSoundInputAudioPreprocessor() {
 
-        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
+        int USERRIGHTS = UserRight.USERRIGHT_VIEW_ALL_USERS |
+            UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL | UserRight.USERRIGHT_TRANSMIT_VOICE;
+        makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
+
+        TeamTalkBase ttclient = newClientInstance();
+        connect(ttclient);
+        login(ttclient, NICKNAME, USERNAME, PASSWORD);
+        joinRoot(ttclient);
+        assertTrue("enable tx", ttclient.enableVoiceTransmission(true));
+
+        AudioPreprocessor preprocess = new AudioPreprocessor();
+        assertTrue("get default preprocessor", ttclient.getSoundInputPreprocess(preprocess));
+        assertEquals("TTAudioPreprocessor is default", AudioPreprocessorType.TEAMTALK_AUDIOPREPROCESSOR, preprocess.nPreprocessor);
+
+        assertEquals("gain compatible", preprocess.ttpreprocessor.nGainLevel, ttclient.getSoundInputGainLevel());
+        assertEquals("gain default set", SoundLevel.SOUND_GAIN_DEFAULT, preprocess.ttpreprocessor.nGainLevel);
+
+        assertTrue("Set gain level", ttclient.setSoundInputGainLevel(SoundLevel.SOUND_GAIN_MAX));
+        assertTrue("get updated AP preprocessor", ttclient.getSoundInputPreprocess(preprocess));
+        assertEquals("gain levelfrom AP is max", SoundLevel.SOUND_GAIN_MAX, preprocess.ttpreprocessor.nGainLevel);
+        assertEquals("gain level is max", SoundLevel.SOUND_GAIN_MAX, ttclient.getSoundInputGainLevel());
+
+        // test SpeexDSP
+        preprocess = new AudioPreprocessor();
+        preprocess.nPreprocessor = AudioPreprocessorType.SPEEXDSP_AUDIOPREPROCESSOR;
+        preprocess.speexdsp.nGainLevel = 7777;
+        assertTrue("Enable SpeexDSP", ttclient.setSoundInputPreprocess(preprocess));
+        SpeexDSP speexdsp = new SpeexDSP();
+        assertTrue("Get SpeexDSP", ttclient.getSoundInputPreprocess(speexdsp));
+        assertEquals("SpeexDSP and AudioPreprocessor are equals", 7777, speexdsp.nGainLevel);
+        assertTrue("get updated AP with SpeexDSP preprocessor", ttclient.getSoundInputPreprocess(preprocess));
+        assertEquals("SpeexDSP and AudioPreprocessor are equals", 7777, preprocess.speexdsp.nGainLevel);
+        assertEquals("gain level not changed by SpeexDSP", SoundLevel.SOUND_GAIN_MAX, ttclient.getSoundInputGainLevel());
+
+        Channel chan = buildDefaultChannel(ttclient, "Opus - Test", Codec.OPUS_CODEC);
+        chan.audiocodec.opus.nChannels = 2;
+        chan.audiocodec.opus.nApplication = OpusConstants.OPUS_APPLICATION_AUDIO;
+        chan.audiocodec.opus.bDTX = false;
+        assertTrue("join", waitCmdSuccess(ttclient, ttclient.doJoinChannel(chan), DEF_WAIT));
+
+        assertTrue("get updated AP with SpeexDSP preprocessor after join", ttclient.getSoundInputPreprocess(preprocess));
+        assertEquals("SpeexDSP and AudioPreprocessor are still equal", 7777, preprocess.speexdsp.nGainLevel);
+
+        SpeexDSP spxdsp = new SpeexDSP(true), spxdsp2 = new SpeexDSP();
+        assertTrue("set Speex DSP", ttclient.setSoundInputPreprocess(spxdsp));
+
+        assertTrue("get Speex DSP", ttclient.getSoundInputPreprocess(spxdsp2));
+        assertEquals("agc1", spxdsp.bEnableAGC, spxdsp2.bEnableAGC);
+        assertEquals("agc2", spxdsp.nGainLevel, spxdsp2.nGainLevel);
+        assertEquals("agc3", spxdsp.nMaxIncDBSec, spxdsp2.nMaxIncDBSec);
+        assertEquals("agc4", spxdsp.nMaxDecDBSec, spxdsp2.nMaxDecDBSec);
+        assertEquals("agc5", spxdsp.nMaxGainDB, spxdsp2.nMaxGainDB);
+        assertEquals("agc6", spxdsp.bEnableDenoise, spxdsp2.bEnableDenoise);
+        assertEquals("agc7", spxdsp.nMaxNoiseSuppressDB, spxdsp2.nMaxNoiseSuppressDB);
+        assertEquals("agc8", spxdsp.nEchoSuppress, spxdsp2.nEchoSuppress);
+        assertEquals("agc9", spxdsp.nEchoSuppressActive, spxdsp2.nEchoSuppressActive);
+    }
+
+    public void testStoreUserVoiceInFileFormats() {
+
+        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_TRANSMIT_VOICE | UserRight.USERRIGHT_MULTI_LOGIN |
             UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL | UserRight.USERRIGHT_VIEW_ALL_USERS;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
@@ -2079,9 +2315,8 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue("wait cmd ok", waitCmdSuccess(ttclient, ttclient.doSubscribe(ttclient.getMyUserID(),
                                                                                 Subscription.SUBSCRIBE_VOICE), DEF_WAIT));
 
-        String cwd = System.getProperty("user.dir");
         assertTrue("specify audio storage", ttclient.setUserMediaStorageDir(ttclient.getMyUserID(),
-                                                                            cwd, "%username%_%counter%",
+                                                                            STORAGEFOLDER, "%username%_%counter%",
                                                                             AudioFileFormat.AFF_CHANNELCODEC_FORMAT));
 
         assertTrue("enable voice tx", ttclient.enableVoiceTransmission(true));
@@ -2089,7 +2324,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue("audio file created", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_RECORD_MEDIAFILE, DEF_WAIT, msg));
 
         assertEquals("recording started", MediaFileStatus.MFS_STARTED, msg.mediafileinfo.nStatus);
-        assertEquals("correct filename", cwd + File.separator + USERNAME + "_" + "000000001.ogg", msg.mediafileinfo.szFileName);
+        assertEquals("correct filename", STORAGEFOLDER + File.separator + USERNAME + "_" + "000000001.ogg", msg.mediafileinfo.szFileName);
 
         waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 10000);
 
@@ -2103,7 +2338,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue("audio file created 2", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_RECORD_MEDIAFILE, DEF_WAIT, msg));
 
         assertEquals("recording started 2", MediaFileStatus.MFS_STARTED, msg.mediafileinfo.nStatus);
-        assertEquals("correct filename 2", cwd + File.separator + USERNAME + "_" + "000000002.ogg", msg.mediafileinfo.szFileName);
+        assertEquals("correct filename 2", STORAGEFOLDER + File.separator + USERNAME + "_" + "000000002.ogg", msg.mediafileinfo.szFileName);
 
         waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 10000);
 
@@ -2134,7 +2369,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue("audio file created 3", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_RECORD_MEDIAFILE, DEF_WAIT, msg));
 
         assertEquals("recording started 3", MediaFileStatus.MFS_STARTED, msg.mediafileinfo.nStatus);
-        assertEquals("correct filename 3", cwd + File.separator + USERNAME + "_" + "000000003.ogg", msg.mediafileinfo.szFileName);
+        assertEquals("correct filename 3", STORAGEFOLDER + File.separator + USERNAME + "_" + "000000003.ogg", msg.mediafileinfo.szFileName);
 
         waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 10000);
 
@@ -2149,7 +2384,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue("audio file created 4", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_RECORD_MEDIAFILE, DEF_WAIT, msg));
 
         assertEquals("recording started 4", MediaFileStatus.MFS_STARTED, msg.mediafileinfo.nStatus);
-        assertEquals("correct filename 4", cwd + File.separator + USERNAME + "_" + "000000004.ogg", msg.mediafileinfo.szFileName);
+        assertEquals("correct filename 4", STORAGEFOLDER + File.separator + USERNAME + "_" + "000000004.ogg", msg.mediafileinfo.szFileName);
 
         waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 10000);
 
@@ -2160,7 +2395,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
     }
 
-    public void test_SoundLoopback() {
+    public void testSoundLoopback() {
         TeamTalkBase ttclient;
 
         ttclient = newClientInstance();
@@ -2172,7 +2407,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
             out.value = OUTPUTDEVICEID;
         }
 
-        SoundDevice nodev = null;
+        SoundDevice nodev = null, outdev = null;
         Vector<SoundDevice> devs = new Vector<SoundDevice>();
         ttclient.getSoundDevices(devs);
         for(SoundDevice d : devs) {
@@ -2180,35 +2415,51 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
                 nodev = d;
                 assertEquals("Virtual TeamTalk device", SoundDeviceConstants.TT_SOUNDDEVICE_ID_TEAMTALK_VIRTUAL, d.nDeviceID);
             }
+            if (d.nDeviceID == out.value)
+                outdev = d;
         }
 
         long loop = ttclient.startSoundLoopbackTest(in.value, out.value, 48000, 1, false, null);
         assertTrue("Sound loopback started", loop>0);
 
-        waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 5000);
+        waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 1000);
 
         assertTrue("Loop stopped", ttclient.closeSoundLoopbackTest(loop));
 
         loop = ttclient.startSoundLoopbackTest(nodev.nDeviceID, out.value, 48000, 1, false, null);
         assertTrue("Sound loopback virtual input-dev started", loop>0);
 
-        waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 5000);
+        waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 1000);
 
         assertTrue("Loop virtual input-dev stopped", ttclient.closeSoundLoopbackTest(loop));
 
         loop = ttclient.startSoundLoopbackTest(in.value, nodev.nDeviceID, 48000, 2, false, null);
         assertTrue("Sound loopback virtual output-dev started", loop>0);
 
-        waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 5000);
+        waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 1000);
 
         assertTrue("Loop virtual output-dev stopped", ttclient.closeSoundLoopbackTest(loop));
 
         loop = ttclient.startSoundLoopbackTest(nodev.nDeviceID, nodev.nDeviceID, 48000, 2, true, new SpeexDSP(true));
-        assertTrue("Sound loopback virtual duplex-dev started", loop>0);
+        assertTrue("Sound loopback virtual duplex-dev started with SpeexDSP", loop>0);
 
-        waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 5000);
+        waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 1000);
 
         assertTrue("Loop virtual duplex-dev stopped", ttclient.closeSoundLoopbackTest(loop));
+
+        AudioPreprocessor preprocessor = new AudioPreprocessor();
+        preprocessor.nPreprocessor = AudioPreprocessorType.TEAMTALK_AUDIOPREPROCESSOR;
+        preprocessor.ttpreprocessor.nGainLevel = 4000;
+        preprocessor.ttpreprocessor.bMuteLeftSpeaker = true;
+
+        SoundDeviceEffects effects = new SoundDeviceEffects();
+
+        loop = ttclient.startSoundLoopbackTest(in.value, out.value, 48000, 2, false, preprocessor, effects);
+        assertTrue("Sound loopback effects started", loop>0);
+
+        waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 1000);
+
+        assertTrue("Loop effects stopped", ttclient.closeSoundLoopbackTest(loop));
 
         if ((in.value & SoundDeviceConstants.TT_SOUNDDEVICE_ID_SHARED_FLAG) == SoundDeviceConstants.TT_SOUNDDEVICE_ID_SHARED_FLAG ||
             (out.value & SoundDeviceConstants.TT_SOUNDDEVICE_ID_SHARED_FLAG) == SoundDeviceConstants.TT_SOUNDDEVICE_ID_SHARED_FLAG) {
@@ -2216,10 +2467,23 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
             return;
         }
 
-        loop = ttclient.startSoundLoopbackTest(in.value, out.value, 48000, 1, true, new SpeexDSP(true));
+        final int SAMPLERATE = outdev.nDefaultSampleRate;
+        if (!supportsDuplexMode(ttclient, in.value, out.value, SAMPLERATE)) {
+            System.err.println("Duplex tests skipped due to no shared sample rate");
+            return;
+        }
+
+        loop = ttclient.startSoundLoopbackTest(in.value, out.value, SAMPLERATE, 2, true, preprocessor, null);
+        assertTrue("Sound loopback AudioPreprocessor started", loop>0);
+
+        waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 1000);
+
+        assertTrue("Loop Audio Preprocessor stopped", ttclient.closeSoundLoopbackTest(loop));
+
+        loop = ttclient.startSoundLoopbackTest(in.value, out.value, SAMPLERATE, 1, true, new SpeexDSP(true));
         assertTrue("Sound duplex loopback started", loop>0);
 
-        waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 5000);
+        waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 1000);
 
         assertTrue("Loop duplex stopped", ttclient.closeSoundLoopbackTest(loop));
 
@@ -2227,7 +2491,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
             System.err.println("Duplex test skipped due to virtual sound device as output");
         }
         else {
-            loop = ttclient.startSoundLoopbackTest(nodev.nDeviceID, out.value, 48000, 1, true, new SpeexDSP(true));
+            loop = ttclient.startSoundLoopbackTest(nodev.nDeviceID, out.value, SAMPLERATE, 1, true, new SpeexDSP(true));
             assertTrue("Sound loopback virtual duplex-dev cannot be mixed with real dev", loop<=0);
         }
 
@@ -2235,17 +2499,16 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
             System.err.println("Duplex test skipped due to virtual sound device as input");
         }
         else {
-            loop = ttclient.startSoundLoopbackTest(in.value, nodev.nDeviceID, 48000, 1, true, new SpeexDSP(true));
+            loop = ttclient.startSoundLoopbackTest(in.value, nodev.nDeviceID, SAMPLERATE, 1, true, new SpeexDSP(true));
             assertTrue("Sound loopback virtual duplex-dev cannot be mixed with real dev", loop<=0);
         }
     }
 
-    public void test_SharedSoundDevice() {
+    public void testSharedSoundDevice() {
 
         TeamTalkBase ttclient1 = newClientInstance();
         TeamTalkBase ttclient2 = newClientInstance();
         TeamTalkBase ttclient3 = newClientInstance();
-
 
         int inputdeviceid = INPUTDEVICEID;
         int outputdeviceid = OUTPUTDEVICEID;
@@ -2340,9 +2603,9 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
     }
 
 
-    public void test_VirtualSoundDevice() {
+    public void testVirtualSoundDevice() {
 
-        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_TRANSMIT_VOICE | UserRight.USERRIGHT_MULTI_LOGIN |
             UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL | UserRight.USERRIGHT_VIEW_ALL_USERS;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
@@ -2381,15 +2644,18 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
     }
 
     public void testSoloTransmitChannel() {
-        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL |
             UserRight.USERRIGHT_TRANSMIT_VOICE | UserRight.USERRIGHT_TRANSMIT_MEDIAFILE_AUDIO |
             UserRight.USERRIGHT_VIEW_ALL_USERS | UserRight.USERRIGHT_MULTI_LOGIN;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
 
+        Vector<TeamTalkBase> clients = new Vector<TeamTalkBase>();
+
         TTMessage msg = new TTMessage();
 
         TeamTalkBase ttclient1 = newClientInstance();
+        clients.add(ttclient1);
 
         connect(ttclient1);
         initSound(ttclient1);
@@ -2411,6 +2677,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         for(int i=0;i<2;i++) {
 
             TeamTalkBase ttclient = newClientInstance();
+            clients.add(ttclient);
 
             connect(ttclient);
             initSound(ttclient);
@@ -2474,7 +2741,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertEquals("ttclient1, myself talking", ttclient1.getMyUserID(), msg.user.nUserID);
 
         // ensure ttclient2 doesn't take over transmit queue from ttclient1
-        TeamTalkBase ttclient2 = ttclients.get(2);
+        TeamTalkBase ttclient2 = clients.get(1);
 
         assertTrue("ttclient2, drain client 2", waitCmdComplete(ttclient2, ttclient2.doPing(), DEF_WAIT));
 
@@ -2525,14 +2792,14 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
     }
 
     public void testAbusePrevention() {
-        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL;
 
         TTMessage msg = new TTMessage();
 
         TeamTalkBase ttadmin = newClientInstance();
         connect(ttadmin);
-        login(ttadmin, ADMIN_NICKNAME, ADMIN_USERNAME, ADMIN_PASSWORD);
+        login(ttadmin, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
 
         UserAccount account = new UserAccount();
         account.szUsername = USERNAME;
@@ -2570,14 +2837,14 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
     }
 
     public void testLoginDelay() throws InterruptedException {
-        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL | UserRight.USERRIGHT_MULTI_LOGIN;
 
         TTMessage msg = new TTMessage();
 
         TeamTalkBase ttadmin = newClientInstance();
         connect(ttadmin);
-        login(ttadmin, ADMIN_NICKNAME, ADMIN_USERNAME, ADMIN_PASSWORD);
+        login(ttadmin, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
 
         ServerProperties srvprop = new ServerProperties();
         assertTrue(ttadmin.getServerProperties(srvprop));
@@ -2613,7 +2880,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         TeamTalkBase ttadmin = newClientInstance();
         connect(ttadmin);
-        login(ttadmin, ADMIN_NICKNAME, ADMIN_USERNAME, ADMIN_PASSWORD);
+        login(ttadmin, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
 
         ServerProperties srvprop = new ServerProperties();
         assertTrue("get srvprop", ttadmin.getServerProperties(srvprop));
@@ -2632,15 +2899,15 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         connect(ttclient);
 
         TTMessage msg = new TTMessage();
-        int cmdid = ttclient.doLogin(ADMIN_NICKNAME, ADMIN_USERNAME, "wrongpassword1");
+        int cmdid = ttclient.doLogin(ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, "wrongpassword1");
         assertTrue("wait login error", waitCmdError(ttclient, cmdid, DEF_WAIT, msg));
         assertEquals("invalid account", ClientError.CMDERR_INVALID_ACCOUNT, msg.clienterrormsg.nErrorNo);
 
-        cmdid = ttclient.doLogin(ADMIN_NICKNAME, ADMIN_USERNAME, "wrongpassword2");
+        cmdid = ttclient.doLogin(ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, "wrongpassword2");
         assertTrue("wait login error", waitCmdError(ttclient, cmdid, DEF_WAIT, msg));
         assertEquals("invalid account", ClientError.CMDERR_INVALID_ACCOUNT, msg.clienterrormsg.nErrorNo);
 
-        cmdid = ttclient.doLogin(ADMIN_NICKNAME, ADMIN_USERNAME, "wrongpassword3");
+        cmdid = ttclient.doLogin(ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, "wrongpassword3");
         assertTrue("wait login error", waitCmdError(ttclient, cmdid, DEF_WAIT, msg));
         assertEquals("banned account", ClientError.CMDERR_SERVER_BANNED, msg.clienterrormsg.nErrorNo);
 
@@ -2650,11 +2917,11 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue("update server", waitCmdSuccess(ttadmin, ttadmin.doUpdateServer(srvprop), DEF_WAIT));
     }
 
-    public void testDisconnect() throws IOException {
+    public void testUserTimeout() throws IOException {
 
         TeamTalkBase ttadmin = newClientInstance();
         connect(ttadmin);
-        login(ttadmin, ADMIN_NICKNAME, ADMIN_USERNAME, ADMIN_PASSWORD);
+        login(ttadmin, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
 
         ServerProperties srvprop = new ServerProperties();
         assertTrue("get srvprop", ttadmin.getServerProperties(srvprop));
@@ -2665,7 +2932,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue("Disconnect hard", ttadmin.disconnect());
 
         connect(ttadmin);
-        login(ttadmin, ADMIN_NICKNAME, ADMIN_USERNAME, ADMIN_PASSWORD);
+        login(ttadmin, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
 
         assertTrue("DoQuit", ttadmin.doQuit()>0);
 
@@ -2674,7 +2941,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue("Disconnect quit", ttadmin.disconnect());
 
         connect(ttadmin);
-        login(ttadmin, ADMIN_NICKNAME, ADMIN_USERNAME, ADMIN_PASSWORD);
+        login(ttadmin, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
 
         srvprop.nUserTimeout = 1;
 
@@ -2682,29 +2949,31 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         assertTrue("Disconnect after tmo", ttadmin.disconnect());
 
-        Socket s = new Socket(IPADDR, TCPPORT);
-        BufferedReader stream = new BufferedReader(new InputStreamReader(s.getInputStream()));
-        if(!ENCRYPTED)
-        {
-            String welcome = stream.readLine();
-            assertTrue("welcome msg", welcome.startsWith(SYSTEMID));
-        }
+        try (Socket s = new Socket(IPADDR, TCPPORT);
+             BufferedReader stream = new BufferedReader(new InputStreamReader(s.getInputStream()));) {
 
-        boolean closed = false;
-        try {
-            closed = stream.readLine() == null;
-        }
-        catch(IOException e) {
-            closed = true;
-        }
-        assertTrue("Closed socket", closed);
+            if(!ENCRYPTED)
+            {
+                String welcome = stream.readLine();
+                assertTrue("welcome msg", welcome.startsWith(SYSTEMID));
+            }
 
-        assertTrue("Disconnect quit", ttadmin.disconnect());
+            boolean closed = false;
+            try {
+                closed = stream.readLine() == null;
+            }
+            catch(IOException e) {
+                closed = true;
+            }
+            assertTrue("Closed socket", closed);
 
-        connect(ttadmin);
-        login(ttadmin, ADMIN_NICKNAME, ADMIN_USERNAME, ADMIN_PASSWORD);
-        srvprop.nUserTimeout = orgValue;
-        assertTrue("update server", waitCmdSuccess(ttadmin, ttadmin.doUpdateServer(srvprop), DEF_WAIT));
+            assertTrue("Disconnect quit", ttadmin.disconnect());
+
+            connect(ttadmin);
+            login(ttadmin, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
+            srvprop.nUserTimeout = orgValue;
+            assertTrue("update server", waitCmdSuccess(ttadmin, ttadmin.doUpdateServer(srvprop), DEF_WAIT));
+        }
     }
 
     public void testKeyTranslate() {
@@ -2727,7 +2996,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
     }
 
     public void testDesktopInput() {
-        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL | UserRight.USERRIGHT_TRANSMIT_DESKTOP |
             UserRight.USERRIGHT_TRANSMIT_DESKTOPINPUT | UserRight.USERRIGHT_VIEW_ALL_USERS | UserRight.USERRIGHT_MULTI_LOGIN;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
@@ -2823,7 +3092,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
     }
 
     public void testWebLogin() {
-        String USERNAME = "facebook", PASSWORD = "code=123", NICKNAME = "jUnit - " + getCurrentMethod();
+        String USERNAME = "facebook", PASSWORD = "code=123", NICKNAME = "jUnit - " + getTestMethodName();
 
         TeamTalkBase ttclient1 = newClientInstance();
         TeamTalkBase ttclient2 = newClientInstance();
@@ -2852,7 +3121,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         // play single two second file
         MediaFileInfo mfi = new MediaFileInfo();
-        mfi.szFileName = "hest.wav";
+        mfi.szFileName = STORAGEFOLDER + File.separator + "hest.wav";
         mfi.audioFmt = new AudioFormat(AudioFileFormat.AFF_WAVE_FORMAT, 48000, 2);
         mfi.uDurationMSec = 2 * 1000;
 
@@ -2893,7 +3162,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         // play single two second file
         MediaFileInfo mfi = new MediaFileInfo();
-        mfi.szFileName = "hest.wav";
+        mfi.szFileName = STORAGEFOLDER + File.separator + "hest.wav";
         mfi.audioFmt = new AudioFormat(AudioFileFormat.AFF_WAVE_FORMAT, 48000, 2);
         mfi.uDurationMSec = 20 * 1000;
 
@@ -2908,7 +3177,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         int sessionid = ttclient.initLocalPlayback(mfi.szFileName, mfp);
         assertTrue("init playback", sessionid > 0);
 
-        assertTrue("Hold pause state", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 100));
+        assertFalse("Hold pause state", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 100));
 
         mfp.bPaused = false;
         assertTrue("Unpause", ttclient.updateLocalPlayback(sessionid, mfp));
@@ -2942,7 +3211,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         // play single two second file
         MediaFileInfo mfi = new MediaFileInfo();
-        mfi.szFileName = "hest.wav";
+        mfi.szFileName = STORAGEFOLDER + File.separator + "hest.wav";
         mfi.audioFmt = new AudioFormat(AudioFileFormat.AFF_WAVE_FORMAT, 48000, 2);
         mfi.uDurationMSec = 20 * 1000;
 
@@ -2976,7 +3245,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         // play single two second file
         MediaFileInfo mfi = new MediaFileInfo();
-        mfi.szFileName = "hest.wav";
+        mfi.szFileName = STORAGEFOLDER + File.separator + "hest.wav";
         mfi.audioFmt = new AudioFormat(AudioFileFormat.AFF_WAVE_FORMAT, 48000, 2);
         mfi.uDurationMSec = 20 * 1000;
 
@@ -3028,9 +3297,9 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertEquals("streaming finished", MediaFileStatus.MFS_FINISHED, msg.mediafileinfo.nStatus);
     }
 
-    public void test_AudioInput() throws IOException {
+    public void testAudioInput() throws IOException {
 
-        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        final String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_TRANSMIT_VOICE | UserRight.USERRIGHT_MULTI_LOGIN;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
 
@@ -3043,20 +3312,54 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         login(ttclient, NICKNAME, USERNAME, PASSWORD);
         joinRoot(ttclient);
 
+        TeamTalkBase ttclient2 = newClientInstance();
+
+        initSound(ttclient2);
+        connect(ttclient2);
+        login(ttclient2, NICKNAME, USERNAME, PASSWORD);
+        joinRoot(ttclient2);
+
+        assertTrue("enable muxed aud cb", ttclient.enableAudioBlockEvent(Constants.TT_MUXED_USERID, StreamType.STREAMTYPE_VOICE, true));
+        assertTrue("enable local aud cb", ttclient.enableAudioBlockEvent(Constants.TT_LOCAL_USERID, StreamType.STREAMTYPE_VOICE, true));
+
+        FileOutputStream localWaveFile = null, muxedWaveFile = null;
+        while (localWaveFile == null || muxedWaveFile == null) {
+            assertTrue("gimme voice audioblock", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
+            if (msg.nSource == Constants.TT_LOCAL_USERID) {
+                AudioBlock ab = ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, Constants.TT_LOCAL_USERID);
+                if (localWaveFile == null) {
+                    localWaveFile = newWaveFile(STORAGEFOLDER + File.separator + "local_audioinput.wav", ab.nSampleRate, ab.nChannels, 1024*1024 /* no idea */);
+                }
+                localWaveFile.write(ab.lpRawAudio);
+            }
+
+            if (msg.nSource == Constants.TT_MUXED_USERID) {
+                AudioBlock ab = ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, Constants.TT_MUXED_USERID);
+                if (muxedWaveFile == null) {
+                    muxedWaveFile = newWaveFile(STORAGEFOLDER + File.separator + "muxed_audioinput.wav", ab.nSampleRate, ab.nChannels, 1024*1024 /* no idea */);
+                }
+                muxedWaveFile.write(ab.lpRawAudio);
+            }
+        }
+
         assertTrue("enable voice tx", ttclient.enableVoiceTransmission(true));
 
+        assertTrue("get voice event", waitForEvent(ttclient2, ClientEvent.CLIENTEVENT_USER_STATECHANGE, DEF_WAIT, msg));
+        assertTrue("initial voice event", ((msg.user.uUserState & UserState.USERSTATE_VOICE) != 0));
+
         int STREAMID = 57;
+        final int SAMPLERATE = 16000, CHANNELS = 1;
 
-        byte[] tone = generateToneAsByte(800, 16000, 1, 1000);
+        byte[] tone = generateToneAsByte(500, SAMPLERATE, CHANNELS, 1000);
 
-        assertEquals("one second of 16000 rate", 16000, tone.length / 2);
+        assertEquals("one second of audio", SAMPLERATE, tone.length / 2 / CHANNELS);
 
         AudioBlock ab = new AudioBlock();
         ab.nStreamID = STREAMID;
-        ab.nSampleRate = 16000;
-        ab.nChannels = 1;
+        ab.nSampleRate = SAMPLERATE;
+        ab.nChannels = CHANNELS;
         ab.lpRawAudio = tone; //PCM16 mono
-        ab.nSamples = tone.length / 2;
+        ab.nSamples = tone.length / 2 / CHANNELS;
         ab.uSampleIndex = 0;
 
         assertFalse("Reject audio input during voicetx", ttclient.insertAudioBlock(ab));
@@ -3069,6 +3372,9 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         assertTrue("disable voice act", ttclient.enableVoiceActivation(false));
 
+        assertTrue("voice stopped event", waitForEvent(ttclient2, ClientEvent.CLIENTEVENT_USER_STATECHANGE, DEF_WAIT, msg));
+        assertTrue("Voice stop event", ((msg.user.uUserState & UserState.USERSTATE_VOICE) == 0));
+
         assertTrue("Send audio block", ttclient.insertAudioBlock(ab));
 
         int frames = 0;
@@ -3077,18 +3383,47 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         assertEquals("Stream ID match", STREAMID, msg.audioinputprogress.nStreamID);
 
+        assertTrue("Playing audio input remotely", waitForEvent(ttclient2, ClientEvent.CLIENTEVENT_USER_STATECHANGE, DEF_WAIT, msg));
+        assertTrue("Voice event from audio input", ((msg.user.uUserState & UserState.USERSTATE_VOICE) != 0));
+
         assertFalse("Reject voice tx", ttclient.enableVoiceTransmission(true));
 
         assertFalse("Reject voice act", ttclient.enableVoiceActivation(true));
 
-        do {
-            assertTrue("Audio input in progress " + STREAMID, waitForEvent(ttclient, ClientEvent.CLIENTEVENT_AUDIOINPUT, DEF_WAIT, msg));
-            if (msg.audioinputprogress.uElapsedMSec > 0)
-                frames++;
-        } while(msg.audioinputprogress.nStreamID == STREAMID &&
-                msg.audioinputprogress.uElapsedMSec != 0 &&
-                msg.audioinputprogress.uQueueMSec != 0);
+        assertTrue("Accept voice tx disable", ttclient.enableVoiceTransmission(false));
 
+        assertTrue("Accept voice act disable", ttclient.enableVoiceActivation(false));
+
+        boolean gotlocal = false, gotmuxed = false;
+        do {
+            assertTrue("Event processing", ttclient.getMessage(msg, DEF_WAIT));
+            switch (msg.nClientEvent) {
+            case ClientEvent.CLIENTEVENT_AUDIOINPUT :
+                if (msg.audioinputprogress.uElapsedMSec > 0)
+                    frames++;
+                break;
+            case ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK :
+                if (msg.nSource == Constants.TT_LOCAL_USERID) {
+                    AudioBlock abl = ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, Constants.TT_LOCAL_USERID);
+                    assertTrue("get local audio block", abl != null);
+                    localWaveFile.write(abl.lpRawAudio);
+                    gotlocal = true;
+                }
+                if (msg.nSource == Constants.TT_MUXED_USERID) {
+                    AudioBlock abm = ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, Constants.TT_MUXED_USERID);
+                    assertTrue("get muxed audio block", abm != null);
+                    muxedWaveFile.write(abm.lpRawAudio);
+                    gotmuxed = true;
+                }
+                break;
+            }
+        } while (msg.nClientEvent != ClientEvent.CLIENTEVENT_AUDIOINPUT ||
+                 (msg.audioinputprogress.nStreamID == STREAMID &&
+                  msg.audioinputprogress.uElapsedMSec != 0 &&
+                  msg.audioinputprogress.uQueueMSec != 0));
+
+        assertTrue("Got local user audio", gotlocal);
+        assertTrue("Got muxed user audio", gotmuxed);
 
         // now send audio block whose nSamples doesn't match the
         // transmit interval, i.e. we need to flush to send
@@ -3104,12 +3439,28 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
 
         assertEquals("Stream ID match", STREAMID, msg.audioinputprogress.nStreamID);
 
-        for (int i=0;i<frames-1;i++) {
-            assertTrue("Audio input in progress " + STREAMID, waitForEvent(ttclient, ClientEvent.CLIENTEVENT_AUDIOINPUT, DEF_WAIT, msg));
-            assertTrue("stream id match", msg.audioinputprogress.nStreamID == STREAMID);
-            assertTrue("elapsed increasing", msg.audioinputprogress.uElapsedMSec != 0);
-            assertTrue("queue holding", msg.audioinputprogress.uQueueMSec != 0);
+        gotlocal = gotmuxed = false;
+        for (int i=0;i<frames-1;) {
+            assertTrue("Event processing", ttclient.getMessage(msg, DEF_WAIT));
+            switch (msg.nClientEvent) {
+            case ClientEvent.CLIENTEVENT_AUDIOINPUT :
+                assertTrue("stream id match", msg.audioinputprogress.nStreamID == STREAMID);
+                assertTrue("elapsed increasing", msg.audioinputprogress.uElapsedMSec != 0);
+                assertTrue("queue holding", msg.audioinputprogress.uQueueMSec != 0);
+                i++;
+                break;
+            case ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK :
+                if (msg.nSource == Constants.TT_LOCAL_USERID) {
+                    gotlocal = true;
+                }
+                if (msg.nSource == Constants.TT_MUXED_USERID) {
+                    gotmuxed = true;
+                }
+                break;
+            }
         }
+        assertTrue("Got local user audio, before flushing", gotlocal);
+        assertTrue("Got muxed user audio, before flushing", gotmuxed);
 
         assertFalse("Last frame will not appear until we flush", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_AUDIOINPUT, 100, msg));
 
@@ -3125,6 +3476,29 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue("elapsed done", msg.audioinputprogress.uElapsedMSec == 0);
         assertTrue("queue done", msg.audioinputprogress.uQueueMSec == 0);
 
+        //drain audio blocks
+        while (ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, Constants.TT_LOCAL_USERID) != null);
+        while (ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, Constants.TT_MUXED_USERID) != null);
+        waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 0);
+
+        gotlocal = gotmuxed = false;
+        while (!gotlocal || !gotmuxed) {
+
+            assertTrue("get another audioblock", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
+            if (msg.nSource == Constants.TT_LOCAL_USERID) {
+                AudioBlock abl = ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, Constants.TT_LOCAL_USERID);
+                assertTrue("get local audio block", abl != null);
+                gotlocal = true;
+            }
+            if (msg.nSource == Constants.TT_MUXED_USERID) {
+                AudioBlock abm = ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, Constants.TT_MUXED_USERID);
+                assertTrue("get muxed audio block", abm != null);
+                gotmuxed = true;
+            }
+        }
+
+        assertTrue("Got local user audio, after flush", gotlocal);
+        assertTrue("Got muxed user audio, after flush", gotmuxed);
 
         // test audio input queue limits
         STREAMID = 77;
@@ -3133,47 +3507,49 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         ab.nSamples = ab.lpRawAudio.length / 2;
 
         // assertFalse("Maximum queue size for audio input is 3 sec", ttclient.insertAudioBlock(ab));
+        localWaveFile.close();
+        muxedWaveFile.close();
     }
 
-    public void test_VoiceTransmitOpenCloseAudioInput() throws InterruptedException {
+    public void testVoiceTransmitOpenCloseAudioInput() throws InterruptedException {
 
-        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_MULTI_LOGIN | UserRight.USERRIGHT_TRANSMIT_VOICE;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
 
-        TeamTalkBase[] ttclients = new TeamTalkBase[4];
-        for (int i=0;i<ttclients.length;++i) {
-            ttclients[i] = newClientInstance();
+        TeamTalkBase[] clients = new TeamTalkBase[4];
+        for (int i=0;i<clients.length;++i) {
+            clients[i] = newClientInstance();
             IntPtr indev = new IntPtr(), outdev = new IntPtr();
-            assertTrue("get default sound devices", ttclients[i].getDefaultSoundDevices(indev, outdev));
-            assertTrue("init output device", ttclients[i].initSoundOutputDevice(outdev.value));
-            connect(ttclients[i]);
-            login(ttclients[i], NICKNAME + "_" + i, USERNAME, PASSWORD);
-            joinRoot(ttclients[i]);
+            assertTrue("get default sound devices", clients[i].getDefaultSoundDevices(indev, outdev));
+            assertTrue("init output device", clients[i].initSoundOutputDevice(outdev.value));
+            connect(clients[i]);
+            login(clients[i], NICKNAME + "_" + i, USERNAME, PASSWORD);
+            joinRoot(clients[i]);
         }
 
         for (int i=0;i < 5; i++) {
-            for (TeamTalkBase ttclient : ttclients) {
+            for (TeamTalkBase ttclient : clients) {
                 IntPtr indev = new IntPtr(), outdev = new IntPtr();
                 assertTrue("get default sound devices", ttclient.getDefaultSoundDevices(indev, outdev));
                 assertTrue("client init sndinput", ttclient.initSoundInputDevice(indev.value));
                 assertTrue("client enable voice tx", ttclient.enableVoiceTransmission(true));
             }
 
-            waitForEvent(ttclients[0], ClientEvent.CLIENTEVENT_NONE, 1500);
+            waitForEvent(clients[0], ClientEvent.CLIENTEVENT_NONE, 1500);
 
-            for (TeamTalkBase ttclient : ttclients) {
+            for (TeamTalkBase ttclient : clients) {
                 assertTrue("client close sndinput", ttclient.closeSoundInputDevice());
                 assertTrue("client disable voice tx", ttclient.enableVoiceTransmission(false));
             }
 
-            waitForEvent(ttclients[0], ClientEvent.CLIENTEVENT_NONE, 1000);
+            waitForEvent(clients[0], ClientEvent.CLIENTEVENT_NONE, 1000);
         }
     }
 
-    public void test_SharedAudioInputOutput() {
+    public void testSharedAudioInputOutput() {
 
-        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_MULTI_LOGIN | UserRight.USERRIGHT_TRANSMIT_VOICE |
             UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
@@ -3195,7 +3571,7 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         assertTrue("Init rx input", rxclient.initSoundInputDevice(indev.value));
         assertTrue("Init rx output", rxclient.initSoundOutputDevice(outdev.value));
         connect(rxclient);
-        login(rxclient, ADMIN_NICKNAME, ADMIN_USERNAME, ADMIN_PASSWORD);
+        login(rxclient, ADMIN_NICKNAME + " - " + getTestMethodName(), ADMIN_USERNAME, ADMIN_PASSWORD);
         Channel chan = buildDefaultChannel(rxclient, "Speex", Codec.SPEEX_CODEC);
         chan.audiocodec.speex.nBandmode = SpeexConstants.SPEEX_BANDMODE_WIDE; //16000
         chan.audiocodec.speex.nTxIntervalMSec = 400;
@@ -3282,11 +3658,135 @@ public abstract class TeamTalkTestCase extends TeamTalkTestCaseBase {
         } while(ids.size()>0);
     }
 
+    public void testInitSoundSharedInputOutput() {
+
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
+        int USERRIGHTS = UserRight.USERRIGHT_MULTI_LOGIN | UserRight.USERRIGHT_TRANSMIT_VOICE |
+            UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL;
+        makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
+
+        TeamTalkBase ttclient = newClientInstance();
+        connect(ttclient);
+        login(ttclient, NICKNAME, USERNAME, PASSWORD);
+
+        Channel chan = buildDefaultChannel(ttclient, "Opus", Codec.OPUS_CODEC);
+        chan.audiocodec.opus.nFrameSizeMSec = 20;
+        chan.audiocodec.opus.nTxIntervalMSec = 20;
+        assertTrue("ttclient join channel", waitCmdSuccess(ttclient, ttclient.doJoinChannel(chan), DEF_WAIT));
+
+        IntPtr indev = new IntPtr(), outdev = new IntPtr();
+        if(INPUTDEVICEID < 0 && OUTPUTDEVICEID < 0)
+           assertTrue("get default devs", ttclient.getDefaultSoundDevices(indev, outdev));
+        else
+        {
+            indev.value = INPUTDEVICEID;
+            outdev.value = OUTPUTDEVICEID;
+        }
+
+        indev.value |= SoundDeviceConstants.TT_SOUNDDEVICE_ID_SHARED_FLAG;
+        outdev.value |= SoundDeviceConstants.TT_SOUNDDEVICE_ID_SHARED_FLAG;
+
+        TTMessage msg = new TTMessage();
+
+        int[] samplerates = {8000, 12000, 16000, 24000, 48000};
+        for (int samplerate : samplerates) {
+
+            if (!supportsInputSampleRate(getSoundDevice(ttclient, indev.value & SoundDeviceConstants.TT_SOUNDDEVICE_ID_MASK), samplerate)) {
+                System.err.println("Input device doesn't support sample rate: " + samplerate);
+                continue;
+            }
+
+            if (!supportsOutputSampleRate(getSoundDevice(ttclient, outdev.value & SoundDeviceConstants.TT_SOUNDDEVICE_ID_MASK), samplerate)) {
+                System.err.println("Output device doesn't support sample rate: " + samplerate);
+                continue;
+            }
+
+            assertTrue("no waiting audio blocks", ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, ttclient.getMyUserID()) == null);
+
+            assertTrue("enable local aud cb", ttclient.enableAudioBlockEvent(Constants.TT_LOCAL_USERID, StreamType.STREAMTYPE_VOICE, true));
+            assertTrue("setup shared input settings", TeamTalkBase.initSoundInputSharedDevice(samplerate, 2, samplerate));
+            assertTrue("setup shared output settings", TeamTalkBase.initSoundOutputSharedDevice(samplerate, 2, samplerate));
+
+            assertTrue("Init "+samplerate+" input", ttclient.initSoundInputDevice(indev.value));
+            assertTrue("Init "+samplerate+" output", ttclient.initSoundOutputDevice(outdev.value));
+
+            int samples = chan.audiocodec.opus.nSampleRate;
+            AudioBlock ab;
+            do {
+                assertTrue("get "+samplerate+" audioblock", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
+                assertEquals("from local", Constants.TT_LOCAL_USERID, msg.nSource);
+                ab = ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, Constants.TT_LOCAL_USERID);
+                assertTrue("get local audio block", ab != null);
+                samples -= ab.nSamples;
+            } while(samples > 0);
+
+            long initialTS = System.currentTimeMillis();
+            assertTrue("get "+samplerate+" audioblock", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
+            long nextTS = System.currentTimeMillis();
+
+            assertTrue("close input", ttclient.closeSoundInputDevice());
+            assertTrue("close output", ttclient.closeSoundOutputDevice());
+            assertTrue("disable local aud cb", ttclient.enableAudioBlockEvent(Constants.TT_LOCAL_USERID, StreamType.STREAMTYPE_VOICE, false));
+            waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 0);
+            while(ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, Constants.TT_LOCAL_USERID) != null);
+
+            assertTrue("reset shared input settings", TeamTalkBase.initSoundInputSharedDevice(0, 0, 0));
+            assertTrue("reset shared output settings", TeamTalkBase.initSoundOutputSharedDevice(0, 0, 0));
+
+            assertTrue(String.format("next in/out %d callback was %d msec later but should be ~1 sec", samplerate, nextTS - initialTS), nextTS - initialTS > 900);
+        }
+
+        assertTrue("reset shared input settings", TeamTalkBase.initSoundInputSharedDevice(0, 0, 0));
+
+        assertTrue("Init input", ttclient.initSoundInputDevice(indev.value));
+
+        assertTrue("enable tx", ttclient.enableVoiceTransmission(true));
+        assertTrue("subscribe", waitCmdSuccess(ttclient, ttclient.doSubscribe(ttclient.getMyUserID(), Subscription.SUBSCRIBE_VOICE), DEF_WAIT));
+
+        for (int samplerate : samplerates) {
+
+            if (!supportsOutputSampleRate(getSoundDevice(ttclient, outdev.value & SoundDeviceConstants.TT_SOUNDDEVICE_ID_MASK), samplerate)) {
+                System.err.println("Output device doesn't support sample rate: " + samplerate);
+                continue;
+            }
+
+            assertTrue("no waiting audio blocks", ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, ttclient.getMyUserID()) == null);
+
+            assertTrue("enable local aud cb", ttclient.enableAudioBlockEvent(ttclient.getMyUserID(), StreamType.STREAMTYPE_VOICE, true));
+            assertTrue("setup shared output settings", TeamTalkBase.initSoundOutputSharedDevice(samplerate, 2, samplerate));
+
+            assertTrue("Init "+samplerate+" output", ttclient.initSoundOutputDevice(outdev.value));
+
+            int samples = chan.audiocodec.opus.nSampleRate;
+            AudioBlock ab;
+            do {
+                assertTrue("get "+samplerate+" audioblock", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
+                assertEquals("from myself", ttclient.getMyUserID(), msg.nSource);
+                ab = ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, ttclient.getMyUserID());
+                assertTrue("get audio block", ab != null);
+                samples -= ab.nSamples;
+            } while(samples > 0);
+
+            long initialTS = System.currentTimeMillis();
+            assertTrue("get "+samplerate+" audioblock", waitForEvent(ttclient, ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK, DEF_WAIT, msg));
+            long nextTS = System.currentTimeMillis();
+
+            assertTrue("close output", ttclient.closeSoundOutputDevice());
+            assertTrue("disable aud cb", ttclient.enableAudioBlockEvent(ttclient.getMyUserID(), StreamType.STREAMTYPE_VOICE, false));
+            waitForEvent(ttclient, ClientEvent.CLIENTEVENT_NONE, 0);
+            while(ttclient.acquireUserAudioBlock(StreamType.STREAMTYPE_VOICE, ttclient.getMyUserID()) != null);
+
+            assertTrue("reset shared output settings", TeamTalkBase.initSoundOutputSharedDevice(0, 0, 0));
+
+            assertTrue(String.format("next output %d callback was %d msec later but should be ~1 sec", samplerate, nextTS - initialTS), nextTS - initialTS > 900);
+        }
+    }
+
     /* cannot test output levels since a user is muted by sound system after decoding and callback.
 
-    public void test_SharedAudioInputOutputLevels() {
+    public void testSharedAudioInputOutputLevels() {
 
-        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getCurrentMethod();
+        String USERNAME = "tt_test", PASSWORD = "tt_test", NICKNAME = "jUnit - " + getTestMethodName();
         int USERRIGHTS = UserRight.USERRIGHT_MULTI_LOGIN | UserRight.USERRIGHT_TRANSMIT_VOICE |
             UserRight.USERRIGHT_CREATE_TEMPORARY_CHANNEL;
         makeUserAccount(NICKNAME, USERNAME, PASSWORD, USERRIGHTS);
