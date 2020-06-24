@@ -71,8 +71,8 @@ BEGIN
     EDITTEXT        IDC_EDIT_IPLOGINS,359,129,40,14,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "Max login attempts before ban",IDC_STATIC_MAXLOGINSBAN,229,116,126,8
     LTEXT           "Max logins per IP-address",IDC_STATIC_MAXLOGINSIP,229,132,126,8
-    LTEXT           "(0=disabled)",IDC_STATIC,403,116,42,8
-    LTEXT           "(0=disabled)",IDC_STATIC,402,132,42,8
+    LTEXT           "(0=disabled)",IDC_STATIC_DISABLED0,403,116,42,8
+    LTEXT           "(0=disabled)",IDC_STATIC_DISABLED1,402,132,42,8
 END
 
 IDD_DIALOG_BANNEDDLG DIALOGEX 0, 0, 312, 221
@@ -103,7 +103,7 @@ CAPTION "User Accounts"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     GROUPBOX        "Active Accounts",IDC_STATIC_ACTACCOUNTS,7,7,126,299
-    LISTBOX         IDC_LIST_ACCOUNTS,14,17,111,199,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_LIST_ACCOUNTS,14,17,111,199,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "&Delete",IDC_BUTTON_DEL,14,218,42,14,WS_DISABLED
     GROUPBOX        "User Account Properties",IDC_STATIC_GRPACCOUNT,144,16,180,120
     LTEXT           "User type",IDC_STATIC_USERTYPE,153,26,50,8
@@ -195,13 +195,6 @@ CAPTION "Advanced"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     GROUPBOX        "Advanced settings",IDC_STATIC_GRPADVANCED,7,7,246,226
-    GROUPBOX        "Windows mixer helper",IDC_STATIC_GRPMIXER,14,19,234,72
-    CONTROL         "Enable temporary mixer input device when pressing hotkey",IDC_CHECK_MIXERAUTOSELECT,
-                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,22,30,217,18
-    CONTROL         "Temporary mixer input",IDC_STATIC_TMPMIXERDEVICE,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,21,53,90,8
-    COMBOBOX        IDC_COMBO_MIXERINPUTS,113,51,127,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Compensate for microphone boost bug",IDC_CHECK_BOOSTBUG,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,74,220,10
 END
 
 IDD_PROPPAGE_CLIENTPAGE DIALOGEX 0, 0, 260, 240
@@ -248,9 +241,8 @@ CAPTION "Sound System"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     GROUPBOX        "Sound system settings",IDC_STATIC_GRPSOUNDSYSTEM,7,7,246,207
-    CONTROL         "Windows Audio Session",IDC_RADIO_WASAPI,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,14,22,95,10
-    CONTROL         "DirectSound",IDC_RADIO_DIRECTSOUND,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,110,22,56,10
-    CONTROL         "Windows Default",IDC_RADIO_WINAUDIO,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,171,22,77,10
+    CONTROL         "Windows Audio Session",IDC_RADIO_WASAPI,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,41,22,95,10
+    CONTROL         "DirectSound",IDC_RADIO_DIRECTSOUND,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,160,22,56,10
     LTEXT           "Input device",IDC_STATIC_INPUT,14,39,75,8
     COMBOBOX        IDC_COMBO_INPUTDRIVER,98,37,150,43,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Input sample rates",IDC_STATIC_INPUTPROP,14,53,80,8
@@ -260,8 +252,6 @@ BEGIN
     LTEXT           "Output sample rates",IDC_STATIC_OUTPUTPROP,14,81,80,8
     LTEXT           "",IDC_STATIC_OUTPUT_SAMPLERATES,98,81,150,8
     PUSHBUTTON      "Test selected",IDC_BUTTON_TEST,97,92,65,14
-    CONTROL         "Enable duplex mode (required for echo cancellation)",IDC_CHECK_DUPLEXMODE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,108,236,10
     CONTROL         "Enable echo cancellation (remove echo from speakers)",IDC_CHECK_ECHOCANCEL,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,122,236,10
     CONTROL         "Enable automatic gain control (microphone level adjusted automatically)",IDC_CHECK_AGC,
@@ -307,7 +297,7 @@ BEGIN
     LTEXT           "Maximum text length",IDC_STATIC_LIMITTEXT,134,136,77,8
     EDITTEXT        IDC_EDIT_LIMITTEXT,208,133,35,14,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_SPIN_TEXTLEN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_HOTTRACK,232,133,11,14
-    LTEXT           "Sort channels",IDC_STATIC,134,154,59,8
+    LTEXT           "Sort channels",IDC_STATIC_SORTCHANNELS,134,154,59,8
     COMBOBOX        IDC_COMBO_SORTCHANNELS,195,152,48,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
@@ -507,15 +497,15 @@ BEGIN
     LTEXT           "Static",IDC_STATIC_APPTITLE,7,7,143,47
     LTEXT           "Static",IDC_STATIC_VERSION,105,34,92,14
     LTEXT           "Written by Bjoern D. Rasmussen",IDC_STATIC_AUTHOR,7,62,139,8
-    LTEXT           "Copyright (c) 2005-2018, BearWare.dk",IDC_STATIC_COPYRIGHT,7,75,183,8
-    LTEXT           "Speex codec developed by Jean-Marc Valin, www.speex.org",IDC_STATIC,7,88,189,17
-    LTEXT           "OPUS codec developed by Opus project, www.opus-codec.org",IDC_STATIC,7,110,189,17
-    LTEXT           "WebM VP8 codec developed by WebM project, www.webmproject.org",IDC_STATIC,7,132,189,17
+    LTEXT           "Copyright (c) 2005-2020, BearWare.dk",IDC_STATIC_COPYRIGHT,7,75,183,8
+    LTEXT           "Speex codec developed by Jean-Marc Valin, www.speex.org",IDC_STATIC_SPEEXCODECDEV,7,88,189,17
+    LTEXT           "OPUS codec developed by Opus project, www.opus-codec.org",IDC_STATIC_OPUSCODECDEV,7,110,189,17
+    LTEXT           "WebM VP8 codec developed by WebM project, www.webmproject.org",IDC_STATIC_WEBMCODECDEV,7,132,189,17
     LTEXT           "Translated by Bjoern D. Rasmussen",IDC_STATIC_TRANSLATOR,7,154,189,18
     LTEXT           "TeamTalk Classic Project Contributors:\nBeqa Gozalishvili",IDC_STATIC_TRANSLATOR2,7,178,189,25
     LTEXT           "Compiled on ",IDC_STATIC_COMPILED,7,205,189,25
     DEFPUSHBUTTON   "OK",IDOK,154,7,36,16
-    ICON            IDR_MAINFRAME,IDC_STATIC_IMAGE,151,61,21,20
+    ICON            IDR_MAINFRAME,IDC_STATIC_IMAGE,151,61,20,20
 END
 
 IDD_DIALOG_HOSTMANAGER DIALOGEX 0, 0, 420, 275
@@ -525,8 +515,8 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     GROUPBOX        "Hosts",IDC_STATIC_GRPHOSTS,7,7,178,261
     LISTBOX         IDC_LIST_HOSTS,13,18,163,206,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "&Delete",IDC_BUTTON_DELETE,13,230,40,14
-    PUSHBUTTON      "&Import .tt File",IDC_BUTTON_IMPORTTTILE,65,230,61,14
+    PUSHBUTTON      "&Delete",IDC_BUTTON_DELETE,13,230,55,14
+    PUSHBUTTON      "&Import .tt File",IDC_BUTTON_IMPORTTTILE,97,230,79,14
     CONTROL         "Include public servers",IDC_CHECK_PUBLICSERVERS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,251,115,10
     GROUPBOX        "Host properties",IDC_STATIC_GRPHOSTPROP,190,7,223,189
     LTEXT           "Host address",IDC_STATIC_HOSTADDR,201,21,68,8
@@ -554,8 +544,8 @@ BEGIN
     GROUPBOX        "Save server information",IDC_STATIC_SAVESERVERINFO,190,219,223,49
     LTEXT           "Entry name",IDC_STATIC_ENTRYNAME,201,234,68,8
     EDITTEXT        IDC_EDIT_ENTRYNAME,285,231,123,14,ES_AUTOHSCROLL
-    PUSHBUTTON      "&Generate .tt File",IDC_BUTTON_GENTT,201,249,69,14
-    PUSHBUTTON      "&Add/Update",IDC_BUTTON_ADDUPDATE,356,249,52,14
+    PUSHBUTTON      "&Generate .tt File",IDC_BUTTON_GENTT,201,249,81,14
+    PUSHBUTTON      "&Add/Update",IDC_BUTTON_ADDUPDATE,327,249,81,14
 END
 
 IDD_DIALOG_KEYCOMP DIALOGEX 0, 0, 196, 106
@@ -624,15 +614,13 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     GROUPBOX        "Sound system settings",IDC_STATIC_GRPSOUNDSYSTEM,0,0,316,212
     LTEXT           "Here you select the sound devices which TeamTalk should use for recording and playing audio. Choosing DirectSound is highly recommended since it provides lower latency than Windows' default sound system. ",IDC_STATIC_SOUNDSYSDESCRIP,14,23,288,29
-    CONTROL         "DirectSound (default)",IDC_RADIO_DIRECTSOUND,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,76,58,98,10
-    CONTROL         "Windows audio",IDC_RADIO_WINAUDIO,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,181,58,109,10
-    LTEXT           "Mixer device",IDC_STATIC_MIXERDEVICE,37,78,78,8
-    COMBOBOX        IDC_COMBO_MIXER,123,76,110,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Input device",IDC_STATIC_INPUT,37,93,82,8
-    COMBOBOX        IDC_COMBO_INPUTDRIVER,123,91,110,43,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Output device",IDC_STATIC_OUTPUT,37,114,81,8
-    COMBOBOX        IDC_COMBO_OUTPUTDRIVER,123,112,110,41,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Test selected",IDC_BUTTON_TEST,129,130,53,14
+    CONTROL         "Windows Audio Session",IDC_RADIO_WASAPI,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,49,58,103,10
+    CONTROL         "DirectSound",IDC_RADIO_DIRECTSOUND,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,179,58,73,10
+    LTEXT           "Input device",IDC_STATIC_INPUT,37,79,82,8
+    COMBOBOX        IDC_COMBO_INPUTDRIVER,123,77,110,43,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Output device",IDC_STATIC_OUTPUT,37,100,81,8
+    COMBOBOX        IDC_COMBO_OUTPUTDRIVER,123,98,110,41,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Test selected",IDC_BUTTON_TEST,129,116,53,14
     LTEXT           "By pressing ""Test selected"" you can test the currently selected devices and hear whether you're able to play the audio recorded by the selected input device.",IDC_STATIC_TESTDESCRIP,14,151,288,20
 END
 
@@ -814,14 +802,14 @@ BEGIN
     LTEXT           "Duration:",IDC_STATIC_SDURATION,18,60,52,8
     LTEXT           "",IDC_STATIC_DURATION,75,60,75,8
     CONTROL         "Continuously play media file",IDC_CHECK_REPEAT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,154,59,120,10
-    GROUPBOX        "Playback Settings",IDC_STATIC,7,77,273,57
-    LTEXT           "Audio preprocessor",IDC_STATIC,18,90,82,8
+    GROUPBOX        "Playback Settings",IDC_STATIC_PBSET,7,77,273,57
+    LTEXT           "Audio preprocessor",IDC_STATIC_AUDIOPREPROCESSOR,18,90,82,8
     COMBOBOX        IDC_COMBO_AUDIOPREPROCESSOR,103,88,125,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "&Setup",IDC_BUTTON_AUDIOSETUP,232,87,42,14
-    LTEXT           "Start position",IDC_STATIC,18,105,44,8
+    LTEXT           "Start position",IDC_STATIC_STARTPOS,18,105,44,8
     CONTROL         "",IDC_SLIDER_OFFSET,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,102,101,125,15
     LTEXT           "0:00:000",IDC_STATIC_TIMEOFFSET,232,105,42,8
-    LTEXT           "Test playback",IDC_STATIC,18,120,45,8
+    LTEXT           "Test playback",IDC_STATIC_TESTPLAYBACK,18,120,45,8
     PUSHBUTTON      "S&top",IDC_BUTTON_STOP,130,117,29,14
     PUSHBUTTON      "&Play",IDC_BUTTON_PLAY,176,117,29,14
     GROUPBOX        "Video Codec Settings",IDC_STATIC_VIDCODECSETTINGS,7,138,273,50
@@ -957,7 +945,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,68,47,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,148,47,50,14
-    LTEXT           "Gain level",IDC_STATIC,7,10,48,8
+    LTEXT           "Gain level",IDC_STATIC_GAINLEVEL,7,10,48,8
     CONTROL         "",IDC_SLIDER_GAINLEVEL,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,61,7,86,15
     PUSHBUTTON      "Default",IDC_BUTTON_DEFAULT,148,7,50,14
     CONTROL         "Mute left channel",IDC_CHECK_MUTELEFT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,30,71,10
@@ -1523,8 +1511,8 @@ IDR_MAINFRAME           ICON                    "res\\TeamTalk.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,5,0,4993
- PRODUCTVERSION 5,5,0,4993
+ FILEVERSION 5,6,0,5000
+ PRODUCTVERSION 5,6,0,5000
  FILEFLAGSMASK 0x1fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -1541,12 +1529,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "BearWare.dk"
             VALUE "FileDescription", "TeamTalk voice conferencing client"
-            VALUE "FileVersion", "5, 5, 0, 4993"
+            VALUE "FileVersion", "5, 6, 0, 5000"
             VALUE "InternalName", "TeamTalk5.exe"
             VALUE "LegalCopyright", "Copyright (c) 2005-2018, BearWare.dk.  All rights reserved."
             VALUE "OriginalFilename", "TeamTalk5.exe"
             VALUE "ProductName", "BearWare.dk TeamTalk"
-            VALUE "ProductVersion", "5, 5, 0, 4993"
+            VALUE "ProductVersion", "5, 6, 0, 5000"
         END
     END
     BLOCK "VarFileInfo"
@@ -1877,6 +1865,21 @@ BEGIN
 END
 
 IDD_DIALOG_SPEEXDSP AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DIALOG_ABOUTBOX AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_WIZARD_SOUNDSYSPAGE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_PROPPAGE_SOUNDSYSPAGE AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -2219,6 +2222,279 @@ BEGIN
     IDS_SNDINITFAILED       "Failed to initialize sound system"
     IDS_CONNECTING          "Connecting to host ""%s"" TCP port %d UDP port %d"
     IDS_PLAY                "Play"
+    IDS_NOPREPROCESSOR      "No Audio Preprocessor"
+    IDS_CONLOGIN            "Connected... logging in"
+    IDS_CONFAILED           "Failed to connect to host %s TCP port %d UDP port %d.\r\nCheck that the server is running on the specified address\r\nand that a firewall isn't preventing clients from connecting."
+    IDS_ERROROCCURREDCOMMAND 
+                            "An error occurred while perform a requested command:\r\n"
+    IDS_CONNFAILED          "Failed to connect to %s TCP port %d UDP port %d"
+    IDS_CONLOST             "Connection lost to %s TCP port %d UDP port %d"
+    IDS_CONSUCCESS          "Successfully logged in"
+    IDS_LOGOUTSUCCESS       "Successfully logged out"
+    IDS_KICKEDFROMCHANNEL   "You have been kicked from the channel."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_STREAMFAILEDBOX     "Failed to stream media file."
+    IDS_ACCELERATORNOTLOADDED "The accelerator table was not loaded"
+    IDS_UNABLELOADSETFILE   "Unable to load the settings file:\r\n"
+    IDS_CREATENEWSETFILE    "Create a new settings file?"
+    IDS_FAILEDTOCREATETRAYICON "Failed to create tray icon"
+    IDS_FAILEDTOCOPY        "Failed to copy %s to %s"
+    IDS_RESETSETTINGS       "Reset Settings"
+    IDS_DISCONNECTEDFROM    "Disconnected from %s TCP port %d UDP port %d"
+    IDS_FAILEDTOINITIALIZENEWSD "Failed to initialize new sound devices."
+    IDS_RESTARTSS           "Restart Sound System"
+    IDS_CHANGENN            "Change nickname"
+    IDS_NEWNN               "Nw nickname"
+    IDS_NOCOMBINAISONKEYPTT "No push-to-talk key combination is currently configured.\r\nWould you like to configure it now?"
+    IDS_ADMIN               "Admin"
+    IDS_OPPSW               "Operator password"
+    IDS_ENTERPSW            "Enter password"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_UNKNOWNERROR        "An unknown error occurred. Check that the action you\r\nperformed is supported by the server. This error is most\r\nlikely caused by an incompability issue between the server\r\nand your client."
+    IDS_NOLONGERTRANSMIT    "%s can no longer transmit voice!"
+    IDS_CANNOWTRANSMIT      "%s can now transmit voice!"
+    IDS_NOLONGERTRANSMITVIDEO "%s can no longer transmit video input!"
+    IDS_CANNOWTRANSMITVIDEO "%s can now transmit video input!"
+    IDS_NOLONGERTRANSMITDESKTOP "%s can no longer transmit shared desktops!"
+    IDS_CANNOWTRANSMITDESKTOP "%s can now transmit shared desktops!"
+    IDS_NOLONGERTRANSMITMEDIAFILE "%s can no longer transmit media files!"
+    IDS_CANNOWTRANSMITMEDIAFILE "%s can now transmit media files!"
+    IDS_FAILEDTOWRITEAUDIOFILE "Failed to write audio file for %s"
+    IDS_FAILEDTOSTARTFILETRANSFER 
+                            "Failed to start file transfer.\r\nFile name: %s"
+    IDS_ERRORSTREAMINGTOCHANNEL "Error streaming media file to channel"
+    IDS_STREAMINGTOCHANNELSTART "Started streaming media file to channel"
+    IDS_STREAMINGTOCHANNELFINISH "Finished streaming media file to channel"
+    IDS_STREAMINGTOCHANNELABORT "Aborted streaming media file to channel"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_DUPLEXNOTSUPPORTPOS "Positioning users is not supported in sound duplex mode"
+    IDS_POSUSERS            "Position Users"
+    IDS_POSONLYDS           "Positioning users is only support with DirectSound"
+    IDS_SUREDELETECHAN      "Are you sure you want to delete channel %s"
+    IDS_CHANDELETETITLE     "Delete Channel"
+    IDS_CHANPSW             "Channel password"
+    IDS_COMPILEDON          "Compiled on "
+    IDS_UNICODEENABLED      "Unicode -> UTF-8 conversion enabled.\r\n"
+    IDS_LOCALECHARS         "Uses local character set.\r\n"
+    IDS_TTDLLVER            "TeamTalk 64-bit DLL version: "
+    IDS_TTDLLVERS           "TeamTalk 32-bit DLL version: "
+    IDS_SHELLEXECOPEN       "open"
+    IDS_RXTXPING            "RX: %.2fKB TX: %.2fKB PING: %u %s"
+    IDS_RXTX                "RX: %.2fKB TX: %.2fKB %s"
+    IDS_AWAY                "Away"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_FAILEDTOCONNECTLP   "Failed to connect to %s port %d sound port %d.\r\nCheck that your host settings are correct."
+    IDS_NEWUPDATEAVAILABLE  "New update available: %s"
+    IDS_DISCONNECTCURRENT   "Disconnect from current host?"
+    IDS_FAILEDTOCONNECTCHECKHOSTVALID 
+                            "Failed to connect to %s, port %d, sound port %d\r\nPlease check that that host is valid"
+    IDS_TTFILEINCOMPATIBLE  "The file %s is incompatible with %s"
+    IDS_MSGBOXTTFILELOADERROR "Load File"
+    IDS_TTFILENOTVALIDHOST  "The file %s\r\ndoes not contain a valid %s host entry.\r\nError message: %s"
+    IDS_UNABLETOPARSELINKADDR "Unable to parse link address:\r\n"
+    IDS_DISCOBEFORERUN      "Please disconnect before running this wizard"
+    IDS_FWFAILEDTOADD       "Failed to add application to Windows Firewall exceptions."
+    IDS_RECSTARTFAILED      "Failed to start recording"
+    IDS_ERR                 "Error"
+    IDS_RECORDINGFILE       "Recording to file: "
+    IDS_FILEOPENFAILED      "Failed to open file: %s"
+    IDS_ALLFILESTYPE        "All files (*.*)|*.*|"
+    IDS_SENDFILEFAILED      "Failed to send file."
+END
+
+STRINGTABLE
+BEGIN
+    IDS_DLFILEFAILED        "Failed to download file."
+    IDS_QUERYSERVSTATFAILED "Failed to query server statistics"
+    IDS_SERVSTAT            "Server Statistics"
+    IDS_BROADMSG            "Broadcast Message"
+    IDS_MSGTOBROAD          "Message to broadcast"
+    IDS_ENABLEVT            "Enable Video Transmission"
+    IDS_NOVIDEODEVICE       "No video devices detected.\r\nPress Client -> Preferences -> Video Capture to reconfigure."
+    IDS_STARTVIDEODEVICEFAILED "Failed to start video capture device."
+    IDS_INITIALIZEVIDEOCODECFAILED "Failed to initiate video codec."
+    IDS_CHANOP              "Channel Operator"
+    IDS_RESETPREF           "Reset Preferences"
+    IDS_NEWCLIENTINSTAN     "New Client Instance"
+    IDS_EXECUTEFAILED       "Failed to execute: "
+    IDS_ONLINEDLGID         "ID"
+    IDS_ONLINEDLGNICKNAME   "Nickname"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_ONLINEDLGSM         "Status message"
+    IDS_ONLINEDLGUSERNAME   "Username"
+    IDS_ONLINEDLGCHAN       "Channel"
+    IDS_ONLINEDLGIPADDR     "IP-address"
+    IDS_ONLINEDLGVERS       "Version"
+    IDS_STREAMDLGUNKFOR     "Unknown format"
+    IDS_STREAMDLGUNSPECIFIED "Unspecified"
+    IDS_STREAMDLGSTEREO     "Stereo"
+    IDS_STREAMDLGMONO       "Mono"
+    IDS_STREAMDLGMFT        "Media files (*.*)|*.*|"
+    IDS_STREAMDLGFAILEDUPDATE "Failed to update preprocessor"
+    IDS_STREAMDLGFAILEDRESUME "Failed to resume"
+    IDS_STREAMDLGFAILEDSTARTPB "Failed to start playback"
+    IDS_LOADFILECLIENTSET   "Load %s File"
+    IDS_ADDTOFWEXCEP        "Add %s to Windows Firewall exceptions?"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_BANTYPEDLGIPADDR    "Ban IP-address"
+    IDS_BANTYPEDLGUSERNAME  "Ban username"
+    IDS_CHANDLGNOAUDIO      "No Audio"
+    IDS_CHANDLGSPEEXVARIABLE "Speex Variable Bitrate"
+    IDS_CHANDLGENTERACHANNAME "Enter a channel name"
+    IDS_CHANDLGNOSLASH      "A channel name cannot contain a '/'"
+    IDS_CHANDLGVOIP         "VoIP"
+    IDS_CHANDLGMUSIC        "Music"
+    IDS_CHATRICHBROADCAST   "Broadcast: %s\r\n"
+    IDS_CHATRICHBROADCASTT  "\r\nBroadcast: %s"
+    IDS_CHATRICHSERVERNAMEMOTD "Server name: %s\r\nMOTD: %s\r\n"
+    IDS_CHATRICHSERVERNAMEMOTDD "\r\nServer name: %s\r\nMOTD: %s"
+    IDS_CHATRICHJOINEDNEWCHAN "\r\nJoined new channel."
+    IDS_CHATRICHCHAN        "\r\nChannel: "
+    IDS_CHATRICHTOPIC       "\r\nTopic: "
+    IDS_CHATRICHDISKQUOTA   "\r\nDisk quota: "
+END
+
+STRINGTABLE
+BEGIN
+    IDS_CHATRICHKBYTES      " KBytes"
+    IDS_CLIENTPAGECANNOTUSESAMEPORTS "You cannot use the same ports"
+    IDS_DESKTOPDLGLOW       "Low (8-bit colors)"
+    IDS_DESKTOPDLGMEDIUM    "Medium (16-bit colors)"
+    IDS_DESKTOPDLGHIGH      "High (24-bit colors)"
+    IDS_DESKTOPDLGMAXIMUM   "Maximum (32-bit colors)"
+    IDS_FILETABKB           "%u KB"
+    IDS_FILETABNAME         "Name"
+    IDS_FILETABSIZE         "Size"
+    IDS_FILETABUSER         "User"
+    IDS_FILETRANSFERKBYTES  "%I64d KBytes"
+    IDS_FILETRANSFERBYTES   "%I64d bytes"
+    IDS_FILETRANSFERSPEED   "%I64d KB/sec, %I64d KB last sec."
+    IDS_FILETRANSFERSPEEDB  "%I64d bytes/sec, %I64d bytes last sec."
+    IDS_FILETRANSFERBYTESSEC "%I64d bytes/sec"
+    IDS_FILETRANSFERPROGRESSCOMPLETED " - Completed"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_FILETRANSFERFAILED  " - Failed"
+    IDS_GENERATETTFILEANY   "Any"
+    IDS_GENERATETTFILEEXTFILE ".tt Files (*.tt)|*.tt||"
+    IDS_GENERATETTFILEFAILEDTOSAVE "Failed to save .tt file."
+    IDS_GENERATETTFILESAVE  "Save .tt File"
+    IDS_HOSTMANAGERFILLALLFIELDS 
+                            "Please fill in all the required fields.\r\n- Entry name\r\n- Host address\r\n- TCP port\r\n- UDP port\r\n"
+    IDS_HOSTMANAGERCANNOTDELPUBSERV "Cannot delete public servers"
+    IDS_HOSTMANAGERDELHOST  "Delete Host"
+    IDS_HOSTMANAGERPUBLIC   "Public: "
+    IDS_HOSTMANAGERHOSTFILES "Host files (*%s)|*%s|All files (*.*)|*.*|"
+    IDS_HOSTMANAGERFILENOTCONTAINVALIDENTRY 
+                            "The file %s\r\ndoes not contain a valid %s host entry.\r\nError message: %s"
+    IDS_KEYCOMPERROR        "Error setting keyboard hook. Try restarting the program."
+    IDS_MEDIASTORAGEWAVEFORMAT "Wave-format"
+    IDS_MEDIASTORAGEOGGFORMAT "Ogg-format"
+    IDS_MEDIASTORAGEMP3FORMAT16 "MP3-format (16 kbit)"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_MEDIASTORAGEMP3FORMAT32 "MP3-format (32 kbit)"
+    IDS_MEDIASTORAGEMP3FORMAT64 "MP3-format (64 kbit)"
+    IDS_MEDIASTORAGEMP3FORMAT128 "MP3-format (128 kbit)"
+    IDS_MEDIASTORAGEMP3FORMAT256 "MP3-format (256 kbit)"
+    IDS_MSGDLGFAILEDTOSEND  "Failed to send message!"
+    IDS_POSUSERDISTCOORDO   "Distance: %.2fm\r\nCoordinates: (%.2f,%.2f)"
+    IDS_SHORTCUTPAGECLEAR   "Clear"
+    IDS_SOUNDEVENTSWAVFILES "Wave files (*.wav)|*.wav|All files (*.*)|*.*|"
+    IDS_SOUNDSYSTEMNOINPUTDEVICESEL "No input device selected"
+    IDS_SOUNDSYSTEMNOOUTPUTDEVICESEL "No output device selected"
+    IDS_SOUNDSYSTEMFAILEDTOINITIALIZE 
+                            "Failed to initialize sound devices. Check your selected input and output devices."
+    IDS_USERACCOUNTCREATEANONYMOUS "Create anonymous user account?"
+    IDS_USERACCOUNTADDUPDATE "Add/Update User Account"
+    IDS_USERDESKTOPLOCALDESKTOP "Local Desktop"
+    IDS_USERDESKTOPDESKTOP  "Desktop - "
+    IDS_USERVIDEOLOCALVIDEO "Local Video"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_USERVIDEOVIDEO      "Video - "
+    IDS_USERVOLUMETITLEWINDOW "Volume for "
+    IDS_VIDEOCAPTUREFAILED  "Failed to start selected device Test Selected"
+    IDS_WEBLOGINFBLOGOUT    "Do Facebook logout?"
+    IDS_WEBLOGINFBLOGIN     "Facebook Login"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_APPTITLEUNRELEASED  " - Unreleased"
+    IDS_APPTITLEPROV        "TeamTalk 5 Classic Professional v. "
+    IDS_APPTITLEPRO         "TeamTalk 5 Classic Professional"
+    IDS_APPTITLENPROV       "TeamTalk 5 Classic v. "
+    IDS_APPTITLENPRO        "TeamTalk 5 Classic"
+    IDS_CMDERR_SYNTAX_ERROR "Syntax error"
+    IDS_CMDERR_UNKNOWN_COMMAND "Unknown command"
+    IDS_CMDERR_MISSING_PARAMETER "Missing parameter"
+    IDS_CMDERR_INCOMPATIBLE_PROTOCOLS "Incompatible protocols"
+    IDS_CMDERR_UNKNOWN_AUDIOCODEC "Unknown audio codec"
+    IDS_CMDERR_INVALID_USERNAME "Invalid username"
+    IDS_CMDERR_INCORRECT_CHANNEL_PASSWORD "Incorrect channel password"
+    IDS_CMDERR_INVALID_ACCOUNT "Invalid account"
+    IDS_CMDERR_MAX_SERVER_USERS_EXCEEDED "Maximum server users exceeded"
+    IDS_CMDERR_MAX_CHANNEL_USERS_EXCEEDED "Maximum channel users exceeded"
+    IDS_CMDERR_SERVER_BANNED "Banned from server"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_CMDERR_NOT_AUTHORIZED "Not authorized"
+    IDS_CMDERR_MAX_DISKUSAGE_EXCEEDED "Maximum disk usage exceeded"
+    IDS_CMDERR_INCORRECT_OP_PASSWORD "Incorrect operator password"
+    IDS_CMDERR_AUDIOCODEC_BITRATE_LIMIT_EXCEEDED 
+                            "Audio codec bitrate limit exceeded"
+    IDS_CMDERR_MAX_LOGINS_PER_IPADDRESS_EXCEEDED 
+                            "Maximum logins per IP-address exceeded"
+    IDS_CMDERR_MAX_CHANNELS_EXCEEDED "Maximum channels exceeded"
+    IDS_CMDERR_COMMAND_FLOOD "Command flood"
+    IDS_CMDERR_CHANNEL_BANNED "Banned from channel"
+    IDS_CMDERR_NOT_LOGGEDIN "Not logged in"
+    IDS_CMDERR_ALREADY_LOGGEDIN "Already logged in"
+    IDS_CMDERR_NOT_IN_CHANNEL "Not in channel"
+    IDS_CMDERR_ALREADY_IN_CHANNEL "Already in channel"
+    IDS_CMDERR_CHANNEL_ALREADY_EXISTS "Channel already exists"
+    IDS_CMDERR_CHANNEL_NOT_FOUND "Channel not found"
+    IDS_CMDERR_BAN_NOT_FOUND "Ban not found"
+    IDS_CMDERR_FILETRANSFER_NOT_FOUND "File transfer not found"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_CMDERR_OPENFILE_FAILED "Open file failed"
+    IDS_CMDERR_ACCOUNT_NOT_FOUND "Account not found"
+    IDS_CMDERR_FILE_NOT_FOUND "File not found"
+    IDS_CMDERR_FILE_ALREADY_EXISTS "File already exists"
+    IDS_CMDERR_FILESHARING_DISABLED "File sharing disabled"
+    IDS_CMDERR_CHANNEL_HAS_USERS "Channel has active users"
+    IDS_CMDERR_LOGINSERVICE_UNAVAILABLE "Login service unavailable"
+    IDS_CMDERR_USER_NOT_FOUND "User not found"
 END
 
 #endif    // Neutral resources

@@ -83,7 +83,7 @@ struct ClientInstance
 {
     std::shared_ptr<TTMsgQueue> eventhandler;
     clientnode_t clientnode;
-    ACE_Recursive_Thread_Mutex mutex_video;
+    std::mutex mutex_video;
     typedef std::map<VideoFrame*, ACE_Message_Block*> video_frames_t;
     video_frames_t video_frames;
 
@@ -96,13 +96,13 @@ struct ClientInstance
             mb->release();
             return NULL;
         }
-        wguard_t g(mutex_video);
+        std::lock_guard<std::mutex> g(mutex_video);
         video_frames[vid_frame] = mb;
         return vid_frame;
     }
     bool RemoveVideoFrame(VideoFrame* vid_frame)
     {
-        wguard_t g(mutex_video);
+        std::lock_guard<std::mutex> g(mutex_video);
         video_frames_t::iterator ii = video_frames.find(vid_frame);
         TTASSERT(ii != video_frames.end());
         if(ii != video_frames.end())
@@ -115,7 +115,7 @@ struct ClientInstance
         return false;
     }
 
-    ACE_Recursive_Thread_Mutex mutex_desktop;
+    std::mutex mutex_desktop;
     typedef std::map<DesktopWindow*, ACE_Message_Block*> desktopwindows_t;
     desktopwindows_t desktop_windows;
     DesktopWindow* PushDesktopWindow(int buf_size)
@@ -129,14 +129,14 @@ struct ClientInstance
         wnd_frame->frameBuffer = mb->rd_ptr() + sizeof(DesktopWindow);
         wnd_frame->nFrameBufferSize = buf_size;
 
-        wguard_t g(mutex_desktop);
+        std::lock_guard<std::mutex> g(mutex_desktop);
         desktop_windows[wnd_frame] = mb;
         return wnd_frame;
     }
 
     bool RemoveDesktopWindow(DesktopWindow* desktop_wnd)
     {
-        wguard_t g(mutex_desktop);
+        std::lock_guard<std::mutex> g(mutex_desktop);
         desktopwindows_t::iterator ii = desktop_windows.find(desktop_wnd);
         if(ii != desktop_windows.end())
         {
@@ -147,7 +147,7 @@ struct ClientInstance
         return false;
     }
 
-    ACE_Recursive_Thread_Mutex mutex_audblocks;
+    std::mutex mutex_audblocks;
     typedef std::map<AudioBlock*, ACE_Message_Block*> audio_blocks_t;
     audio_blocks_t audio_blocks;
 
@@ -160,14 +160,14 @@ struct ClientInstance
             mb->release();
             return NULL;
         }
-        wguard_t g(mutex_audblocks);
+        std::lock_guard<std::mutex> g(mutex_audblocks);
         audio_blocks[audblock] = mb;
         return audblock;
     }
 
     bool RemoveAudioBlock(AudioBlock* audblock)
     {
-        wguard_t g(mutex_audblocks);
+        std::lock_guard<std::mutex> g(mutex_audblocks);
         audio_blocks_t::iterator ii = audio_blocks.find(audblock);
         TTASSERT(ii != audio_blocks.end());
         if(ii != audio_blocks.end())
@@ -234,10 +234,10 @@ typedef std::shared_ptr< ClientInstance > clientinst_t;
 typedef std::vector< clientinst_t > clients_t;
 
 clients_t clients;
-ACE_Recursive_Thread_Mutex clients_mutex;
+std::mutex clients_mutex;
 
 typedef std::set<SoundLoopback*> soundloops_t;
-ACE_Recursive_Thread_Mutex soundloops_mutex;
+std::mutex soundloops_mutex;
 soundloops_t soundloops;
 
 #if defined(WIN32)
@@ -297,7 +297,7 @@ void HOTKEY_USAGE(int num)
 
 clientinst_t GET_CLIENT(TTInstance* pInstance)
 {
-    wguard_t g(clients_mutex);
+    std::lock_guard<std::mutex> g(clients_mutex);
 
     for (auto c : clients)
     {
@@ -309,8 +309,6 @@ clientinst_t GET_CLIENT(TTInstance* pInstance)
 
 clientnode_t GET_CLIENTNODE(TTInstance* pInstance)
 {
-    wguard_t g(clients_mutex);
-
     auto c = GET_CLIENT(pInstance);
     if (c)
         return c->clientnode;
@@ -334,7 +332,7 @@ TEAMTALKDLL_API TTInstance* TT_InitTeamTalk(IN HWND hWnd, IN UINT32 uMsg)
 {
     clientinst_t inst(new ClientInstance(new TTMsgQueue(hWnd, uMsg)));
 
-    wguard_t g(clients_mutex);
+    std::lock_guard<std::mutex> g(clients_mutex);
     clients.push_back(inst);
 
     return inst.get();
@@ -356,7 +354,7 @@ TEAMTALKDLL_API TTInstance* TT_InitTeamTalkPoll(void)
 {
     clientinst_t inst(new ClientInstance(new TTMsgQueue()));
 
-    wguard_t g(clients_mutex);
+    std::lock_guard<std::mutex> g(clients_mutex);
     clients.push_back(inst);
 
     return inst.get();
@@ -383,7 +381,7 @@ TEAMTALKDLL_API TTBOOL TT_CloseTeamTalk(IN TTInstance* lpTTInstance)
 
     TTASSERT(ret>=0);
 
-    wguard_t g(clients_mutex);
+    std::lock_guard<std::mutex> g(clients_mutex);
     auto c = std::find(clients.begin(), clients.end(), inst);
     if (c != clients.end())
         clients.erase(c);
@@ -454,14 +452,15 @@ TEAMTALKDLL_API TTBOOL TT_GetSoundDevices(IN OUT SoundDevice* pSoundDevices,
         pSoundDevices[i].nMaxInputChannels = devices[i].max_input_channels;
         pSoundDevices[i].nMaxOutputChannels = devices[i].max_output_channels;
         pSoundDevices[i].nDefaultSampleRate = devices[i].default_samplerate;
-        pSoundDevices[i].bSupports3D = devices[i].supports3d;
+        pSoundDevices[i].bSupports3D = (devices[i].features & SOUNDDEVICEFEATURE_3DPOSITION);
         pSoundDevices[i].nSoundSystem = (SoundSystem)devices[i].soundsystem;
+        pSoundDevices[i].uSoundDeviceFeatures = devices[i].features;
+
         ACE_OS::strsncpy(pSoundDevices[i].szDeviceID, 
                         devices[i].deviceid.c_str(), 
                         TT_STRLEN);
-#ifdef WIN32
         pSoundDevices[i].nWaveDeviceID = devices[i].wavedeviceid;
-#endif
+
         set<int>::const_iterator is = devices[i].input_samplerates.begin();
         for(size_t s=0;s<TT_SAMPLERATES_MAX;s++)
         {
@@ -503,41 +502,87 @@ TEAMTALKDLL_API TTSoundLoop* TT_StartSoundLoopbackTest(IN INT32 nInputDeviceID,
                                                        IN TTBOOL bDuplexMode,
                                                        IN const SpeexDSP* lpSpeexDSP)
 {
+    AudioPreprocessor preprocessor = {};
+    preprocessor.nPreprocessor = NO_AUDIOPREPROCESSOR;
+    if (lpSpeexDSP)
+    {
+        preprocessor.nPreprocessor = SPEEXDSP_AUDIOPREPROCESSOR;
+        preprocessor.speexdsp = *lpSpeexDSP;
+    }
+    
+    SoundDeviceEffects effects = {};
+    return TT_StartSoundLoopbackTestEx(nInputDeviceID, nOutputDeviceID, nSampleRate,
+                                       nChannels, bDuplexMode, &preprocessor, &effects);
+}
+
+TEAMTALKDLL_API TTSoundLoop* TT_StartSoundLoopbackTestEx(IN INT32 nInputDeviceID,
+                                                         IN INT32 nOutputDeviceID,
+                                                         IN INT32 nSampleRate,
+                                                         IN INT32 nChannels,
+                                                         IN TTBOOL bDuplexMode,
+                                                         IN const AudioPreprocessor* lpAudioPreprocessor,
+                                                         IN const SoundDeviceEffects* lpSoundDeviceEffects)
+{
     bool agc_enable = false, denoise_enable = false, aec_enable = false;
     int noisesuppressdb = 0;
+    soundsystem::SoundDeviceFeatures sndfeatures = soundsystem::SOUNDDEVICEFEATURE_NONE;
 
 #if defined(ENABLE_SPEEXDSP)
     SpeexAGC agc;
     SpeexAEC aec;
 #endif
 
-    if(lpSpeexDSP)
+    int gainlevel = GAIN_NORMAL;
+    StereoMask stereo = ToStereoMask(false, false);
+
+    if (lpAudioPreprocessor)
     {
+        switch (lpAudioPreprocessor->nPreprocessor)
+        {
+        case SPEEXDSP_AUDIOPREPROCESSOR :
 #if defined(ENABLE_SPEEXDSP)
-        agc_enable = lpSpeexDSP->bEnableAGC;
-        agc.gain_level = (float)lpSpeexDSP->nGainLevel;
-        agc.max_increment = lpSpeexDSP->nMaxIncDBSec;
-        agc.max_decrement = lpSpeexDSP->nMaxDecDBSec;
-        agc.max_gain = lpSpeexDSP->nMaxGainDB;
+            agc_enable = lpAudioPreprocessor->speexdsp.bEnableAGC;
+            agc.gain_level = (float)lpAudioPreprocessor->speexdsp.nGainLevel;
+            agc.max_increment = lpAudioPreprocessor->speexdsp.nMaxIncDBSec;
+            agc.max_decrement = lpAudioPreprocessor->speexdsp.nMaxDecDBSec;
+            agc.max_gain = lpAudioPreprocessor->speexdsp.nMaxGainDB;
         
-        denoise_enable = lpSpeexDSP->bEnableDenoise;
-        noisesuppressdb = lpSpeexDSP->nMaxNoiseSuppressDB;
+            denoise_enable = lpAudioPreprocessor->speexdsp.bEnableDenoise;
+            noisesuppressdb = lpAudioPreprocessor->speexdsp.nMaxNoiseSuppressDB;
         
-        aec_enable = lpSpeexDSP->bEnableEchoCancellation;
-        aec.suppress_level = lpSpeexDSP->nEchoSuppress;
-        aec.suppress_active = lpSpeexDSP->nEchoSuppressActive;
+            aec_enable = lpAudioPreprocessor->speexdsp.bEnableEchoCancellation;
+            aec.suppress_level = lpAudioPreprocessor->speexdsp.nEchoSuppress;
+            aec.suppress_active = lpAudioPreprocessor->speexdsp.nEchoSuppressActive;
 #else
-        if(lpSpeexDSP->bEnableAGC || lpSpeexDSP->bEnableDenoise ||
-           lpSpeexDSP->bEnableEchoCancellation)
-           return FALSE;
+            if (lpAudioPreprocessor->speexdsp.bEnableAGC ||
+                lpAudioPreprocessor->speexdsp.bEnableDenoise ||
+                lpAudioPreprocessor->speexdsp.bEnableEchoCancellation)
+                return FALSE;
 #endif
+            break;
+        case TEAMTALK_AUDIOPREPROCESSOR :
+            gainlevel = lpAudioPreprocessor->ttpreprocessor.nGainLevel;
+            
+            stereo = ToStereoMask(lpAudioPreprocessor->ttpreprocessor.bMuteLeftSpeaker,
+                                  lpAudioPreprocessor->ttpreprocessor.bMuteRightSpeaker);
+            break;
+        case NO_AUDIOPREPROCESSOR :
+            break;
+        }
+    }
+
+    if (lpSoundDeviceEffects)
+    {
+        teamtalk::SoundDeviceEffects effects;
+        Convert(*lpSoundDeviceEffects, effects);
+        sndfeatures = teamtalk::GetSoundDeviceFeatures(effects);
     }
 
     SoundLoopback* pSoundLoopBack;
     ACE_NEW_RETURN(pSoundLoopBack, SoundLoopback(), NULL);
 
     TTBOOL b;
-    if(bDuplexMode)
+    if (bDuplexMode)
     {
         b = pSoundLoopBack->StartDuplexTest(nInputDeviceID, 
                                             nOutputDeviceID, 
@@ -549,7 +594,8 @@ TEAMTALKDLL_API TTSoundLoop* TT_StartSoundLoopbackTest(IN INT32 nInputDeviceID,
                                             aec_enable, 
                                             aec
 #endif
-                                            );
+                                            , gainlevel, stereo,
+                                            sndfeatures);
     }
     else
     {
@@ -563,7 +609,8 @@ TEAMTALKDLL_API TTSoundLoop* TT_StartSoundLoopbackTest(IN INT32 nInputDeviceID,
                                        aec_enable, 
                                        aec
 #endif
-                                       );
+                                      , gainlevel, stereo,
+                                      sndfeatures);
     }
 
     if(!b)
@@ -573,15 +620,16 @@ TEAMTALKDLL_API TTSoundLoop* TT_StartSoundLoopbackTest(IN INT32 nInputDeviceID,
     }
     else
     {
-        wguard_t g(soundloops_mutex);
+        std::lock_guard<std::mutex> g(soundloops_mutex);
         soundloops.insert(pSoundLoopBack);
     }
     return pSoundLoopBack;
 }
 
+
 TEAMTALKDLL_API TTBOOL TT_CloseSoundLoopbackTest(IN TTSoundLoop* lpTTSoundLoop)
 {
-    wguard_t g(soundloops_mutex);
+    std::lock_guard<std::mutex> g(soundloops_mutex);
     SoundLoopback* pSoundLoopBack = reinterpret_cast<SoundLoopback*>(lpTTSoundLoop);
     if(soundloops.find(pSoundLoopBack) != soundloops.end())
     {
@@ -611,12 +659,30 @@ TEAMTALKDLL_API TTBOOL TT_InitSoundInputDevice(IN TTInstance* lpTTInstance,
     return clientnode->InitSoundInputDevice(nInputDeviceID);
 }
 
+TEAMTALKDLL_API TTBOOL TT_InitSoundInputSharedDevice(IN INT32 nSampleRate,
+                                                     IN INT32 nChannels,
+                                                     IN INT32 nFrameSize)
+{
+    return soundsystem::GetInstance()->InitSharedInputDevice(nSampleRate,
+                                                             nChannels,
+                                                             nFrameSize);
+}
+
 TEAMTALKDLL_API TTBOOL TT_InitSoundOutputDevice(IN TTInstance* lpTTInstance, 
                                                 IN INT32 nOutputDeviceID)
 {
     clientnode_t clientnode;
     GET_CLIENTNODE_RET(clientnode, lpTTInstance, FALSE);
     return clientnode->InitSoundOutputDevice(nOutputDeviceID);
+}
+
+TEAMTALKDLL_API TTBOOL TT_InitSoundOutputSharedDevice(IN INT32 nSampleRate,
+                                                      IN INT32 nChannels,
+                                                      IN INT32 nFrameSize)
+{
+    return soundsystem::GetInstance()->InitSharedOutputDevice(nSampleRate,
+                                                              nChannels,
+                                                              nFrameSize);
 }
 
 TEAMTALKDLL_API TTBOOL TT_CloseSoundInputDevice(IN TTInstance* lpTTInstance)
@@ -640,21 +706,41 @@ TEAMTALKDLL_API TTBOOL TT_CloseSoundDuplexDevices(IN TTInstance* lpTTInstance)
     return clientnode->CloseSoundDuplexDevices();
 }
 
+TEAMTALKDLL_API TTBOOL TT_SetSoundDeviceEffects(IN TTInstance* lpTTInstance,
+                                                IN const SoundDeviceEffects* lpSoundDeviceEffects)
+{
+    clientnode_t clientnode;
+    GET_CLIENTNODE_RET(clientnode, lpTTInstance, FALSE);
+
+    teamtalk::SoundDeviceEffects prop;
+    Convert(*lpSoundDeviceEffects, prop);
+    
+    return clientnode->SetSoundDeviceEffects(prop);
+}
+
+TEAMTALKDLL_API TTBOOL TT_GetSoundDeviceEffects(IN TTInstance* lpTTInstance,
+                                                OUT SoundDeviceEffects* lpSoundDeviceEffect)
+{
+    clientnode_t clientnode;
+    GET_CLIENTNODE_RET(clientnode, lpTTInstance, FALSE);
+
+    Convert(clientnode->GetSoundDeviceEffects(), *lpSoundDeviceEffect);
+    return TRUE;
+}
+
+
 TEAMTALKDLL_API INT32 TT_GetSoundInputLevel(IN TTInstance* lpTTInstance)
 {
-    INT32 nLevel = SOUND_VU_MIN;
     clientnode_t clientnode;
-    GET_CLIENTNODE_RET(clientnode, lpTTInstance, nLevel);
-    nLevel = clientnode->GetCurrentVoiceLevel();
-    return nLevel;
+    GET_CLIENTNODE_RET(clientnode, lpTTInstance, SOUND_VU_MIN);
+    return clientnode->GetCurrentVoiceLevel();
 }
 
 TEAMTALKDLL_API TTBOOL TT_SetSoundInputGainLevel(IN TTInstance* lpTTInstance, IN INT32 nLevel)
 {
     clientnode_t clientnode;
     GET_CLIENTNODE_RET(clientnode, lpTTInstance, FALSE);
-    clientnode->SetVoiceGainLevel(nLevel);
-    return TRUE;
+    return clientnode->SetVoiceGainLevel(nLevel);
 }
 
 TEAMTALKDLL_API INT32 TT_GetSoundInputGainLevel(IN TTInstance* lpTTInstance)
@@ -667,21 +753,45 @@ TEAMTALKDLL_API INT32 TT_GetSoundInputGainLevel(IN TTInstance* lpTTInstance)
 TEAMTALKDLL_API TTBOOL TT_SetSoundInputPreprocess(IN TTInstance* lpTTInstance,
                                                   const IN SpeexDSP* lpSpeexDSP)
 {
-    clientnode_t clientnode;
-    GET_CLIENTNODE_RET(clientnode, lpTTInstance, FALSE);
-    teamtalk::SpeexDSP spxdsp;
-    Convert(*lpSpeexDSP, spxdsp);
-
-    return clientnode->SetSoundPreprocess(spxdsp);
+    AudioPreprocessor preprocess;
+    preprocess.nPreprocessor = SPEEXDSP_AUDIOPREPROCESSOR;
+    preprocess.speexdsp = *lpSpeexDSP;
+    return TT_SetSoundInputPreprocessEx(lpTTInstance, &preprocess);
 }
 
 TEAMTALKDLL_API TTBOOL TT_GetSoundInputPreprocess(IN TTInstance* lpTTInstance,
                                                   OUT SpeexDSP* lpSpeexDSP)
 {
+    AudioPreprocessor preprocess = {};
+    if (!TT_GetSoundInputPreprocessEx(lpTTInstance, &preprocess))
+        return FALSE;
+    
+    if (preprocess.nPreprocessor == SPEEXDSP_AUDIOPREPROCESSOR)
+    {
+        *lpSpeexDSP = preprocess.speexdsp;
+        return TRUE;
+    }
+    return FALSE;
+}
+
+TEAMTALKDLL_API TTBOOL TT_SetSoundInputPreprocessEx(IN TTInstance* lpTTInstance,
+                                                    IN const AudioPreprocessor* lpAudioPreprocessor)
+{
     clientnode_t clientnode;
     GET_CLIENTNODE_RET(clientnode, lpTTInstance, FALSE);
-    teamtalk::SpeexDSP spxdsp = clientnode->GetSoundProperties().speexdsp;
-    Convert(spxdsp, *lpSpeexDSP);
+
+    teamtalk::AudioPreprocessor preprocess;
+    Convert(*lpAudioPreprocessor, preprocess);
+    return clientnode->SetSoundPreprocess(preprocess);
+}
+    
+TEAMTALKDLL_API TTBOOL TT_GetSoundInputPreprocessEx(IN TTInstance* lpTTInstance,
+                                                    OUT AudioPreprocessor* lpAudioPreprocessor)
+{
+    clientnode_t clientnode;
+    GET_CLIENTNODE_RET(clientnode, lpTTInstance, FALSE);
+
+    Convert(clientnode->GetSoundProperties().preprocessor, *lpAudioPreprocessor);
     return TRUE;
 }
 
@@ -779,10 +889,26 @@ TEAMTALKDLL_API TTBOOL TT_EnableAudioBlockEvent(IN TTInstance* lpTTInstance,
                                                 IN StreamType nStreamType,
                                                 IN TTBOOL bEnable)
 {
+    return TT_EnableAudioBlockEventEx(lpTTInstance, nUserID, nStreamType, nullptr, bEnable);
+}
+
+TEAMTALKDLL_API TTBOOL TT_EnableAudioBlockEventEx(IN TTInstance* lpTTInstance,
+                                                  IN INT32 nUserID,
+                                                  IN StreamType nStreamType,
+                                                  IN const AudioFormat* lpAudioFormat,
+                                                  IN TTBOOL bEnable)
+{
     clientnode_t clientnode;
     GET_CLIENTNODE_RET(clientnode, lpTTInstance, FALSE);
+
+    media::AudioFormat fmt = (lpAudioFormat ? media::AudioFormat(lpAudioFormat->nSampleRate,
+                                                                 lpAudioFormat->nChannels)
+                              : media::AudioFormat());
     
-    return clientnode->EnableAudioBlockCallback(nUserID, (teamtalk::StreamType)nStreamType, bEnable);
+    
+    
+    return clientnode->EnableAudioBlockCallback(nUserID, (teamtalk::StreamType)nStreamType,
+                                                fmt, bEnable);
 }
 
 TEAMTALKDLL_API TTBOOL TT_InsertAudioBlock(IN TTInstance* lpTTInstance,
