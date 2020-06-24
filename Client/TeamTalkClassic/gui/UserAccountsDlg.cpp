@@ -137,7 +137,9 @@ BOOL CUserAccountsDlg::OnInitDialog()
     if(m_uad == UAD_READONLY && m_accounts.size() == 1)
     {
         m_wndAccounts.SetCurSel(0);
-        ShowUserAccount(m_accounts[0]);
+        size_t i = m_wndAccounts.GetItemData(0);
+        if (i != CB_ERR)
+            ShowUserAccount(m_accounts[i]);
     }
     else
         OnBnClickedButtonNew();
@@ -181,8 +183,8 @@ void CUserAccountsDlg::OnBnClickedButtonAdd()
     m_wndPassword.GetWindowText(account.szPassword, TT_STRLEN);
 
     if(_tcslen(account.szUsername) == 0 &&
-       MessageBox(_T("Create anonymous user account?"), 
-                  _T("Add/Update User Account"), MB_YESNO) != IDYES)
+       MessageBox(LoadText(IDS_USERACCOUNTCREATEANONYMOUS, _T("Create anonymous user account?")), 
+                  LoadText(IDS_USERACCOUNTADDUPDATE, _T("Add/Update User Account")), MB_YESNO) != IDYES)
         return;
 
     account.uUserType = (m_wndAdminUser.GetCheck() == BST_CHECKED)? USERTYPE_ADMIN : USERTYPE_DEFAULT;
@@ -288,7 +290,8 @@ void CUserAccountsDlg::OnLbnSelchangeListAccounts()
     if(index == LB_ERR)
         return;
 
-    ShowUserAccount(m_accounts[index]);
+    size_t i = GetItemData(m_wndAccounts, 0);
+    ShowUserAccount(m_accounts[i]);
 }
 
 void CUserAccountsDlg::OnEnChangeEditUsername()
@@ -416,10 +419,16 @@ void CUserAccountsDlg::ListAccounts()
     m_wndAccounts.ResetContent();
     for(size_t i=0;i<m_accounts.size();i++)
     {
+        int pos;
         if(_tcslen(m_accounts[i].szUsername) == 0)
-            m_wndAccounts.AddString(szFmt);
+        {
+            pos = m_wndAccounts.AddString(szFmt);
+        }
         else
-            m_wndAccounts.AddString(m_accounts[i].szUsername);
+        {
+            pos = m_wndAccounts.AddString(m_accounts[i].szUsername);
+        }
+        m_wndAccounts.SetItemData(pos, i);
     }
 }
 
