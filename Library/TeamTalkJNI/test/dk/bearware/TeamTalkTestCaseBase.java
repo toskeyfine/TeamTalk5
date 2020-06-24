@@ -43,6 +43,7 @@ public abstract class TeamTalkTestCaseBase extends TestCase {
     public static int TCPPORT = 0, UDPPORT = 0;
 
     public static String SYSTEMID = "teamtalk";
+    public static String STORAGEFOLDER = System.getProperty("user.dir");
 
     public static int INPUTDEVICEID = -1, OUTPUTDEVICEID = -1;
     public static String VIDEODEVICEID = "None", VIDEODEVDISABLE="None"; //set to "None" to ignore video capture tests
@@ -56,7 +57,6 @@ public abstract class TeamTalkTestCaseBase extends TestCase {
     public static final String MUXEDMEDIAFILE_SPEEX = "muxwavefile_speex.ogg";
     public static final String MUXEDMEDIAFILE_SPEEX_VBR = "muxwavefile_speex_vbr.ogg";
     public static final String MUXEDMEDIAFILE_OPUS = "muxwavefile_opus.ogg";
-
 
     public Vector<TeamTalkBase> ttclients = new Vector<TeamTalkBase>();
 
@@ -141,21 +141,28 @@ public abstract class TeamTalkTestCaseBase extends TestCase {
     }
 
     protected void initSound(TeamTalkBase ttclient, boolean duplex) {
+        initSound(ttclient, duplex, INPUTDEVICEID, OUTPUTDEVICEID);
+    }
+
+    protected void initSound(TeamTalkBase ttclient, boolean duplex, int inputdeviceid, int outputdeviceid) {
 
         Vector<SoundDevice> devs = new Vector<SoundDevice>();
         assertTrue("get sound devs", ttclient.getSoundDevices(devs));
-        System.out.println("---- Sound Devices ----");
-        for(int i=0;i<devs.size();i++)
-            printSoundDevice(devs.get(i));
+
+        if ("0".equals(System.getProperty("dk.bearware.verbose")) == false) {
+            System.out.println("---- Sound Devices ----");
+            for(int i=0;i<devs.size();i++)
+                printSoundDevice(devs.get(i));
+        }
 
         IntPtr indev = new IntPtr(), outdev = new IntPtr();
-        if(INPUTDEVICEID < 0 && OUTPUTDEVICEID < 0)
+        if (inputdeviceid < 0 && outputdeviceid < 0)
            assertTrue("get default devs", ttclient.getDefaultSoundDevices(indev, outdev));
 
-        if(INPUTDEVICEID >= 0)
-            indev.value = INPUTDEVICEID;
-        if(OUTPUTDEVICEID >= 0)
-            outdev.value = OUTPUTDEVICEID;
+        if (inputdeviceid >= 0)
+            indev.value = inputdeviceid;
+        if (outputdeviceid >= 0)
+            outdev.value = outputdeviceid;
 
         if(duplex) {
             assertTrue("init duplex devs", ttclient.initSoundDuplexDevices(indev.value, outdev.value));
@@ -165,19 +172,9 @@ public abstract class TeamTalkTestCaseBase extends TestCase {
             assertTrue("init output dev", ttclient.initSoundOutputDevice(outdev.value));
         }
 
-        SpeexDSP spxdsp = new SpeexDSP(true), spxdsp2 = new SpeexDSP();
-        assertTrue("set Speex DSP", ttclient.setSoundInputPreprocess(spxdsp));
-
-        assertTrue("get Speex DSP", ttclient.getSoundInputPreprocess(spxdsp2));
-        assertEquals("agc1", spxdsp.bEnableAGC, spxdsp2.bEnableAGC);
-        assertEquals("agc2", spxdsp.nGainLevel, spxdsp2.nGainLevel);
-        assertEquals("agc3", spxdsp.nMaxIncDBSec, spxdsp2.nMaxIncDBSec);
-        assertEquals("agc4", spxdsp.nMaxDecDBSec, spxdsp2.nMaxDecDBSec);
-        assertEquals("agc5", spxdsp.nMaxGainDB, spxdsp2.nMaxGainDB);
-        assertEquals("agc6", spxdsp.bEnableDenoise, spxdsp2.bEnableDenoise);
-        assertEquals("agc7", spxdsp.nMaxNoiseSuppressDB, spxdsp2.nMaxNoiseSuppressDB);
-        assertEquals("agc8", spxdsp.nEchoSuppress, spxdsp2.nEchoSuppress);
-        assertEquals("agc9", spxdsp.nEchoSuppressActive, spxdsp2.nEchoSuppressActive);
+        if ("0".equals(System.getProperty("dk.bearware.verbose")) == false) {
+            System.out.println("Using sound input device #"+indev.value+" and output device #"+outdev.value);
+        }
     }
 
     public interface ServerInterleave {
@@ -230,21 +227,113 @@ public abstract class TeamTalkTestCaseBase extends TestCase {
         UserAccount account = msg.useraccount;
         assertEquals("username set", username, account.szUsername);
         //Assert.AreEqual(passwd, account.szPassword, "password set");
-        assertTrue("Wait login complete", waitCmdComplete(ttclient, cmdid, 1000));
+        assertTrue("Wait login complete", waitCmdComplete(ttclient, cmdid, DEF_WAIT));
         assertTrue("Authorized", hasFlag(ttclient.getFlags(), ClientFlag.CLIENT_AUTHORIZED));
     }
 
+    protected void resetServerProperties() {
+        TeamTalkBase ttclient = newClientInstance();
+        connect(ttclient);
+        login(ttclient, ADMIN_NICKNAME + "resetServerProperties()", ADMIN_USERNAME, ADMIN_PASSWORD);
+
+        // reset server properties
+        ServerProperties prop = new ServerProperties();
+        prop.szServerName = "TeamTalk 5 Server";
+        prop.szMOTD = "";
+        prop.szMOTDRaw = "";
+        prop.nMaxUsers = 1000;
+        prop.nMaxLoginAttempts = 0;
+        prop.nMaxLoginsPerIPAddress = 0;
+        prop.nLoginDelayMSec = 0;
+        prop.nMaxVoiceTxPerSecond = 0;
+        prop.nMaxVideoCaptureTxPerSecond = 0;
+        prop.nMaxMediaFileTxPerSecond = 0;
+        prop.nMaxDesktopTxPerSecond = 0;
+        prop.nMaxTotalTxPerSecond = 0;
+        prop.bAutoSave = false;
+        prop.nTcpPort = TCPPORT;
+        prop.nUdpPort = UDPPORT;
+        prop.nUserTimeout = 60;
+        prop.szServerVersion = "";
+        prop.szServerProtocolVersion = "";
+        prop.szAccessToken = "";
+        assertTrue("reset server properties", waitCmdSuccess(ttclient, ttclient.doUpdateServer(prop), DEF_WAIT));
+
+        // reset bans
+        int cmdid = ttclient.doListBans(0, 0, 10000);
+        assertTrue("do list bans", cmdid > 0);
+        removeBans(ttclient, cmdid);
+
+        cmdid = ttclient.doListBans(ttclient.getRootChannelID(), 0, 10000);
+        assertTrue("do list root bans", cmdid > 0);
+        removeBans(ttclient, cmdid);
+
+        // erase user accounts
+        Vector<UserAccount> accounts = new Vector<UserAccount>();
+        cmdid = ttclient.doListUserAccounts(0, 10000);
+        TTMessage msg = new TTMessage();
+        while (cmdid > 0 && ttclient.getMessage(msg, DEF_WAIT)) {
+            switch (msg.nClientEvent) {
+            case ClientEvent.CLIENTEVENT_CMD_USERACCOUNT :
+                accounts.add(msg.useraccount);
+                break;
+            case ClientEvent.CLIENTEVENT_CMD_PROCESSING :
+                if (msg.nSource == cmdid && msg.bActive == false) {
+                    cmdid = 0;
+                }
+                break;
+            }
+        }
+        
+        for (UserAccount account : accounts) {
+            if (account.szUsername.equals(ADMIN_USERNAME))
+                continue;
+            
+            assertTrue("del account", waitCmdSuccess(ttclient, ttclient.doDeleteUserAccount(account.szUsername), DEF_WAIT));
+        }
+
+        // reset root channel
+        Channel root = new Channel(true, false);
+        root.nChannelID = ttclient.getRootChannelID();
+        root.uChannelType = ChannelType.CHANNEL_PERMANENT;
+        root.nMaxUsers = prop.nMaxUsers;
+        assertTrue("reset root channel", waitCmdSuccess(ttclient, ttclient.doUpdateChannel(root), DEF_WAIT));
+
+        assertTrue("Disconnect", ttclient.disconnect());
+    }
+
+    protected void removeBans(TeamTalkBase ttclient, int cmdid) {
+        Vector<BannedUser> bans = new Vector<BannedUser>();
+        TTMessage msg = new TTMessage();
+        while (cmdid > 0 && ttclient.getMessage(msg, DEF_WAIT)) {
+            switch (msg.nClientEvent) {
+            case ClientEvent.CLIENTEVENT_CMD_BANNEDUSER :
+                bans.add(msg.banneduser);
+                break;
+            case ClientEvent.CLIENTEVENT_CMD_PROCESSING :
+                if (msg.nSource == cmdid && msg.bActive == false) {
+                    cmdid = 0;
+                }
+                break;
+            }
+        }
+
+        for (BannedUser ban : bans) {
+            assertTrue("del ban", waitCmdSuccess(ttclient, ttclient.doUnBanUserEx(ban), DEF_WAIT));
+        }
+    }
+    
     protected void makeUserAccount(String nickname, String username, String password, int userrights)
     {
         TeamTalkBase ttclient = newClientInstance();
         connect(ttclient);
-        login(ttclient, nickname, ADMIN_USERNAME, ADMIN_PASSWORD);
+        login(ttclient, ADMIN_NICKNAME + "makeUserAccount()", ADMIN_USERNAME, ADMIN_PASSWORD);
         UserAccount useraccount = new UserAccount();
         useraccount.szUsername = username;
         useraccount.szPassword = password;
         useraccount.uUserRights = userrights;
         useraccount.uUserType = UserType.USERTYPE_DEFAULT;
-        assertTrue("New user accout ok", waitCmdSuccess(ttclient, ttclient.doNewUserAccount(useraccount), DEF_WAIT));
+        assertTrue("New user account ok", waitCmdSuccess(ttclient, ttclient.doNewUserAccount(useraccount), DEF_WAIT));
         assertTrue("Disconnect", ttclient.disconnect());
     }
 
@@ -262,7 +351,7 @@ public abstract class TeamTalkTestCaseBase extends TestCase {
 
         assertTrue("do join root", cmdid > 0);
 
-        assertTrue("Wait join complete", waitCmdComplete(ttclient, cmdid, 1000, server));
+        assertTrue("Wait join complete", waitCmdComplete(ttclient, cmdid, DEF_WAIT, server));
 
         assertEquals("In root channel", ttclient.getMyChannelID(), ttclient.getRootChannelID());
     }
@@ -301,6 +390,11 @@ public abstract class TeamTalkTestCaseBase extends TestCase {
         TTMessage tmp = new TTMessage();
         boolean gotmsg;
         do {
+            // caller might pass 'nClientEvent =
+            // ClientEvent.CLIENTEVENT_NONE' which is default in
+            // TTMessage. So set to something unsupported.
+            tmp.nClientEvent = -1;
+
             gotmsg = ttclient.getMessage(tmp, 0);
 
             interleave.interleave();
@@ -311,10 +405,8 @@ public abstract class TeamTalkTestCaseBase extends TestCase {
                     System.out.println("Command error: " + tmp.clienterrormsg.szErrorMsg);
                 }
             }
-            if(System.currentTimeMillis() - start >= waittimeout)
-                break;
         }
-        while (!gotmsg || tmp.nClientEvent != nClientEvent);
+        while (tmp.nClientEvent != nClientEvent && (System.currentTimeMillis() - start <= waittimeout || gotmsg));
 
         if (tmp.nClientEvent == nClientEvent)
         {
@@ -382,11 +474,12 @@ public abstract class TeamTalkTestCaseBase extends TestCase {
     protected static boolean waitCmdSuccess(TeamTalkBase ttclient, int cmdid,
                                             int waittimeout, ServerInterleave interleave) {
         TTMessage msg = new TTMessage();
-
         while (waitForEvent(ttclient, ClientEvent.CLIENTEVENT_CMD_SUCCESS, waittimeout, msg, interleave))
         {
-            if (msg.nSource == cmdid)
+            if (msg.nSource == cmdid) {
+                waitCmdComplete(ttclient, cmdid, waittimeout, interleave);
                 return true;
+            }
         }
 
         return false;
@@ -403,8 +496,10 @@ public abstract class TeamTalkTestCaseBase extends TestCase {
 
         while (waitForEvent(ttclient, ClientEvent.CLIENTEVENT_CMD_ERROR, waittimeout, msg, interleave))
         {
-            if (msg.nSource == cmdid)
+            if (msg.nSource == cmdid) {
+                waitCmdComplete(ttclient, cmdid, waittimeout, interleave);
                 return true;
+            }
         }
 
         return false;
@@ -441,9 +536,14 @@ public abstract class TeamTalkTestCaseBase extends TestCase {
         return chan;
     }
 
-    public static String getCurrentMethod()
+    public static String getTestMethodName()
     {
-        return Thread.currentThread().getStackTrace()[2].getMethodName();
+        for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
+            if (ste.getMethodName().startsWith("test"))
+                return ste.getMethodName();
+        }
+        assertTrue("no test method found", false);
+        return "";
     }
 
     static boolean hasFlag(int flags, int flag) {
@@ -453,17 +553,92 @@ public abstract class TeamTalkTestCaseBase extends TestCase {
     static void printSoundDevice(SoundDevice dev) {
         System.out.println("Sound dev " + Integer.toString(dev.nDeviceID) + ":");
         System.out.println("\tName:" + dev.szDeviceName);
+        switch (dev.nSoundSystem) {
+        case SoundSystem.SOUNDSYSTEM_NONE :
+            System.out.println("\tSound System: None");
+            break;
+        case SoundSystem.SOUNDSYSTEM_WINMM :
+            System.out.println("\tSound System: Windows MM");
+            break;
+        case SoundSystem.SOUNDSYSTEM_DSOUND :
+            System.out.println("\tSound System: DirectSound");
+            break;
+        case SoundSystem.SOUNDSYSTEM_ALSA :
+            System.out.println("\tSound System: ALSA");
+            break;
+        case SoundSystem.SOUNDSYSTEM_COREAUDIO :
+            System.out.println("\tSound System: CoreAudio");
+            break;
+        case SoundSystem.SOUNDSYSTEM_WASAPI :
+            System.out.println("\tSound System: WASAPI");
+            break;
+        case SoundSystem.SOUNDSYSTEM_OPENSLES_ANDROID :
+            System.out.println("\tSound System: OpenSL ES for Android");
+            break;
+        case SoundSystem.SOUNDSYSTEM_AUDIOUNIT_IOS :
+            System.out.println("\tSound System: AudioUnit for iOS");
+            break;
+        }
         System.out.println("\tInput channels: " + Integer.toString(dev.nMaxInputChannels));
         System.out.println("\tOutput channels: " + Integer.toString(dev.nMaxOutputChannels));
         System.out.print("\tInput sample rates: ");
-        for(int j=0;j<dev.inputSampleRates.length;j++)
+        for(int j=0;j<dev.inputSampleRates.length && dev.inputSampleRates[j] != 0;j++)
             System.out.print(Integer.toString(dev.inputSampleRates[j]) + ", ");
         System.out.println();
         System.out.print("\tOutput sample rates: ");
-        for(int j=0;j<dev.outputSampleRates.length;j++)
+        for(int j=0;j<dev.outputSampleRates.length && dev.outputSampleRates[j] != 0;j++)
             System.out.print(Integer.toString(dev.outputSampleRates[j]) + ", ");
         System.out.println();
         System.out.println("\tDefault sample rate: " + Integer.toString(dev.nDefaultSampleRate));
+    }
+
+    public static SoundDevice getSoundDevice(TeamTalkBase ttclient, int deviceid) {
+        Vector<SoundDevice> devs = new Vector<SoundDevice>();
+        ttclient.getSoundDevices(devs);
+        for(SoundDevice d : devs) {
+            if (d.nDeviceID == deviceid)
+                return d;
+        }
+        return null;
+    }
+
+    public static boolean supportsInputSampleRate(SoundDevice indev, int samplerate) {
+
+        boolean inputsr = false;
+        for (int sr : indev.inputSampleRates)
+            inputsr |= sr == samplerate;
+
+        return inputsr;
+    }
+
+    public static boolean supportsOutputSampleRate(SoundDevice outdev, int samplerate) {
+
+        boolean outputsr = false;
+        for (int sr : outdev.outputSampleRates)
+            outputsr |= sr == samplerate;
+
+        return outputsr;
+    }
+
+    static boolean supportsDuplexMode(TeamTalkBase ttclient, int inputdeviceid, int outputdeviceid, int samplerate) {
+
+        if (inputdeviceid == -1 || outputdeviceid == -1) {
+            IntPtr indev = new IntPtr(), outdev = new IntPtr();
+            ttclient.getDefaultSoundDevices(indev, outdev);
+            inputdeviceid = inputdeviceid == -1? indev.value : inputdeviceid;
+            outputdeviceid = outputdeviceid == -1? outdev.value : outputdeviceid;
+        }
+
+        SoundDevice indev = getSoundDevice(ttclient, inputdeviceid),
+            outdev = getSoundDevice(ttclient, outputdeviceid);
+
+        assertTrue("indev set", indev != null);
+        assertTrue("outdev set", outdev != null);
+
+        boolean inputsr = supportsInputSampleRate(indev, samplerate),
+            outputsr = supportsOutputSampleRate(outdev, samplerate);
+
+        return inputsr && outputsr;
     }
 
     static FileOutputStream newWaveFile(String filename, int samplerate, int channels, int bytesize) throws IOException {
