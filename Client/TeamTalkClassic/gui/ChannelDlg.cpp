@@ -151,9 +151,9 @@ BOOL CChannelDlg::OnInitDialog()
     ServerProperties prop;
     TT_GetServerProperties(ttInst, &prop);
 
-    AddString(m_wndCodec, _T("No Audio"), NO_CODEC);
+    AddString(m_wndCodec, LoadText(IDS_CHANDLGNOAUDIO, _T("No Audio")), NO_CODEC);
     AddString(m_wndCodec, _T("Speex"), SPEEX_CODEC);
-    AddString(m_wndCodec, _T("Speex Variable Bitrate"), SPEEX_VBR_CODEC);
+    AddString(m_wndCodec, LoadText(IDS_CHANDLGSPEEXVARIABLE, _T("Speex Variable Bitrate")), SPEEX_VBR_CODEC);
     AddString(m_wndCodec, _T("OPUS"), OPUS_CODEC);
     SetCurSelItemData(m_wndCodec, m_codec.nCodec);
 
@@ -242,12 +242,12 @@ void CChannelDlg::OnOK()
     m_wndChannelName.GetWindowText(s);
     if(s.GetLength() == 0 && m_nType == CREATE_CHANNEL)
     {
-        AfxMessageBox(_T("Enter a channel name"));
+        AfxMessageBox(LoadText(IDS_CHANDLGENTERACHANNAME, _T("Enter a channel name")));
         m_wndChannelName.SetFocus();
     }
     else if(s.Find('/') != -1)
     {
-        AfxMessageBox(_T("A channel name cannot contain a '/'"));
+        AfxMessageBox(LoadText(IDS_CHANDLGNOSLASH, _T("A channel name cannot contain a '/'")));
         m_wndChannelName.SetFocus();
     }
     else
@@ -308,8 +308,8 @@ void CChannelDlg::DisplayCodecControls(Codec nCodec)
         m_wndACLabel.ShowWindow(SW_HIDE);
         m_wndAudioChannels.ShowWindow(SW_HIDE);
         m_wndAudioChannels.ResetContent();
-        AddString(m_wndAudioChannels, _T("Mono"), 1);
-        AddString(m_wndAudioChannels, _T("Stereo"), 2);
+        AddString(m_wndAudioChannels, LoadText(IDS_STREAMDLGMONO, _T("Mono")), 1);
+        AddString(m_wndAudioChannels, LoadText(IDS_STREAMDLGSTEREO, _T("Stereo")), 2);
         SetCurSelItemData(m_wndAudioChannels, DEFAULT_SPEEX_SIMSTEREO ? 2 : 1);
         //quality
         m_wndQuality.SetRange(0, 10, TRUE);
@@ -352,8 +352,8 @@ void CChannelDlg::DisplayCodecControls(Codec nCodec)
         //channels
         m_wndACLabel.ShowWindow(SW_HIDE);
         m_wndAudioChannels.ShowWindow(SW_HIDE);
-        AddString(m_wndAudioChannels, _T("Mono"), 1);
-        AddString(m_wndAudioChannels, _T("Stereo"), 2);
+        AddString(m_wndAudioChannels, LoadText(IDS_STREAMDLGMONO, _T("Mono")), 1);
+        AddString(m_wndAudioChannels, LoadText(IDS_STREAMDLGSTEREO, _T("Stereo")), 2);
         SetCurSelItemData(m_wndAudioChannels, DEFAULT_SPEEX_VBR_SIMSTEREO ? 2 : 1);
         //quality        
         m_wndQualityLabel.ShowWindow(SW_SHOW);
@@ -393,8 +393,8 @@ void CChannelDlg::DisplayCodecControls(Codec nCodec)
         m_wndAppLabel.ShowWindow(SW_SHOW);
         m_wndCodecApp.ShowWindow(SW_SHOW);
         m_wndCodecApp.ResetContent();
-        AddString(m_wndCodecApp, _T("VoIP"), OPUS_APPLICATION_VOIP);
-        AddString(m_wndCodecApp, _T("Music"), OPUS_APPLICATION_AUDIO);
+        AddString(m_wndCodecApp, LoadText(IDS_CHANDLGVOIP, _T("VoIP")), OPUS_APPLICATION_VOIP);
+        AddString(m_wndCodecApp, LoadText(IDS_CHANDLGMUSIC, _T("Music")), OPUS_APPLICATION_AUDIO);
         SetCurSelItemData(m_wndCodecApp, DEFAULT_OPUS_APPLICATION);
         //samplerate
         m_wndSRLabel.ShowWindow(SW_SHOW);
@@ -410,8 +410,8 @@ void CChannelDlg::DisplayCodecControls(Codec nCodec)
         m_wndACLabel.ShowWindow(SW_SHOW);
         m_wndAudioChannels.ShowWindow(SW_SHOW);
         m_wndAudioChannels.ResetContent();
-        AddString(m_wndAudioChannels, _T("Mono"), 1);
-        AddString(m_wndAudioChannels, _T("Stereo"), 2);
+        AddString(m_wndAudioChannels, LoadText(IDS_STREAMDLGMONO, _T("Mono")), 1);
+        AddString(m_wndAudioChannels, LoadText(IDS_STREAMDLGSTEREO, _T("Stereo")), 2);
         SetCurSelItemData(m_wndAudioChannels, DEFAULT_OPUS_CHANNELS);
         //bitrate
         m_wndBpsLabel.ShowWindow(SW_SHOW);
@@ -496,13 +496,13 @@ void CChannelDlg::UpdateCodec()
     switch(m_codec.nCodec)
     {
     case SPEEX_CODEC :
-        m_codec.speex.nBandmode = GetItemData(m_wndSampleRate);
+        m_codec.speex.nBandmode = GetItemData(m_wndSampleRate, DEFAULT_SPEEX_BANDMODE);
         m_codec.speex.nQuality = m_wndQuality.GetPos();
         m_codec.speex.bStereoPlayback = DEFAULT_SPEEX_SIMSTEREO;
         m_codec.speex.nTxIntervalMSec = GetWindowNumber(m_wndTxDelay);
         break;
     case SPEEX_VBR_CODEC :
-        m_codec.speex_vbr.nBandmode = GetItemData(m_wndSampleRate);
+        m_codec.speex_vbr.nBandmode = GetItemData(m_wndSampleRate, DEFAULT_SPEEX_BANDMODE);
         m_codec.speex_vbr.nQuality = m_wndQuality.GetPos();
         m_codec.speex_vbr.nBitRate = bitrate;
         m_codec.speex_vbr.nMaxBitRate = maxbitrate;
@@ -511,9 +511,9 @@ void CChannelDlg::UpdateCodec()
         m_codec.speex_vbr.nTxIntervalMSec = GetWindowNumber(m_wndTxDelay);
         break;
     case OPUS_CODEC :
-        m_codec.opus.nSampleRate = GetItemData(m_wndSampleRate);
-        m_codec.opus.nChannels = GetItemData(m_wndAudioChannels);
-        m_codec.opus.nApplication = GetItemData(m_wndCodecApp);
+        m_codec.opus.nSampleRate = GetItemData(m_wndSampleRate, DEFAULT_OPUS_SAMPLERATE);
+        m_codec.opus.nChannels = GetItemData(m_wndAudioChannels, DEFAULT_OPUS_CHANNELS);
+        m_codec.opus.nApplication = GetItemData(m_wndCodecApp, DEFAULT_OPUS_APPLICATION);
         m_codec.opus.nComplexity = DEFAULT_OPUS_COMPLEXITY;
         m_codec.opus.bFEC = DEFAULT_OPUS_FEC;
         m_codec.opus.bDTX = m_wndDtx.GetCheck() == BST_CHECKED;
@@ -521,7 +521,7 @@ void CChannelDlg::UpdateCodec()
         m_codec.opus.bVBR = m_wndVBR.GetCheck() == BST_CHECKED;
         m_codec.opus.bVBRConstraint = DEFAULT_OPUS_VBRCONSTRAINT;
         m_codec.opus.nTxIntervalMSec = GetWindowNumber(m_wndTxDelay);
-        m_codec.opus.nFrameSizeMSec = GetItemData(m_wndOpusFrameSizes);
+        m_codec.opus.nFrameSizeMSec = GetItemData(m_wndOpusFrameSizes, DEFAULT_OPUS_FRAMESIZE);
         break;
     }
 }
@@ -569,7 +569,7 @@ void CChannelDlg::GetBitrateLimits(Codec nCodec, int& nMinBps,
     switch(nCodec)
     {
     case SPEEX_VBR_CODEC :
-        switch(GetItemData(m_wndSampleRate))
+        switch(GetItemData(m_wndSampleRate, DEFAULT_SPEEX_BANDMODE))
         {
         case SPEEX_MODEID_NB :
             nMinBps = SPEEX_NB_MIN_BITRATE;
