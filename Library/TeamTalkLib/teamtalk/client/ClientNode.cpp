@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2005-2018, BearWare.dk
- * 
+ *
  * Contact Information:
  *
  * Bjoern D. Rasmussen
@@ -49,8 +49,9 @@ using namespace std::placeholders;
 #define UDP_SOCKET_RECV_BUF_SIZE 0x20000
 #define UDP_SOCKET_SEND_BUF_SIZE 0x20000
 
-#define LOCAL_USERID 0
-#define MUX_USERID   0x1001
+#define LOCAL_USERID    0 // Local user recording
+#define MUX_USERID      0x1001 // User ID for recording muxed stream
+#define LOCAL_TX_USERID 0x1002 // User ID for local user transmitting
 
 #define SIMULATE_RX_PACKETLOSS 0
 #define SIMULATE_TX_PACKETLOSS 0
@@ -61,11 +62,11 @@ using namespace std::placeholders;
 
 ClientNode::ClientNode(const ACE_TString& version, ClientListener* listener)
                        : m_reactor(new ACE_Select_Reactor(), true) //Ensure we don't use ACE_WFMO_Reactor!!!
-#ifdef _DEBUG
+#if defined(_DEBUG)
                        , m_reactor_thr_id(0)
                        , m_active_timerid(0)
-                       , m_reactor_wait(0)
 #endif
+                       , m_reactor_wait(0)
                        , m_flags(CLIENT_CLOSED)
                        , m_connector(&m_reactor, ACE_NONBLOCK)
                        , m_def_stream(NULL)
@@ -99,24 +100,18 @@ ClientNode::ClientNode(const ACE_TString& version, ClientListener* listener)
     m_local_voicelog.reset(new ClientUser(LOCAL_USERID, this,
                                           m_listener, m_soundsystem));
 
-    this->activate();
-#if defined(_DEBUG)
-    m_reactor_wait.acquire();
-#endif
-
+    ResumeEventHandling();
 }
 
 ClientNode::~ClientNode()
 {
     //close reactor so no one can register new handlers
-    int ret = m_reactor.end_reactor_event_loop();
-    TTASSERT(ret>=0);
-    this->wait();
+    SuspendEventHandling(true);
 
     {
         //guard needed for disconnect since Logout and LeaveChannel are called
         GUARD_REACTOR(this);
-        
+
         Disconnect();
         StopStreamingMediaFile();
         CloseVideoCapture();
@@ -136,41 +131,46 @@ int ClientNode::svc(void)
     int ret = m_reactor.owner (ACE_OS::thr_self ());
     assert(ret >= 0);
 
-#if defined(_DEBUG)
     m_reactor_wait.release();
-#endif
 
     m_reactor.run_reactor_event_loop ();
     MYTRACE( (ACE_TEXT("ClientNode reactor thread exited.\n")) );
     return 0;
 }
 
-void ClientNode::SuspendEventHandling()
+void ClientNode::SuspendEventHandling(bool quit)
 {
-    if(this->thr_count())
-    {
-        m_reactor.end_reactor_event_loop();
-        MYTRACE( (ACE_TEXT("ClientNode reactor thread suspended.\n")) );
-    }
+    m_reactor.end_reactor_event_loop();
+
+    // don't wait for thread to die if SuspendEventHandling() is called from reactor loop
+    ACE_thread_t thr_id = 0;
+    m_reactor.owner(&thr_id);
+    if(thr_id != ACE_OS::thr_self())
+        this->wait();
+
+    MYTRACE(ACE_TEXT("ClientNode reactor thread %s.\n"), (quit ? ACE_TEXT("exited") : ACE_TEXT("suspended")));
 }
 
 void ClientNode::ResumeEventHandling()
 {
-    if(this->thr_count() == 0)
-    {
-        ACE_thread_t thr_id = 0;
-        m_reactor.owner(&thr_id);
-        TTASSERT(thr_id != ACE_OS::thr_self());
+    MYTRACE( (ACE_TEXT("ClientNode reactor thread activating.\n")) );
 
+    ACE_thread_t thr_id = 0;
+    m_reactor.owner(&thr_id);
+    if(thr_id != ACE_OS::thr_self())
+    {
         MYTRACE( (ACE_TEXT("ClientNode reactor thread waiting.\n")) );
-        if(thr_id != ACE_OS::thr_self())
-            this->wait();
-        MYTRACE( (ACE_TEXT("ClientNode reactor thread activating.\n")) );
-        m_reactor.reset_reactor_event_loop();
-        int ret = this->activate();
-        assert(ret >= 0);
-        MYTRACE( (ACE_TEXT("ClientNode reactor thread activated.\n")) );
+        this->wait();
     }
+
+    m_reactor.reset_reactor_event_loop();
+    int ret = this->activate();
+    assert(ret >= 0);
+
+    ret = m_reactor_wait.acquire();
+    assert(ret >= 0);
+
+    MYTRACE( (ACE_TEXT("ClientNode reactor thread activated.\n")) );
 }
 
 ACE_Lock& ClientNode::reactor_lock()
@@ -980,7 +980,6 @@ void ClientNode::OpenAudioCapture(const AudioCodec& codec)
     int codec_samplerate = GetAudioCodecSampleRate(codec);
     int codec_samples = GetAudioCodecCbSamples(codec);
     int codec_channels = GetAudioCodecChannels(codec);
-    int output_channels = GetAudioCodecSimulateStereo(codec)?2:codec_channels;
 
     rguard_t g_snd(lock_sndprop());
 
@@ -988,53 +987,26 @@ void ClientNode::OpenAudioCapture(const AudioCodec& codec)
        m_soundprop.inputdeviceid == SOUNDDEVICE_IGNORE_ID)
         return;
 
-    int input_samplerate = 0, input_channels = 0, input_samples = 0;
-    if(!m_soundsystem->SupportsInputFormat(m_soundprop.inputdeviceid,
-                                       codec_channels, codec_samplerate))
+    bool opened;
+    if (m_flags & CLIENT_SNDINOUTPUT_DUPLEX)
     {
-        DeviceInfo dev;
-        if(!m_soundsystem->GetDevice(m_soundprop.inputdeviceid, dev) ||
-           dev.default_samplerate == 0)
-            return;
-        
-        //choose highest sample rate supported by device
-        input_samplerate = dev.default_samplerate;
-        //choose channels supported by device
-        input_channels = dev.GetSupportedInputChannels(codec_channels);
-        //get callback size for new samplerate
-        input_samples = CalcSamples(codec_samplerate, codec_samples,
-                                    input_samplerate);
-        media::AudioFormat infmt(input_samplerate, input_channels),
-            outfmt(codec_samplerate, codec_channels);
-        m_capture_resampler = MakeAudioResampler(infmt, outfmt);
+        int samplerate = codec_samplerate;
+        int output_channels = GetAudioCodecSimulateStereo(codec) ? 2 : codec_channels;
 
-        if (!m_capture_resampler)
+        // In order to support Windows AEC we let output device 
+        // determine what resampler settings should be used. Input sample rate
+        // is fixed in Windows AEC so we should let output device choose sample rate.
+        // Also duplex mode in PortAudioWrapper is hacked on Windows' to make a fake
+        // duplex device.
+        DeviceInfo outdev;
+        m_soundsystem->GetDevice(m_soundprop.outputdeviceid, outdev);
+        if (!outdev.SupportsOutputFormat(output_channels, codec_samplerate))
         {
-            m_capture_resampler.reset();
-            m_listener->OnInternalError(TT_INTERR_SNDINPUT_FAILURE,
-                                        ACE_TEXT("Cannot create resampler for sound input device."));
-            return;
-        }
-        m_capture_buffer.resize(codec_samples * codec_channels);
-    }
-    else
-    {
-        input_samplerate = codec_samplerate;
-        input_channels = codec_channels;
-        input_samples = codec_samples;
-    }
-
-    bool b;
-    if(m_flags & CLIENT_SNDINOUTPUT_DUPLEX)
-    {
-        DeviceInfo dev;
-        m_soundsystem->GetDevice(m_soundprop.outputdeviceid, dev);
-        if(!dev.SupportsOutputFormat(output_channels, input_samplerate))
-        {
-            media::AudioFormat infmt(input_samplerate, output_channels),
+            output_channels = outdev.GetSupportedOutputChannels(output_channels);
+            samplerate = outdev.default_samplerate; // duplex callback should use output device's sample rate
+            media::AudioFormat infmt(samplerate, output_channels),
                 outfmt(codec_samplerate, codec_channels);
-            m_playback_resampler = MakeAudioResampler(infmt, //sample rate shared in dpx mode
-                                                      outfmt);
+            m_playback_resampler = MakeAudioResampler(infmt, outfmt);  //sample rate shared in dpx mode
             if (!m_playback_resampler)
             {
                 m_playback_resampler.reset();
@@ -1042,26 +1014,95 @@ void ClientNode::OpenAudioCapture(const AudioCodec& codec)
                                             ACE_TEXT("Cannot create resampler for sound output device"));
                 return;
             }
-
             m_playback_buffer.resize(codec_samples * codec_channels);
         }
 
-        b = m_soundsystem->OpenDuplexStream(this, m_soundprop.inputdeviceid,
-                                        m_soundprop.outputdeviceid,
-                                        m_soundprop.soundgroupid, 
-                                        input_samplerate, input_channels,
-                                        output_channels, input_samples);
+        // resample if output device already forced resampling or 
+        // if input device doesn't support number of channels
+        DeviceInfo indev;
+        m_soundsystem->GetDevice(m_soundprop.inputdeviceid, indev);
+        int input_channels = indev.GetSupportedInputChannels(codec_channels);
+        int samples = codec_samples;
+
+        if (samplerate != codec_samplerate || input_channels != codec_channels)
+        {
+            media::AudioFormat infmt(samplerate, input_channels),
+                outfmt(codec_samplerate, codec_channels);
+            m_capture_resampler = MakeAudioResampler(infmt, outfmt);
+
+            if (!m_capture_resampler)
+            {
+                m_capture_resampler.reset();
+                m_listener->OnInternalError(TT_INTERR_SNDINPUT_FAILURE,
+                    ACE_TEXT("Cannot create resampler for sound input device."));
+                return;
+            }
+            m_capture_buffer.resize(codec_samples * codec_channels);
+
+            samples = CalcSamples(codec_samplerate, codec_samples, samplerate);
+        }
+
+
+        opened = m_soundsystem->OpenDuplexStream(this, m_soundprop.inputdeviceid,
+                                                 m_soundprop.outputdeviceid,
+                                                 m_soundprop.soundgroupid, 
+                                                 samplerate, input_channels,
+                                                 output_channels, samples);
     }
     else
-        b = m_soundsystem->OpenInputStream(this, m_soundprop.inputdeviceid, 
-                                       m_soundprop.soundgroupid,
-                                       input_samplerate, input_channels, 
-                                       input_samples);
-    if(!b)
     {
-        if(m_listener)
+        int input_samplerate = 0, input_channels = 0, input_samples = 0;
+
+        if(!m_soundsystem->SupportsInputFormat(m_soundprop.inputdeviceid,
+            codec_channels, codec_samplerate))
+        {
+            DeviceInfo dev;
+            if(!m_soundsystem->GetDevice(m_soundprop.inputdeviceid, dev) ||
+                dev.default_samplerate == 0)
+            {
+                m_listener->OnInternalError(TT_INTERR_SNDINPUT_FAILURE,
+                    ACE_TEXT("Cannot open sound input device."));
+                return;
+            }
+
+            //choose highest sample rate supported by device
+            input_samplerate = dev.default_samplerate;
+            //choose channels supported by device
+            input_channels = dev.GetSupportedInputChannels(codec_channels);
+            //get callback size for new samplerate
+            input_samples = CalcSamples(codec_samplerate, codec_samples,
+                input_samplerate);
+            media::AudioFormat infmt(input_samplerate, input_channels),
+                outfmt(codec_samplerate, codec_channels);
+            m_capture_resampler = MakeAudioResampler(infmt, outfmt);
+
+            if(!m_capture_resampler)
+            {
+                m_capture_resampler.reset();
+                m_listener->OnInternalError(TT_INTERR_SNDINPUT_FAILURE,
+                    ACE_TEXT("Cannot create resampler for sound input device."));
+                return;
+            }
+            m_capture_buffer.resize(codec_samples * codec_channels);
+        }
+        else
+        {
+            input_samplerate = codec_samplerate;
+            input_channels = codec_channels;
+            input_samples = codec_samples;
+        }
+
+        opened = m_soundsystem->OpenInputStream(this, m_soundprop.inputdeviceid, 
+                                                m_soundprop.soundgroupid,
+                                                input_samplerate, input_channels, 
+                                                input_samples);
+    }
+
+    if (!opened)
+    {
+        if (m_listener)
             m_listener->OnInternalError(TT_INTERR_SNDINPUT_FAILURE,
-                                        ACE_TEXT("Failed to open sound input device"));
+                                        GetErrorDescription(TT_INTERR_SNDINPUT_FAILURE));
     }
 }
 
@@ -1078,6 +1119,10 @@ void ClientNode::CloseAudioCapture()
     media::AudioFrame frm;
     frm.sample_no = m_soundprop.samples_transmitted;
     frm.streamid = m_voice_stream_id;
+    AudioUserCallback(LOCAL_TX_USERID, STREAMTYPE_VOICE, frm);
+
+    // submit ending of recording
+    frm.sample_no = m_soundprop.samples_recorded;
     AudioUserCallback(LOCAL_USERID, STREAMTYPE_VOICE, frm);
     
     m_soundprop.samples_transmitted = 0;
@@ -1092,24 +1137,38 @@ void ClientNode::CloseAudioCapture()
 }
 
 // Separate thread
-void ClientNode::QueueVoiceFrame(media::AudioFrame& audframe)
+void ClientNode::QueueAudioCapture(media::AudioFrame& audframe)
 {
     audframe.force_enc = ((m_flags & CLIENT_TX_VOICE) || m_voice_tx_closed.exchange(false));
     audframe.voiceact_enc = (m_flags & CLIENT_SNDINPUT_VOICEACTIVATED);
+    audframe.sample_no = m_soundprop.samples_recorded;
+    m_soundprop.samples_recorded += audframe.input_samples;
+
+    if (!m_audioinput_voice)
+        QueueVoiceFrame(audframe);
+}
+
+// Separate thread
+void ClientNode::QueueVoiceFrame(media::AudioFrame& audframe,
+                                 ACE_Message_Block* mb_audio)
+{
     audframe.soundgrpid = m_soundprop.soundgroupid;
     audframe.userdata = STREAMTYPE_VOICE;
-    audframe.sample_no = m_soundprop.samples_recorded;
     audframe.streamid = m_voice_stream_id;
 
-    m_voice_thread.QueueAudio(audframe);
-    
     if (m_audiocontainer.AddAudio(LOCAL_USERID, STREAMTYPE_VOICE, audframe))
     {
         m_listener->OnUserAudioBlock(LOCAL_USERID, STREAMTYPE_VOICE);
     }
-
-    m_soundprop.samples_recorded += audframe.input_samples;
-}
+    
+    if (mb_audio)
+    {
+        m_voice_thread.QueueAudio(mb_audio);
+        // don't touch 'mb_audio' after this
+    }
+    else
+        m_voice_thread.QueueAudio(audframe);
+    }
 
 void ClientNode::SendVoicePacket(const VoicePacket& packet)
 {
@@ -1199,7 +1258,7 @@ void ClientNode::EncodedAudioVoiceFrame(const teamtalk::AudioCodec& codec,
         media::AudioFrame frm;
         frm.sample_no = m_soundprop.samples_transmitted;
         frm.streamid = m_voice_stream_id;
-        AudioUserCallback(LOCAL_USERID, STREAMTYPE_VOICE, frm);
+        AudioUserCallback(LOCAL_TX_USERID, STREAMTYPE_VOICE, frm);
         
         return;
     }
@@ -1218,7 +1277,7 @@ void ClientNode::EncodedAudioVoiceFrame(const teamtalk::AudioCodec& codec,
     media::AudioFrame cpyframe = org_frame;
     cpyframe.streamid = m_voice_stream_id;
     cpyframe.sample_no = m_soundprop.samples_transmitted;
-    AudioUserCallback(LOCAL_USERID, STREAMTYPE_VOICE, cpyframe);
+    AudioUserCallback(LOCAL_TX_USERID, STREAMTYPE_VOICE, cpyframe);
     
     m_soundprop.samples_transmitted += org_frame.input_samples;
 
@@ -1308,7 +1367,7 @@ void ClientNode::StreamCaptureCb(const soundsystem::InputStreamer& streamer,
     AudioFrame audframe(AudioFormat(codec_samplerate, codec_channels),
                         const_cast<short*>(capture_buffer), codec_samples);
     
-    QueueVoiceFrame(audframe);
+    QueueAudioCapture(audframe);
 }
 
 void ClientNode::StreamDuplexEchoCb(const soundsystem::DuplexStreamer& streamer,
@@ -1364,7 +1423,33 @@ void ClientNode::StreamDuplexEchoCb(const soundsystem::DuplexStreamer& streamer,
     audframe.output_buffer = playback_buffer;
     audframe.output_samples = codec_samples;
 
-    QueueVoiceFrame(audframe);
+    QueueAudioCapture(audframe);
+}
+
+namespace teamtalk {
+    SoundDeviceFeatures GetSoundDeviceFeatures(const SoundDeviceEffects& effects)
+    {
+        SoundDeviceFeatures features = SOUNDDEVICEFEATURE_NONE;
+
+        if (effects.enable_aec)
+            features |= SOUNDDEVICEFEATURE_AEC;
+        if (effects.enable_agc)
+            features |= SOUNDDEVICEFEATURE_AGC;
+        if (effects.enable_denoise)
+            features |= SOUNDDEVICEFEATURE_DENOISE;
+
+        return features;
+    }
+}
+
+SoundDeviceFeatures ClientNode::GetCaptureFeatures()
+{
+    return GetSoundDeviceFeatures(m_soundprop.effects);
+}
+
+SoundDeviceFeatures ClientNode::GetDuplexFeatures()
+{
+    return GetCaptureFeatures();
 }
 
 bool ClientNode::VideoCaptureRGB32Callback(media::VideoFrame& video_frame,
@@ -1466,8 +1551,9 @@ bool ClientNode::MediaStreamAudioCallback(AudioFrame& audio_frame,
     audio_frame.userdata = STREAMTYPE_MEDIAFILE_AUDIO;
     audio_frame.streamid = m_mediafile_stream_id;
     m_audiofile_thread.QueueAudio(mb_audio);
+    // don't touch 'mb_audio' after this
 
-    return true;  //m_video_thread always takes ownership
+    return true;  //m_audiofile_thread always takes ownership
 }
 
 void ClientNode::MediaStreamStatusCallback(const MediaFileProp& mfp,
@@ -1511,10 +1597,8 @@ bool ClientNode::AudioInputCallback(media::AudioFrame& audio_frame,
 {
     assert(mb_audio);
     audio_frame.force_enc = true;
-    audio_frame.userdata = STREAMTYPE_VOICE;
-    audio_frame.streamid = m_voice_stream_id;
+    QueueVoiceFrame(audio_frame);
 
-    m_voice_thread.QueueAudio(mb_audio);
     return true;
 }
 
@@ -2862,11 +2946,39 @@ bool ClientNode::CloseSoundDuplexDevices()
     return true;
 }
 
+bool ClientNode::SetSoundDeviceEffects(const SoundDeviceEffects& effects)
+{
+    {
+        rguard_t g_snd(lock_sndprop());
+        m_soundprop.effects = effects;
+    }
+
+    if (m_flags & CLIENT_SNDINOUTPUT_DUPLEX)
+    {
+        if (!m_soundsystem->IsStreamStopped(static_cast<StreamDuplex*>(this)))
+            return m_soundsystem->UpdateStreamDuplexFeatures(this);
+    }
+    else if (m_flags & CLIENT_SNDINPUT_READY)
+    {
+        if (!m_soundsystem->IsStreamStopped(static_cast<StreamCapture*>(this)))
+            return m_soundsystem->UpdateStreamCaptureFeatures(this);
+    }
+    return true;
+}
+
+SoundDeviceEffects ClientNode::GetSoundDeviceEffects()
+{
+    rguard_t g_snd(lock_sndprop());
+
+    return m_soundprop.effects;
+}
+
 bool ClientNode::SetSoundOutputVolume(int volume)
 {
     rguard_t g_snd(lock_sndprop());
     return m_soundsystem->SetMasterVolume(m_soundprop.soundgroupid, volume);
 }
+
 int ClientNode::GetSoundOutputVolume()
 {
     rguard_t g_snd(lock_sndprop());
@@ -2877,11 +2989,12 @@ bool ClientNode::EnableVoiceTransmission(bool enable)
 {
     ASSERT_REACTOR_LOCKED(this);
 
-    if (m_audioinput_voice)
-        return false;
-    
-    if(enable)
+    if (enable)
     {
+        // don't allow voice transmission during audio input
+        if (m_audioinput_voice)
+            return false;
+        
         m_flags |= CLIENT_TX_VOICE;
 
         //don't increment stream id if voice activated and voice active
@@ -2908,11 +3021,14 @@ bool ClientNode::EnableVoiceActivation(bool enable)
 {
     ASSERT_REACTOR_LOCKED(this);
 
-    if (m_audioinput_voice)
-        return false;
+    if (enable)
+    {
+        // don't allow voice activation during audio input
+        if (m_audioinput_voice)
+            return false;
     
-    if(enable)
         m_flags |= CLIENT_SNDINPUT_VOICEACTIVATED;
+    }
     else
     {
         m_flags &= ~CLIENT_SNDINPUT_VOICEACTIVATED;
@@ -2963,12 +3079,13 @@ bool ClientNode::AutoPositionUsers()
 }
 
 bool ClientNode::EnableAudioBlockCallback(int userid, StreamType stream_type,
+                                          const media::AudioFormat& outfmt,
                                           bool enable)
 {
     ASSERT_REACTOR_LOCKED(this);
 
     if(enable)
-        m_audiocontainer.AddSoundSource(userid, stream_type);
+        m_audiocontainer.AddSoundSource(userid, stream_type, outfmt);
     else
         m_audiocontainer.RemoveSoundSource(userid, stream_type);
 
@@ -3056,33 +3173,48 @@ bool ClientNode::MuteAll(bool muteall)
     return m_soundsystem->MuteAll(m_soundprop.soundgroupid, muteall);
 }
 
-void ClientNode::SetVoiceGainLevel(int gainlevel)
+bool ClientNode::SetVoiceGainLevel(int gainlevel)
 {
     rguard_t g_snd(lock_sndprop());
 
-    m_soundprop.gainlevel = gainlevel; //cache value
-    m_voice_thread.m_gainlevel = gainlevel;
+    switch (m_soundprop.preprocessor.preprocessor)
+    {
+    case AUDIOPREPROCESSOR_TEAMTALK :
+        m_soundprop.preprocessor.ttpreprocessor.gainlevel = gainlevel; //cache vvalue
+        return SetSoundPreprocess(m_soundprop.preprocessor);
+    case AUDIOPREPROCESSOR_NONE :
+    case AUDIOPREPROCESSOR_SPEEXDSP : // maybe only denoising is used
+                                      // in SpeexDSP but gain should
+                                      // still be allowed.
+        m_voice_thread.m_gainlevel = gainlevel;
+        return true;
+    }
+    return false;
 }
 
 int ClientNode::GetVoiceGainLevel()
 {
     rguard_t g_snd(lock_sndprop());
 
-    return m_soundprop.gainlevel;
+    if (m_soundprop.preprocessor.preprocessor == AUDIOPREPROCESSOR_TEAMTALK)
+        return m_soundprop.preprocessor.ttpreprocessor.gainlevel;
+
+    return m_voice_thread.m_gainlevel;
 }
 
-bool ClientNode::SetSoundPreprocess(const SpeexDSP& speexdsp)
+bool ClientNode::SetSoundPreprocess(const AudioPreprocessor& preprocessor)
 {
-    ASSERT_REACTOR_LOCKED(this);
     rguard_t g_snd(lock_sndprop());
 
-    m_soundprop.speexdsp = speexdsp;
+    m_soundprop.preprocessor = preprocessor;
 
-    return m_voice_thread.UpdatePreprocess(speexdsp);
+    return m_voice_thread.UpdatePreprocessor(preprocessor);
 }
 
 void ClientNode::SetSoundInputTone(StreamTypes streams, int frequency)
 {
+    ASSERT_REACTOR_LOCKED(this);
+
     if(streams & STREAMTYPE_MEDIAFILE_AUDIO)
         m_audiofile_thread.EnableTone(frequency);
     if(streams & STREAMTYPE_VOICE)
@@ -3250,20 +3382,8 @@ bool ClientNode::UpdateStreamingMediaFile(uint32_t offset, bool paused,
         }
     }
 
-    switch(preprocessor.preprocessor)
-    {
-    case AUDIOPREPROCESSOR_NONE :
-        break;
-    case AUDIOPREPROCESSOR_SPEEXDSP :
-        if (!m_audiofile_thread.UpdatePreprocess(preprocessor.speexdsp))
-            return false;
-        break;
-    case AUDIOPREPROCESSOR_TEAMTALK :
-        m_audiofile_thread.m_gainlevel = preprocessor.ttpreprocessor.gainlevel;
-        m_audiofile_thread.MuteSound(preprocessor.ttpreprocessor.muteleft,
-                                     preprocessor.ttpreprocessor.muteright);
-        break;
-    }
+    if (!m_audiofile_thread.UpdatePreprocessor(preprocessor))
+        return false;
 
     if (offset != MEDIASTREAMER_OFFSET_IGNORE)
         m_mediafile_streamer->SetOffset(offset);
@@ -4098,10 +4218,10 @@ void ClientNode::JoinChannel(clientchannel_t& chan)
     auto cbenc = std::bind(&ClientNode::EncodedAudioVoiceFrame, this, _1, _2, _3, _4, _5);
     if(m_voice_thread.StartEncoder(cbenc, codec, true))
     {
-        if (!m_voice_thread.UpdatePreprocess(m_soundprop.speexdsp)) //set AGC, denoise, etc.
+        if (!SetSoundPreprocess(m_soundprop.preprocessor)) //set AGC, denoise, etc.
         {
-            m_listener->OnInternalError(TT_INTERR_AUDIOCONFIG_INIT_FAILED,
-                                        GetErrorDescription(TT_INTERR_AUDIOCONFIG_INIT_FAILED));
+            m_listener->OnInternalError(TT_INTERR_AUDIOPREPROCESSOR_INIT_FAILED,
+                                        GetErrorDescription(TT_INTERR_AUDIOPREPROCESSOR_INIT_FAILED));
         }
     }
     else
@@ -4111,7 +4231,7 @@ void ClientNode::JoinChannel(clientchannel_t& chan)
     }
         
     // add "self" from muxed recording
-    m_channelrecord.AddUser(LOCAL_USERID, chan->GetChannelID());
+    m_channelrecord.AddUser(LOCAL_TX_USERID, chan->GetChannelID());
 
     // enable audio muxer callback
     if (m_audiomuxer_stream)
@@ -4166,7 +4286,7 @@ void ClientNode::LeftChannel(ClientChannel& chan)
         m_audiomuxer_stream->UnregisterMuxCallback();
 
     // remove "self" from muxed recording
-    m_channelrecord.RemoveUser(LOCAL_USERID);
+    m_channelrecord.RemoveUser(LOCAL_TX_USERID);
 
     CloseDesktopSession(true);
 
@@ -4880,18 +5000,6 @@ void ClientNode::OnClosed()
 #endif
     m_def_stream = NULL;
     
-
-    if (m_serverinfo.hostaddrs.size() > 1)
-    {
-        m_serverinfo.hostaddrs.erase(m_serverinfo.hostaddrs.begin());
-        u_short udpport = m_serverinfo.udpaddr.get_port_number();
-        m_serverinfo.udpaddr = m_serverinfo.hostaddrs[0];
-        m_serverinfo.udpaddr.set_port_number(udpport);
-        if (Connect(encrypted, m_serverinfo.hostaddrs[0],
-                    m_localTcpAddr != ACE_INET_Addr() ? &m_localTcpAddr : NULL))
-            return;
-    }
-
     if(m_flags & CLIENT_CONNECTED)
     {
         m_flags &= ~CLIENT_CONNECTED;
@@ -4901,6 +5009,18 @@ void ClientNode::OnClosed()
     }
     else if(m_flags & CLIENT_CONNECTING)
     {
+        // try next resolved host before giving up
+        if (m_serverinfo.hostaddrs.size() > 1)
+        {
+            m_serverinfo.hostaddrs.erase(m_serverinfo.hostaddrs.begin());
+            u_short udpport = m_serverinfo.udpaddr.get_port_number();
+            m_serverinfo.udpaddr = m_serverinfo.hostaddrs[0];
+            m_serverinfo.udpaddr.set_port_number(udpport);
+            if (Connect(encrypted, m_serverinfo.hostaddrs[0],
+                        m_localTcpAddr != ACE_INET_Addr() ? &m_localTcpAddr : NULL))
+                return;
+        }
+
         m_flags &= ~CLIENT_CONNECTING;
         //Disconnect and clean up clientnode
         if(m_listener)
