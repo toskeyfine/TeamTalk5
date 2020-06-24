@@ -213,10 +213,8 @@ namespace teamtalk {
         int outputdeviceid;
         //sound group for current instance
         int soundgroupid;
-        //AGC and denoise settings
-        SpeexDSP speexdsp;
-        //gain input audio
-        int gainlevel;
+        // AGC, AEC and denoise settings
+        AudioPreprocessor preprocessor;
         //dereverb
         bool dereverb;
         //count transmitted samples
@@ -224,21 +222,29 @@ namespace teamtalk {
         //total samples recorded
         ACE_UINT32 samples_recorded;
 
+        SoundDeviceEffects effects;
+
         SoundProperties()
         {
             inputdeviceid = outputdeviceid = SOUNDDEVICE_IGNORE_ID;
             soundgroupid = 0;
-            gainlevel = GAIN_NORMAL;
             dereverb = true;
             samples_transmitted = 0;
             samples_recorded = 0;
+            // default to TT Audio preprocessor to be compatible with
+            // SetVoiceGainLevel()
+            preprocessor.preprocessor = AUDIOPREPROCESSOR_TEAMTALK;
+            preprocessor.ttpreprocessor.gainlevel = GAIN_NORMAL;
+            preprocessor.ttpreprocessor.muteleft = preprocessor.ttpreprocessor.muteright = false;
         }
     };
+
+    soundsystem::SoundDeviceFeatures GetSoundDeviceFeatures(const SoundDeviceEffects& effects);
 
     class EventSuspender
     {
     public:
-        virtual void SuspendEventHandling() = 0;
+        virtual void SuspendEventHandling(bool quit = false) = 0;
         virtual void ResumeEventHandling() = 0;
     };
 
@@ -265,15 +271,16 @@ namespace teamtalk {
 
         int svc(void);
 
-        void SuspendEventHandling();
+        void SuspendEventHandling(bool quit = false);
         void ResumeEventHandling();
 
         ACE_Lock& reactor_lock();
 #if defined(_DEBUG)
         ACE_thread_t m_reactor_thr_id;
         ACE_UINT32 m_active_timerid;
-        ACE_Semaphore m_reactor_wait;
 #endif
+        ACE_Semaphore m_reactor_wait;
+        
         ACE_Recursive_Thread_Mutex& lock_sndprop() { return m_sndgrp_lock; }
         ACE_Recursive_Thread_Mutex& lock_timers() { return m_timers_lock; }
         VoiceLogger& voicelogger();
@@ -304,6 +311,8 @@ namespace teamtalk {
         bool CloseSoundInputDevice();
         bool CloseSoundOutputDevice();
         bool CloseSoundDuplexDevices();
+        bool SetSoundDeviceEffects(const SoundDeviceEffects& effects);
+        SoundDeviceEffects GetSoundDeviceEffects();
         const SoundProperties& GetSoundProperties() const { return m_soundprop; }
 
         bool SetSoundOutputVolume(int volume);
@@ -321,16 +330,17 @@ namespace teamtalk {
         bool AutoPositionUsers();    //position users in 3D
 
         bool EnableAudioBlockCallback(int userid, StreamType stream_type,
+                                      const media::AudioFormat& outfmt,
                                       bool enable);
         // user provided audio stream that replaces voice input stream
         bool QueueAudioInput(const media::AudioFrame& frm, int streamid);
         
         bool MuteAll(bool muteall);
 
-        void SetVoiceGainLevel(int gainlevel);
+        bool SetVoiceGainLevel(int gainlevel);
         int GetVoiceGainLevel();
 
-        bool SetSoundPreprocess(const SpeexDSP& speexdsp);
+        bool SetSoundPreprocess(const AudioPreprocessor& preprocessor);
         void SetSoundInputTone(StreamTypes streams, int frequency);
 
         bool StartRecordingMuxedAudioFile(const AudioCodec& codec, 
@@ -447,6 +457,8 @@ namespace teamtalk {
                                 const short* input_buffer, 
                                 const short* prev_output_buffer, 
                                 int n_samples);
+        soundsystem::SoundDeviceFeatures GetCaptureFeatures();
+        soundsystem::SoundDeviceFeatures GetDuplexFeatures();
 
         //VideoCapture listener - separate thread
         bool VideoCaptureRGB32Callback(media::VideoFrame& video_frame,
@@ -589,7 +601,9 @@ namespace teamtalk {
         //audio start/stop/update
         void OpenAudioCapture(const AudioCodec& codec);
         void CloseAudioCapture();
-        void QueueVoiceFrame(media::AudioFrame& audframe);
+        void QueueAudioCapture(media::AudioFrame& audframe);
+        void QueueVoiceFrame(media::AudioFrame& audframe,
+                             ACE_Message_Block* mb_audio = nullptr);
 
         void SendVoicePacket(const VoicePacket& packet);
         void SendAudioFilePacket(const AudioFilePacket& packet);
