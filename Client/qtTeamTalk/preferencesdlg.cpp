@@ -526,6 +526,8 @@ void PreferencesDlg::slotTabChange(int index)
         ui.questionmodeEdit->setText(ttSettings->value(SETTINGS_SOUNDEVENT_QUESTIONMODE).toString());
         ui.desktopaccessEdit->setText(ttSettings->value(SETTINGS_SOUNDEVENT_DESKTOPACCESS).toString());
         break;
+    case TTSEVENTS_TAB :
+        break;
     case SHORTCUTS_TAB :  //shortcuts
     {
         hotkey_t hotkey;
