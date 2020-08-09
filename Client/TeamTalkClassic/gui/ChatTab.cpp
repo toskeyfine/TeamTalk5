@@ -87,6 +87,10 @@ BOOL CChatTab::OnInitDialog()
     m_wndRichEdit.SendMessage(EM_AUTOURLDETECT, TRUE, 0);
     m_wndRichEdit.SetEventMask(m_wndRichEdit.GetEventMask() | ENM_LINK) ;
 
+    TRANSLATE(*this, IDD);
+    SetAccessibleName(m_wndRichEdit, LoadText(IDS_CHANHISTORYLAB, _T("History")));
+    SetAccessibleName(m_wndChanMessage, LoadText(IDS_CHANMESSAGELAB, _T("Message")));
+
     return TRUE;  // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }
