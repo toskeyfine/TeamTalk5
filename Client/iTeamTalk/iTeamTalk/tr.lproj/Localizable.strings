@@ -1,4 +1,3 @@
-
 /* log entry */
 "%@ joined channel" = "%@ kanala katıldı";
 
@@ -106,6 +105,9 @@
 
 /* preferences */
 "Broadcast Text Message" = "Yayınlanan Metin İletisi";
+
+/* Dialog message */
+"Cancel" = "İptal";
 
 /* channel list
    server entry */
@@ -273,7 +275,7 @@
 
 /* codec detail
    create channel */
-"Mono" = "Tekli";
+"Mono" = "Mono";
 
 /* channel list */
 "Move user" = "Kullanıcıyı taşı";
@@ -515,7 +517,7 @@
 
 /* codec detail
    create channel */
-"Stereo" = "Çoklu";
+"Stereo" = "Stereo";
 
 /* user detail */
 "Subscriptions" = "Abonelikler";
