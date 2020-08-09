@@ -118,13 +118,8 @@ MainWindow::MainWindow(const QString& cfgfile)
 {
     //Ensure the correct version of the DLL is loaded
     if(QString(TEAMTALK_VERSION) != _Q(TT_GetVersion()))
-        QMessageBox::warning(nullptr, ("DLL load error"),
-                             QString("This %3 executable is built for DLL "
-                                      "version %1 but the loaded DLL reports "
-                                      "it's version %2. Loading an incorrent "
-                                      "DLL for %3 may cause problems and crash "
-                                      "the application. Please reinstall to "
-                                      "solve this problem.")
+        QMessageBox::warning(nullptr, (tr("DLL load error")),
+                             QString(tr("This %3 executable is built for DLL version %1 but the loaded DLL reports it's version %2. Loading an incorrect DLL for %3 may cause problems and crash the application. Please reinstall to solve this problem."))
                                      .arg(TEAMTALK_VERSION).
                                      arg(_Q(TT_GetVersion())).
                                      arg(APPNAME_SHORT));
@@ -2089,15 +2084,21 @@ bool MainWindow::nativeEvent(const QByteArray& eventType, void* message,
 
 void MainWindow::updateWindowTitle()
 {
-    QString profilename, title;
+    QString profilename, title = APPTITLE;
     if(ttSettings)
         profilename = ttSettings->value(SETTINGS_GENERAL_PROFILENAME).toString();
 
+    ServerProperties prop = {};
     if(m_mychannel.nChannelID > 0 &&
        m_mychannel.nChannelID != TT_GetRootChannelID(ttInst))
-        title = QString("%1 - %2").arg(_Q(m_mychannel.szName)).arg(APPTITLE);
-    else
-        title = APPTITLE;
+    {
+        title = QString("%1 - %2").arg(limitText(_Q(m_mychannel.szName))).arg(APPTITLE);
+    }
+    else if (TT_GetServerProperties(ttInst, &prop))
+    {
+        title = QString("%1 - %2").arg(limitText(_Q(prop.szServerName))).arg(APPTITLE);
+    }
+
     if(profilename.size())
         title = QString("%1 - %2").arg(title).arg(profilename);
     setWindowTitle(title);
