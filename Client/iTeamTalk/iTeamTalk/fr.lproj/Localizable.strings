@@ -1,4 +1,3 @@
-
 /* log entry */
 "%@ joined channel" = "%@ a rejoint le canal";
 
@@ -95,7 +94,7 @@
 "Bitrate" = "Débit";
 
 /* preferences */
-"Bjoern D. Rasmussen, contact@bearware.dk" = "Bjoern D. Rasmussen, contact@bearware.dk";
+"Bjoern D. Rasmussen, contact@bearware.dk" = "Oreonan";
 
 /* text message type */
 "Broadcast message" = "Message général";
@@ -106,6 +105,9 @@
 
 /* preferences */
 "Broadcast Text Message" = "Message texte général";
+
+/* Dialog message */
+"Cancel" = "Annuler";
 
 /* channel list
    server entry */
