@@ -30,12 +30,12 @@ import dk.bearware.backend.TeamTalkConnection;
 import dk.bearware.backend.TeamTalkConnectionListener;
 import dk.bearware.backend.TeamTalkService;
 import dk.bearware.data.Permissions;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -46,7 +46,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 public class StreamMediaActivity
-extends Activity implements TeamTalkConnectionListener {
+extends AppCompatActivity implements TeamTalkConnectionListener {
 
     public static final String TAG = "bearware";
     public static final int REQUEST_STREAM_MEDIA = 1;
@@ -61,7 +61,7 @@ extends Activity implements TeamTalkConnectionListener {
         super.onCreate(savedInstanceState);
         
         setContentView(R.layout.activity_stream_media);
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         file_path = (EditText)this.findViewById(R.id.file_path_txt);
         file_path.setText(PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getString(lastMedia, ""));
     }
@@ -156,6 +156,9 @@ extends Activity implements TeamTalkConnectionListener {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if ((requestCode == REQUEST_STREAM_MEDIA) && (resultCode == RESULT_OK)) {
             file_path.setText(data.getStringExtra(FilePickerActivity.SELECTED_FILE));
+        }
+        else {
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 }
