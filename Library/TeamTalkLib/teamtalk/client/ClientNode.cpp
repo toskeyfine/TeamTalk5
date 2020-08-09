@@ -3304,8 +3304,13 @@ bool ClientNode::StartStreamingMediaFile(const ACE_TString& filename,
                                                        this, _1, _2), true);
 
     MediaStreamOutput media_out;
-    if (vid_codec.codec != CODEC_NO_CODEC)
+    bool videooutput = vid_codec.codec != CODEC_NO_CODEC;
+    if (videooutput)
+    {
         media_out.video.fourcc = media::FOURCC_I420; // TODO: this is not enforced. FFmpeg will output RGB32
+        // notice we don't set video output format (width/height)
+        // since it's determined by the video decoder's format information
+    }
     media_out.audio.channels = GetAudioCodecChannels(m_mychannel->GetAudioCodec());
     media_out.audio.samplerate = GetAudioCodecSampleRate(m_mychannel->GetAudioCodec());
     media_out.audio_samples = GetAudioCodecCbSamples(m_mychannel->GetAudioCodec());
@@ -3319,7 +3324,7 @@ bool ClientNode::StartStreamingMediaFile(const ACE_TString& filename,
     MediaFileProp file_in = m_mediafile_streamer->GetMediaFile();
 
     //initiate audio part of media file
-    if(file_in.audio.IsValid())
+    if(file_in.audio.IsValid() && media_out.audio.IsValid())
     {
         auto cbfunc = std::bind(&ClientNode::EncodedAudioFileFrame, this, _1, _2, _3, _4, _5);
         if (!m_audiofile_thread.StartEncoder(cbfunc, m_mychannel->GetAudioCodec(), true))
@@ -3332,7 +3337,7 @@ bool ClientNode::StartStreamingMediaFile(const ACE_TString& filename,
 
     TTASSERT(!m_videofile_thread);
     //initiate video part of media file
-    if (file_in.video.IsValid())
+    if (file_in.video.IsValid() && videooutput)
     {
         m_flags |= CLIENT_STREAM_VIDEOFILE;
 
@@ -5258,15 +5263,15 @@ void ClientNode::HandleServerUpdate(const mstrings_t& properties)
 
     if(m_serverinfo.hostaddrs.size())
     {
-        int tcpport = m_serverinfo.hostaddrs[0].get_port_number();
-        int udpport = m_serverinfo.udpaddr.get_port_number();
-        if (GetProperty(properties, TT_TCPPORT, tcpport))
-        {
-            for (auto& a : m_serverinfo.hostaddrs)
-                a.set_port_number(tcpport);
-        }
-        if (GetProperty(properties, TT_UDPPORT, udpport))
-            m_serverinfo.udpaddr.set_port_number(udpport);
+        int newtcpport, tcpport = m_serverinfo.hostaddrs[0].get_port_number();
+        int newudpport, udpport = m_serverinfo.udpaddr.get_port_number();
+        
+        GetProperty(properties, TT_TCPPORT, newtcpport);
+        MYTRACE_COND(newtcpport != tcpport, ACE_TEXT("TCP port is different. Indicates server is behind NAT.\n"));
+        // don't change m_serverinfo.udpaddr. This will not work for
+        // servers behind NAT
+        GetProperty(properties, TT_UDPPORT, newudpport);
+        MYTRACE_COND(newudpport != udpport, ACE_TEXT("UDP port is different. Indicates server is behind NAT.\n"));
     }
     GetProperty(properties, TT_MOTD, m_serverinfo.motd);
     GetProperty(properties, TT_MOTDRAW, m_serverinfo.motd_raw);
