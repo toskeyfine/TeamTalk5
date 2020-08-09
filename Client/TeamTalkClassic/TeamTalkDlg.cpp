@@ -287,7 +287,7 @@ void CTeamTalkDlg::Login()
     }
 
     int cmd = TT_DoLoginEx(ttInst,
-        STR_UTF8(m_xmlSettings.GetNickname(STR_UTF8(DEFAULT_NICKNAME)).c_str()),
+        STR_UTF8(m_xmlSettings.GetNickname(STR_UTF8(LoadText(IDS_DEFAULTNICKNAME, DEFAULT_NICKNAME))).c_str()),
         STR_UTF8(m_host.szUsername.c_str()),
         STR_UTF8(m_host.szPassword.c_str()), APPTITLE_SHORT);
 
@@ -304,11 +304,16 @@ void CTeamTalkDlg::UpdateWindowTitle()
     TT_GetChannel(ttInst, TT_GetMyChannelID(ttInst), &chan);
 
     //set window title
-    CString szTitle;
+    ServerProperties prop = {};
+    CString szTitle = APPTITLE;
     if(chan.nChannelID>0 && TT_GetRootChannelID(ttInst) != chan.nChannelID)
+    {
         szTitle.Format(_T("%s - %s"), LimitText(chan.szName), APPTITLE);
-    else
-        szTitle.Format(_T("%s"), APPTITLE);
+    }
+    else if (TT_GetServerProperties(ttInst, &prop))
+    {
+        szTitle.Format(_T("%s - %s"), LimitText(prop.szServerName), APPTITLE);
+    }
 
     if(szProfileName.GetLength())
         szTitle += _T(" - ") + szProfileName;
@@ -2725,6 +2730,9 @@ BOOL CTeamTalkDlg::OnInitDialog()
     szCtrlName.LoadString(IDS_VOICEACTLEVEL);
     TRANSLATE_ITEM(IDS_VOICEACTLEVEL, szCtrlName);
     SetAccessibleName(m_wndVoiceSlider, szCtrlName);
+    szCtrlName.LoadString(IDS_TREECTRLLAB);
+    TRANSLATE_ITEM(IDS_TREECTRLLAB, szCtrlName);
+    SetAccessibleName(m_wndTree, szCtrlName);
 
     return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -4086,6 +4094,11 @@ void CTeamTalkDlg::OnAdvancedIncvolumevoice()
         {
             int v = RefVolumeToPercent(user.nVolumeVoice);
             TT_SetUserVolume(ttInst, i->nUserID, STREAMTYPE_VOICE, RefVolume(v + 1));
+        if (m_xmlSettings.GetEventTTSEvents() & TTS_SUBSCRIPTIONS_VOICE) {
+            CString szText;
+            szText.Format(LoadText(IDS_INCVOLUMEVOICEUSER, _T("Voice volume for %s increased to %d")), GetDisplayName(user), int(v+1));
+            AddVoiceMessage(szText);
+        }
         }
     }
 }
@@ -4110,6 +4123,11 @@ void CTeamTalkDlg::OnAdvancedLowervolumevoice()
             int v = RefVolumeToPercent(user.nVolumeVoice);
             TT_SetUserVolume(ttInst, i->nUserID, STREAMTYPE_VOICE,
                 RefVolume(v - 1));
+        if (m_xmlSettings.GetEventTTSEvents() & TTS_SUBSCRIPTIONS_VOICE) {
+            CString szText;
+            szText.Format(LoadText(IDS_DECVOLUMEVOICEUSER, _T("Voice volume for %s decreased to %d")), GetDisplayName(user), int(v-1));
+            AddVoiceMessage(szText);
+        }
         }
     }
 }
@@ -4134,6 +4152,11 @@ void CTeamTalkDlg::OnAdvancedIncvolumemediafile()
             int v = RefVolumeToPercent(user.nVolumeMediaFile);
             TT_SetUserVolume(ttInst, i->nUserID, STREAMTYPE_MEDIAFILE_AUDIO,
                 RefVolume(v + 1));
+        if (m_xmlSettings.GetEventTTSEvents() & TTS_SUBSCRIPTIONS_MEDIAFILE) {
+            CString szText;
+            szText.Format(LoadText(IDS_INCVOLUMEMFUSER, _T("Media files volume for %s increased to %d")), GetDisplayName(user), int(v+1));
+            AddVoiceMessage(szText);
+        }
         }
     }
 }
@@ -4158,6 +4181,11 @@ void CTeamTalkDlg::OnAdvancedLowervolumemediafile()
             int v = RefVolumeToPercent(user.nVolumeMediaFile);
             TT_SetUserVolume(ttInst, i->nUserID, STREAMTYPE_MEDIAFILE_AUDIO,
                 RefVolume(v - 1));
+        if (m_xmlSettings.GetEventTTSEvents() & TTS_SUBSCRIPTIONS_MEDIAFILE) {
+            CString szText;
+            szText.Format(LoadText(IDS_DECVOLUMEMFUSER, _T("Media files volume for %s decreased to %d")), GetDisplayName(user), int(v-1));
+            AddVoiceMessage(szText);
+        }
         }
     }
 }
@@ -4466,12 +4494,12 @@ void CTeamTalkDlg::OnHelpAbout()
 
 void CTeamTalkDlg::OnHelpWebsite()
 {
-    HINSTANCE i = ShellExecute(this->m_hWnd,LoadText(IDS_SHELLEXECOPEN, _T("open")),WEBSITE,_T(""),_T(""),SW_SHOW);
+    HINSTANCE i = ShellExecute(this->m_hWnd,_T("open"),WEBSITE,_T(""),_T(""),SW_SHOW);
 }
 
 void CTeamTalkDlg::OnHelpManual()
 {
-    HINSTANCE i = ShellExecute(this->m_hWnd,LoadText(IDS_SHELLEXECOPEN, _T("open")),MANUALFILE,_T(""),NULL,SW_SHOW);
+    HINSTANCE i = ShellExecute(this->m_hWnd,_T("open"),MANUALFILE,_T(""),NULL,SW_SHOW);
 }
 
 void CTeamTalkDlg::OnTimer(UINT_PTR nIDEvent)
@@ -6613,7 +6641,7 @@ void CTeamTalkDlg::OnUserinfoSpeakuserinfo()
         if(!m_wndTree.GetChannel(nID, chan))
             return;
 
-        CString szChannel, szPasswd, szClassroom;
+        CString szChannel, szPasswd, szClassroom, szTopic;
         szChannel.LoadString(IDS_CHANNEL);
         szPasswd.LoadString(IDS_PASSWORD_PROTECTED);
         szClassroom.LoadString(IDS_CLASSROOMCHANNEL);
@@ -6621,12 +6649,19 @@ void CTeamTalkDlg::OnUserinfoSpeakuserinfo()
         TRANSLATE_ITEM(IDS_CHANNEL, szChannel);
         TRANSLATE_ITEM(IDS_PASSWORD_PROTECTED, szPasswd);
         TRANSLATE_ITEM(IDS_CLASSROOMCHANNEL, szClassroom);
+        TRANSLATE_ITEM(IDC_STATIC_CHTOPIC, szTopic);
+        szChannel += _T(":");
+        szChannel += chan.szName;
+        szTopic += _T(": ");
+        szTopic += chan.szTopic;
 
         szSpeakList.AddTail(szChannel);
         if(chan.uChannelType & CHANNEL_CLASSROOM)
             szSpeakList.AddTail(szClassroom);
         if(chan.bPassword)
             szSpeakList.AddTail(szPasswd);
+        if (_tcslen(chan.szTopic))
+            szSpeakList.AddTail(szTopic);
     }
 
     CString szSpeak;

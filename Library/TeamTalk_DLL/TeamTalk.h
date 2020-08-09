@@ -16,7 +16,7 @@
  * client's version can be seen in the @a szVersion member of the
  * #User-struct. */
 
-#define TEAMTALK_VERSION "5.6.0.5000"
+#define TEAMTALK_VERSION "5.6.0.5006"
 
 
 #if defined(WIN32)
@@ -289,6 +289,8 @@ extern "C" {
      * */
     typedef enum SoundDeviceFeature
     {
+        /** @brief No sound device features are available on this
+         * sound device. */
         SOUNDDEVICEFEATURE_NONE         = 0x0000,
         /** @brief The #SoundDevice can enable Acoustic 
          * Echo Canceler (AEC).
@@ -403,9 +405,14 @@ extern "C" {
         /**
          * @brief Enable Automatic Gain Control.
          *
+         * This effect can be enabled on a #SoundDevice that has
+         * #SOUNDDEVICEFEATURE_AGC flag in @c uSoundDeviceFeatures.
+         *
          * Supported platforms:
          * - Windows
          *   - Automatic gain control is per #TTInstance.
+         *   - #TTInstance must initialize sound devices using
+         *     TT_InitSoundDuplexDevices()
          * - Android
          *   - Automatic gain control will be applied on all active
          *     #TTInstance.
@@ -414,9 +421,15 @@ extern "C" {
         /**
          * @brief Enable noise suppression.
          *
+         * This effect can be enabled on a #SoundDevice that has
+         * #SOUNDDEVICEFEATURE_DENOISE flag in @c
+         * uSoundDeviceFeatures.
+         *
          * Supported platforms:
          * - Windows
          *   - Noise suppression is per #TTInstance.
+         *   - #TTInstance must initialize sound devices using
+         *     TT_InitSoundDuplexDevices()
          * - Android
          *   - Noise suppression will be applied on all active
          *     #TTInstance.
@@ -425,9 +438,14 @@ extern "C" {
         /**
          * @brief Enable echo cancellation.
          *
+         * This effect can be enabled on a #SoundDevice that has
+         * #SOUNDDEVICEFEATURE_AEC flag in @c uSoundDeviceFeatures.
+         *
          * Supported platforms:
          * - Windows
          *   - Echo cancellation is per #TTInstance.
+         *   - #TTInstance must initialize sound devices using
+         *     TT_InitSoundDuplexDevices()
          * - Android
          *   - Echo cancellation will be applied on all active
          *     #TTInstance.
@@ -3944,19 +3962,8 @@ extern "C" {
      * @brief Enable duplex mode where multiple audio streams are
      * mixed into a single stream using software.
      *
-     * Duplex mode can @b ONLY be enabled on sound devices which
-     * support the same sample rate. Sound systems #SOUNDSYSTEM_WASAPI
-     * and #SOUNDSYSTEM_ALSA typically only support a single sample
-     * rate.  Check @c supportedSampleRates in #SoundDevice to see
-     * which sample rates are supported.
-     *
      * To use duplex mode the feature #SOUNDDEVICEFEATURE_DUPLEXMODE
      * must be available on the #SoundDevice.
-     *
-     * Sound duplex mode is required for echo cancellation since sound
-     * input and output device must be synchronized. Also sound cards
-     * which does not support multiple output streams should use
-     * duplex mode.
      *
      * If TT_InitSoundDuplexDevices() is successful the following
      * flags will be set:
@@ -3972,8 +3979,9 @@ extern "C" {
      * local client instance calls TT_DoSubscribe() with
      * #SUBSCRIBE_INTERCEPT_VOICE on a user in another channel then
      * the audio from this user will be started in a separate
-     * stream. The reason for this is that the other user may use a
-     * different audio codec.
+     * stream. The reason for this is that the other user may use an
+     * audio codec with a different sample rate or number of audio
+     * channels.
      *
      * @param lpTTInstance Pointer to client instance created by 
      * #TT_InitTeamTalk.
@@ -4046,10 +4054,17 @@ extern "C" {
      * #SoundDeviceEffects-struct can be used to toggle these audio
      * effects on the device.
      *
-     * Currently only #SOUNDSYSTEM_OPENSLES_ANDROID supports setting
-     * #SoundDeviceEffects. Modifying #SoundDeviceEffects on Android
-     * will apply to all active #TTInstance, i.e. #SoundDeviceEffects
-     * are applied globally.
+     * The following sound systems support TT_SetSoundDeviceEffects():
+     * - #SOUNDSYSTEM_OPENSLES_ANDROID
+     *   - Modifying #SoundDeviceEffects on Android will apply to all
+     *     active #TTInstance, i.e. #SoundDeviceEffects are applied
+     *     globally.
+     * - #SOUNDSYSTEM_WASAPI
+     *   - TT_SetSoundDeviceEffects() must be called prior to
+     *     TT_InitSoundDuplexDevices(). Sound device effects cannot be
+     *     used with TT_InitSoundInputDevice() and TT_InitSoundOutputDevice()
+     *     since Windows needs to know both input and output device upon
+     *     initialization.
      *
      * This setting should not be confused with
      * TT_SetSoundInputPreprocessEx() which runs entirely in software
@@ -4062,7 +4077,7 @@ extern "C" {
      * since an sound device is not active until the #TTInstance joins
      * a channel where the sound device knowns the sample rate and
      * number of channels
-     * (mono/stereo). #INTERR_SNDEFFECT_INIT_FAILED will be
+     * (mono/stereo). #INTERR_SNDEFFECT_FAILURE will be
      * posted if the #SoundDeviceEffects was unable to initialize.
      *
      * @see TT_GetSoundDeviceEffects() */
@@ -5287,8 +5302,9 @@ extern "C" {
      * @param nLocalUdpPort The local UDP port which should be used. 
      * Setting it to 0 makes OS select a port number (recommended).
      * @param bEncrypted Whether the server requires an encrypted 
-     * connection. Encryption is only available in the TeamTalk
-     * Professional SDK.
+     * connection. As of TeamTalk v5.5 and onwards encryption is 
+     * available in both TeamTalk SDK Standard and Professional
+     * Edition.
      * @return Returns TRUE if connection process was initiated.
      * @see CLIENTEVENT_CON_SUCCESS
      * @see CLIENTEVENT_CON_FAILED
@@ -5322,8 +5338,9 @@ extern "C" {
      * @param nLocalUdpPort The local UDP port which should be used. 
      * Setting it to 0 makes OS select a port number (recommended).
      * @param bEncrypted Whether the server requires an encrypted 
-     * connection. Encryption is only available in the TeamTalk
-     * Professional SDK.
+     * connection. As of TeamTalk v5.5 and onwards encryption is 
+     * available in both TeamTalk SDK Standard and Professional
+     * Edition.
      * @param szSystemID The identification of the conferencing system.
      * The default value is "teamtalk". See TTS_StartServerSysID()
      * @return Returns TRUE if connection process was initiated. */
@@ -5337,7 +5354,7 @@ extern "C" {
                                            IN const TTCHAR* szSystemID);
 
     /**
-     * @brief Bind to specific IP-address priot to connecting to server.
+     * @brief Bind to specific IP-address prior to connecting to server.
      *
      * Same as TT_Connect() except that this also allows which IP-address
      * to bind to on the local interface.
@@ -5354,8 +5371,9 @@ extern "C" {
      * @param nLocalUdpPort The local UDP port which should be used. 
      * Setting it to 0 makes OS select a port number (recommended).
      * @param bEncrypted Whether the server requires an encrypted 
-     * connection. Encryption is only available in the TeamTalk
-     * Professional SDK.
+     * connection. As of TeamTalk v5.5 and onwards encryption is 
+     * available in both TeamTalk SDK Standard and Professional
+     * Edition.
      * @see TT_Connect */
     TEAMTALKDLL_API TTBOOL TT_ConnectEx(IN TTInstance* lpTTInstance,
                                         IN const TTCHAR* szHostAddress,
