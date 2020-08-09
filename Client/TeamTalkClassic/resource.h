@@ -279,7 +279,6 @@
 #define IDS_LOCALECHARS                 377
 #define IDS_TTDLLVER                    378
 #define IDS_TTDLLVERS                   379
-#define IDS_SHELLEXECOPEN               380
 #define IDS_RXTXPING                    381
 #define IDS_RXTX                        382
 #define IDS_AWAY                        383
@@ -439,6 +438,11 @@
 #define IDS_CMDERR_CHANNEL_HAS_USERS    549
 #define IDS_CMDERR_LOGINSERVICE_UNAVAILABLE 550
 #define IDS_CMDERR_USER_NOT_FOUND       551
+#define IDS_CHANHISTORYLAB           553
+#define IDS_CHANMESSAGELAB           555
+#define IDS_DEFAULTNICKNAME           556
+#define IDS_TREECTRLLAB           557
+#define IDS_FILESLISTLAB           558
 #define IDC_SLIDER_VOICEACT             1001
 #define IDC_SLIDER_VOLUME               1002
 #define IDC_EDIT_HOSTTCPPORT            1003
@@ -455,10 +459,14 @@
 #define IDC_EDIT_MOTD                   1015
 #define IDC_STATIC_HOSTUDPPORT          1016
 #define IDC_STATIC_VOLUME               1017
+#define IDS_INCVOLUMEVOICEUSER          1018
+#define IDS_DECVOLUMEVOICEUSER          1019
 #define IDC_CHECK_SHOWUSERCOUNT         1020
 #define IDC_CHECK_POSITIONING           1021
 #define IDC_CHECK_IDLEVOX               1022
+#define IDS_INCVOLUMEMFUSER          1023
 #define IDC_CHECK_MANUAL                1024
+#define IDS_DECVOLUMEMFUSER          1025
 #define IDC_STATIC_VOICEACT             1027
 #define IDC_STATIC_VOLUME2              1028
 #define IDC_EDIT_CHANPASSWORD           1029
@@ -1048,7 +1056,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        552
+#define _APS_NEXT_RESOURCE_VALUE        559
 #define _APS_NEXT_COMMAND_VALUE         32955
 #define _APS_NEXT_CONTROL_VALUE         1597
 #define _APS_NEXT_SYMED_VALUE           413

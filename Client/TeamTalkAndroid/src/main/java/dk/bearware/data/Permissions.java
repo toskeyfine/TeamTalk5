@@ -27,8 +27,8 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -43,7 +43,8 @@ public class Permissions {
     MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 5,
     MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 6,
     MY_PERMISSIONS_REQUEST_WAKE_LOCK = 7,
-    MY_PERMISSIONS_REQUEST_READ_PHONE_STATE = 8;
+    MY_PERMISSIONS_REQUEST_READ_PHONE_STATE = 8,
+    MY_PERMISSIONS_BLUETOOTH = 9;
 
     public static boolean setupPermission(Context context, Activity activity, int permission) {
         String stringPermission;
@@ -81,6 +82,10 @@ public class Permissions {
             case MY_PERMISSIONS_REQUEST_READ_PHONE_STATE:
                 stringPermission = Manifest.permission.READ_PHONE_STATE;
                 errormessage = context.getString(R.string.permission_read_phone_state);
+                break;
+            case MY_PERMISSIONS_BLUETOOTH:
+                stringPermission = Manifest.permission.BLUETOOTH;
+                errormessage = context.getString(R.string.permission_bluetooth);
                 break;
             default :
                 Log.e(AppInfo.TAG, String.format("Unknown permission %d", permission));
