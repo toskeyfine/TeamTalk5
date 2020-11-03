@@ -56,7 +56,7 @@ jobs:
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl
     - name: Install Dependencies
-      run: sudo apt install  libace-dev libace-ssl-dev libace-inet-dev libace-inet-ssl-dev libtinyxml-dev zlib1g-dev libssl-dev libopus-dev libspeex-dev libspeexdsp-dev libvpx-dev libogg-dev portaudio19-dev libasound2-dev libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavresample-dev libavutil-dev libswresample-dev libswscale-dev openjdk-8-jdk cmake qt5-default qtmultimedia5-dev libqt5x11extras5-dev libqt5webkit5-dev junit4 catch python3-minimal doxygen
+      run: sudo apt install  libace-dev libace-ssl-dev libace-inet-dev libace-inet-ssl-dev libtinyxml-dev zlib1g-dev libssl-dev libopus-dev libspeex-dev libspeexdsp-dev libvpx-dev libogg-dev portaudio19-dev libasound2-dev libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavresample-dev libavutil-dev libswresample-dev libswscale-dev cmake qt5-default qtmultimedia5-dev libqt5x11extras5-dev libqt5webkit5-dev junit4 catch python3-minimal doxygen
 
     # ✏️ If the Autobuild fails above, remove it and uncomment the following three lines
     #    and modify them (or add more) to build your code if your project
