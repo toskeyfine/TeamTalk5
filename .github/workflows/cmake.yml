@@ -25,6 +25,7 @@ jobs:
 
     - name: Source environment
       working-directory: ${{runner.workspace}}
+      shell: bash
       run: source env.sh
 
     - name: Create Build Environment
