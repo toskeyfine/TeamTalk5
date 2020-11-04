@@ -8,9 +8,9 @@ env:
   OUTPUTDEVICEID: 1978
   OPUSTOOLS: 0
   VERBOSE: 0
-  TEAMTALK_ROOT: ${{runner.workspace}}
-  PYTHONPATH: ${TEAMTALK_ROOT}/Library/TeamTalkPy:${PYTHONPATH}
-  LD_LIBRARY_PATH: ${TEAMTALK_ROOT}/Library/TeamTalk_DLL:${TEAMTALK_ROOT}/Library/TeamTalkJNI/libs
+#  TEAMTALK_ROOT: ${{runner.workspace}}
+#  PYTHONPATH: ${TEAMTALK_ROOT}/Library/TeamTalkPy:${PYTHONPATH}
+#  LD_LIBRARY_PATH: ${TEAMTALK_ROOT}/Library/TeamTalk_DLL:${TEAMTALK_ROOT}/Library/TeamTalkJNI/libs
   
 jobs:
   build:
@@ -22,6 +22,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+  
+    - name: Source environment
+      working-directory: ${{runner.workspace}}
+      run: source env.sh
 
     - name: Install Dependencies
       run: sudo apt install libace-dev libace-ssl-dev libace-inet-dev libace-inet-ssl-dev libtinyxml-dev zlib1g-dev libssl-dev libopus-dev libspeex-dev libspeexdsp-dev libvpx-dev libogg-dev portaudio19-dev libasound2-dev libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavresample-dev libavutil-dev libswresample-dev libswscale-dev cmake junit4 catch python3-minimal doxygen
