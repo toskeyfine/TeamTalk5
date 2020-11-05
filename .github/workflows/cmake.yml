@@ -48,12 +48,20 @@ jobs:
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: cmake --build .
 
-    - name: Java Server Test
+    - name: Java Server API Test (non-encrypted)
       working-directory: ${{runner.workspace}}/TeamTalk5/Library/TeamTalkJNI
       # Execute tests defined by the CMake configuration.  
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: make runjunitsrv
-      
+      run: |
+        export ENCRYPTED=0
+        make runjunitsrv
+
+    - name: Java Server API Test (encrypted)
+      working-directory: ${{runner.workspace}}/TeamTalk5/Library/TeamTalkJNI
+      run: |
+        export ENCRYPTED=1
+        make runjunitsrv
+        
     - name: Start TeamTalk Standard Server
       working-directory: ${{runner.workspace}}/TeamTalk5
       run: |
@@ -70,14 +78,22 @@ jobs:
     
     - name: Catch unit-test
       working-directory: ${{runner.workspace}}/TeamTalk5/Library/TeamTalkLib/test
-      run: ./catchtt
-      
+      run: |
+        export ENCRYPTED=0
+        ./catchtt
+
+#    - name: Run Python client
+#      working-directory: ${{runner.workspace}}/TeamTalk5
+#      run: make -C Client/ttserverlogpy
+    
     - name: Stop TeamTalk Pro Server
       run: killall tt5prosrv
     
     - name: Java Unit-test (non-encrypted)
       working-directory: ${{runner.workspace}}/TeamTalk5/Library/TeamTalkJNI
-      run: make runjunit
+      run: |
+        export ENCRYPTED=0
+        make runjunit
 
     - name: Stop TeamTalk Standard Server
       run: killall tt5srv
@@ -88,7 +104,7 @@ jobs:
         cp -f Library/TeamTalkLib/test/tt5srv.xml_template Server/tt5srv.xml
         Server/tt5prosrv -d -c Server/tt5srv.xml
     
-    - name: Java Unit-test with shared audio devices
+    - name: Java Unit-test with shared audio devices (non-encrypted)
       working-directory: ${{runner.workspace}}/TeamTalk5/Library/TeamTalkJNI
       run: |
         export ENCRYPTED=0
@@ -107,11 +123,7 @@ jobs:
         cp Library/TeamTalkLib/test/ttserverkey.pem Server/
         Server/tt5prosrv -d -wd Server/
     
-    - name: Run Python client
-      working-directory: ${{runner.workspace}}/TeamTalk5
-      run: make -C Client/ttserverlogpy
-    
-    - name: Java Unit-test with virtual audio device and encryption
+    - name: Java Unit-test with virtual audio device (encrypted)
       working-directory: ${{runner.workspace}}/TeamTalk5/Library/TeamTalkJNI
       run: |
         export ENCRYPTED=1
@@ -121,11 +133,7 @@ jobs:
         
     - name: Stop TeamTalk Pro Server (encrypted)
       run: killall tt5prosrv
-      
-    - name: Java Server Test (encrypted mode)
-      working-directory: ${{runner.workspace}}/TeamTalk5/Library/TeamTalkJNI
-      run: make runjunitsrv
-    
+          
     - name: Doxygen Documentation
       working-directory: ${{runner.workspace}}/TeamTalk5/Documentation
       run: |
@@ -133,4 +141,3 @@ jobs:
         doxygen TeamTalkSDK/TeamTalk.dox
         doxygen TeamTalkSDK/TeamTalk.NET.dox
         doxygen TeamTalkSDK/TeamTalk.Java.dox
-        
